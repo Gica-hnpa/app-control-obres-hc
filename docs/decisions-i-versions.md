@@ -4905,3 +4905,18 @@
   - `v653test` (37/37) amb comprovacions noves: oriol sense «Direcció d'obra» no té «Preus i marges»; amb el paquet, sí, i «Obrir» porta a
     la llibreria. Les 21 proves del repàs, en verd: neteja353, personal340, simple354, v365, v410, v414, v431, v436, v437, v438, v450, v459,
     v461, v464, v605, v606, v608, v610, v614, v617 i clientsvirtuals (v461 falla de vegades en una tanda llarga per lentitud; sola, 26/26).
+- **V87.655 · Revisió de disseny, «Cal arreglar»** (l'Héctor, 23/11/2026: «Revisa totes les pantalles… fes-me la llista»; va triar els punts
+  1–6 de la revisió de 160 pantalles, tècnic i constructora al mòbil, la tauleta i l'ordinador). Tot és a `src/theme-v878655.css`: només
+  mides, marges i colors; cap pantalla canvia de lloc.
+  - Marges del mòbil i la tauleta a 16 px a cada costat (abans 8 px: les targetes tocaven la vora); el logo i «Tornar» de dalt, alineats.
+  - Menú: el nom (APP CONTROL D'OBRES o el d'Imatge de l'empresa) en fins a dues línies, sense passar per sota del ☰; el ☰ i la ✕ tenen nom
+    («Plegar el menú» / «Desplegar el menú», «Tancar el menú»).
+  - Botons per al dit (norma de la V87.392): els de dalt de l'obra (rellotge, estat, ⋯), les fletxes de l'Agenda i el cercador, 40 px; la resta
+    (any, «Seleccionar», enllaços, preu per hora, «Sortir», Cadastre…), 36 px. Al mòbil, de 82 per sota de la norma a 0.
+  - Lletra de 12 px com a mínim: rètols de les rajoles de l'obra, dies del temps, «Usuari:» i versió del menú, «Avui» del Planning, dades petites
+    d'Obres i Despeses. Contrast: missatges buits, «Preu per hora per defecte», l'any de les llistes i un import gris sobre blau.
+  - Punt 6 (desplegable dels blocs de l'obra a l'ordinador que es tancava): no s'ha pogut reproduir (amb el ratolí i clicant va bé); sense canvis.
+  - Proves: `accessibilitat391` treu les transicions abans de mesurar (llegia colors a mig canvi) i salta les miniatures dels estils de document;
+    `marca351test` igual (ja fallava abans per això, no per l'app). Noves: `revisio655.mjs` (passa per 160 pantalles i en mesura marges,
+    botons, lletra, contrast i textos tallats) i `captures654.mjs` (captures dels perfils i paquets). En verd: i18n, marca351 20/20, v534 29/29,
+    navtest 32/32, obratest 34/34, menustest 48/48, expedients 21/21, pantalles 13/13, v653 37/37, tallades374; 0 errors a les 160 pantalles.

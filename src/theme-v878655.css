@@ -1,0 +1,50 @@
+/* V87.655 · Revisió de disseny, «Cal arreglar» (l'Héctor, 23/11/2026). Només mides, marges i colors; cap pantalla canvia de lloc. */
+
+/* 1 · Marges del mòbil i la tauleta: 16 px a cada costat (abans 8–10 px: les targetes tocaven la vora). La capçalera i la barra de baix
+   continuen d'una vora a l'altra; el logo o «Tornar» de dalt, alineats amb el contingut. */
+@media (max-width:900px){
+  html body .main{padding-left:16px!important;padding-right:16px!important}
+}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .app-head-v878268{padding-left:16px!important}
+  html body .app-head-v878268 .back-v878268{margin-left:-4px}
+}
+
+/* 2 · El nom del menú (APP CONTROL D'OBRES o el que es posa a Imatge de l'empresa) ja no passa per sota del botó ☰ / ✕: fins a dues línies */
+html body .sidebar .sidebar-head>.brand{overflow:hidden;white-space:normal!important}
+html body .sidebar .sidebar-head>.brand>span{min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;white-space:normal;line-height:1.15;overflow-wrap:anywhere}
+
+/* 3 · Botons per al dit (la norma de la V87.392: 36 px com a mínim al mòbil i l'iPad; els de dalt de l'obra, 40 px) */
+@media (pointer:coarse),(max-width:1100px){
+  html body .obra-acc-btn-v878269,html body .crono-v878376{min-width:40px!important;min-height:40px!important}
+  html body .obra-estat-v878269 select{min-height:40px!important}
+  html body .ag-arrow{min-width:40px!important;min-height:40px!important}
+  html body .main .search-field input{min-height:40px!important}
+  html body .main .ch-head input.rate{min-height:36px!important;min-width:72px}
+  html body .sidebar .logout-mini-v8778{min-height:36px!important}
+  html body .main .anys>button,html body .main select,html body .main button.secondary.small{min-height:36px!important}
+  html body .main button.chev-v878390{min-width:36px!important}
+  html body .main button.link{min-height:36px;display:inline-flex;align-items:center}
+  html body .main .gt-scroll-v878253 .gt-left-v878253 button{min-height:32px}
+}
+
+/* 4 · Lletra de 12 px com a mínim (la norma de la V87.392) */
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t small,html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button.on .t small,
+html body .obra-blocs-v878299>button .t small{font-size:12px!important}
+html body .nav-version-v878264{font-size:12px!important}
+html body .temps-b-v878538 .dia small,html body .raj-v878484.ample-v878538 .dia small,html body .temps-b-v878538 .dia em,
+html body .temps-b-v878538 .dia .n-v878541,html body .raj-v878484.ample-v878538 .dia .n-v878541{font-size:12px!important}
+html body .sidebar .active-user-v8780{font-size:12px!important}
+html body .ind-xifres-v878608 small,html body .ch-rajoles-v878515 em.avis-v878529{font-size:12px!important}
+html body .exp-table-v878289 td small{font-size:12px!important}
+html body .gt-head-v878253 .today em,html body .gantt-track-v878252.head .today em,html body .gt-head-v878253 .top>span{font-size:12px!important}
+
+html body .main .fila-v878348 small.m-only,html body .main em.pag-v878575,html body .main .exp-paquets-v878314 .det-v878497{font-size:12px!important}
+
+/* 5 · Contrast: els textos grisos dels missatges buits i del preu per hora (4,4:1 → el gris fosc de l'app) i l'any de les llistes */
+html body .main .empty,html body .main .ch-head>span,html body .main .buit-v878426{color:var(--co-ink-2,#4B5D63)!important}
+html body .main .exp-year-v878270>h3>span{color:#1D4ED8!important}
+html body .main details.sub-v878426.de-sec-v878386>summary>span.xifra{color:var(--co-ink,#152328)!important}
+@media (pointer:coarse),(max-width:1100px){
+  html body .main .enllacos-obra-v878305 a.enllac-v878305{min-height:36px}
+}

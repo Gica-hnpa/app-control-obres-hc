@@ -6386,4 +6386,8 @@ export default {
   "honoraris": "honorarios",
   "factures": "facturas",
   "pressupostos d’honoraris": "presupuestos de honorarios",
+  // V87.655
+  "Plegar el menú": "Contraer el menú",
+  "Desplegar el menú": "Desplegar el menú",
+  "Tancar el menú": "Cerrar el menú",
 };

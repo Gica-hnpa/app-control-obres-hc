@@ -167,7 +167,9 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.654 a Render):**
+**Estat (publicada la V87.655 a Render):**
+- **Revisió de disseny** (V87.655, 23/11/2026): punts 1–5 de «Cal arreglar» (marges de 16 px al mòbil, botons ≥36–40 px, lletra de 12 px,
+  contrast) a `src/theme-v878655.css`. Següent: «Convindria» (punts 7–20), per tandes A–D, amb captures abans/després i el sí de l'Héctor.
 - **Paquets per compte** (V87.653): cada perfil té una base i paquets (Honoraris, Pressupost i certificacions / «Direcció d'obra», Encàrrecs
   tècnics, Hores i rendiment, Control d'obra, Personal i fitxatge, Factures i comptabilitat); el que no té el compte no surt. Els posa l'Héctor
   a Ajustos › Comptes del núvol › «Paquets dels comptes» (cal l'SQL `aco_paquets_v878653.sql`). El «Tècnic amb gestió» ja és el Tècnic amb
