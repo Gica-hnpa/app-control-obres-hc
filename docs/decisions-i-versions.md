@@ -5004,3 +5004,27 @@
     contrast, 0 petits, 0 de menys de 12 px), i18n tot traduït, marca351 20/20, navtest 32/32, obratest 34/34, menustest 48/48, v536 11/11, v538 17/17,
     v508 26/26, v507 24/24, expedients 21/21, pantalles 13/13, despeses329 34/34, v562 18/18, pressupost 27/27; `revisio655` a les 160 pantalles,
     0 errors JS.
+- **V87.660 · El nom «G3C» i el logo, el botó ☰, «Comptabilitat» que només s'obre i els partes des de l'avís** (l'Héctor, 24/11/2026).
+  - Nom i logo (triats en una conversa a part, `docs/prompt-nom-comercial.md`): **G3C**, «Gestió i control d'obres», amb el logo F3 (la G blanca i
+    la C blava que acaba en una validació). Al menú, a la barra de dalt del mòbil (el logo i el nom), a la pantalla d'entrar (amb el lema), a la
+    pestanya del navegador («G3C · Gestió i control d'obres») i a les icones de l'app (`public/icon*.png`, `icon.svg`, `manifest.webmanifest`,
+    color del tema #16263D). El nom va amb la Barlow Condensed i tot d'un color (sense el 3 en blau: el blau ja el porta el logo).
+    `src/theme-v878660.css`, `LogoG3C878660`, `NomG3C878660`, `PeuMenu878660`. El calendari de Google continua dient-se «Control d'Obres»
+    (canviar-lo en faria un de nou).
+  - Empreses amb el seu logo (Ajustos › Imatge de l'empresa), «combinat de A i C»: el seu logo a dalt del menú (gran, sobre blanc) i a la
+    salutació de l'Inici (al mòbil, a sobre; a l'ordinador, al costat); G3C a la barra de dalt del mòbil i al peu del menú, al costat de la versió.
+  - Mòbil: un botó ☰ a la vista a la barra de dalt (abans el menú només s'obria tocant el logo: «la gent no ho sap»).
+  - Menú: «Comptabilitat» només obre i tanca les quatre opcions (Facturació, Despeses, Caixa i bancs, Rendiment); en triar-ne una, s'hi va. Abans
+    anava directament a l'última pantalla i, al mòbil, tancava el menú. Dins de Comptabilitat, el grup surt obert.
+  - L'avís «N partes per validar» obre els partes de l'obra amb «Validar de cop» i tots els per validar ja triats, per mirar-los i passar-los a la
+    certificació d'un cop (validar-ne un passa les quantitats a la certificació: per això no es fa des de l'avís a cegues); amb un de sol, s'obre
+    aquell. Els triats es validen per ordre de dia.
+  - Proves: nova `v660test` (5 partes amb «Diversos dies», l'avís des de Pendent, els 5 triats i passats a la certificació).
+  - «Validar» / «Passar a la certificació» (l'Héctor: «hauria de posar validar i no passar a certificació; això només si hi ha partides
+    associades»): a «Validar de cop» i al resum d'un parte, el botó diu «Validar» si els partes només porten hores, i «Passar a la certificació»
+    si algun porta partides del pressupost o feina fora de pressupost (`ambPartides878660`); la pregunta de confirmar, igual.
+  - Proves posades al dia: `marca351test` (G3C sense logo; amb logo, a dalt del menú i a la salutació; G3C al peu i a la barra del mòbil), `v481test`
+    («Validar» en un parte de només hores), `partes350test` (ja fallava: la llista ja no posa el punt volat), `accessibilitat391` i `revisio655` (el
+    títol «Comptabilitat» del menú no és una pantalla). En verd: v660 14/14, v572 14/14, marca351 20/20, navtest 32/32, v507 24/24, v508 26/26,
+    menutecnic 13/13, menustest 48/48, obratest 34/34, v536 11/11, v538 17/17, mobiltest 22/22, partes359 20/20, v494 24/24, accessibilitat391 net,
+    i18n tot traduït. Ja fallaven amb la V87.659 (proves velles, per posar al dia): partes352, v481 (pas 10), v483 i v422.
