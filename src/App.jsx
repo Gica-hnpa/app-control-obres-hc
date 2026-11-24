@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.658";
+const APP_VERSION878264="87.659";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9867,7 +9867,11 @@ function IniciB878536({name="",todayLabel="",avisos=[],feines=[],properes=[],obr
   const obreA=a=>a.obraId?openObraTab?.(a.obraId,a.tab):(obreAvis878520(a)||obreDoc878360(a));
   const enCursT=(ob?(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)):(obres||[]).filter(o=>isExpedientOpen878136(o.estat)))
     .map(o=>({o,...certObra878336((odata||{})[o.id]||{}),w:String(o.lastWorkedAt||o.updatedAt||o.lastOpenedAt||"")})).sort((a,b)=>b.w.localeCompare(a.w));
-  const enCurs=enCursT.slice(0,6);
+  // V87.659 · constructora amb poques obres en curs (l'Héctor, 24/11/2026: a l'ordinador quedava molt d'espai lliure): fins a 4, també les obertes
+  // (pressupostades, acceptades…), després de les que estan en curs. El temps de les obres continua sent només de les que estan en curs.
+  const mesObertes659=ob&&enCursT.length<4?(obres||[]).filter(o=>isExpedientOpen878136(o.estat)&&!paquetOk878314("execucio",o.estat))
+    .map(o=>({o,...certObra878336((odata||{})[o.id]||{}),w:String(o.lastWorkedAt||o.updatedAt||o.lastOpenedAt||"")})).sort((a,b)=>b.w.localeCompare(a.w)).slice(0,4-enCursT.length):[];
+  const enCurs=[...enCursT.slice(0,6),...mesObertes659];
   const nAv=id=>avisos.filter(a=>a.obraId===id).length+(feines||[]).filter(x=>x.obra?.id===id&&taskDeadlineTone878140(x.task)==="overdue").length;
   const cita=e=><button type="button" key={eventKey878137(e)} className="cita-b" onClick={()=>e.obraId?openObraTab?.(e.obraId,"Agenda / Avisos"):setScreen?.("Agenda")}>
     <span className="h">{e.hora||"—"}</span><span className="tx"><b>{e.title||e.titol||i18nT(e.tipus||"Cita")}</b>{e.obra?<small>{e.obra}</small>:null}</span></button>;
@@ -9881,12 +9885,12 @@ function IniciB878536({name="",todayLabel="",avisos=[],feines=[],properes=[],obr
     <div className="cos-b">
       <div className="esq-b">
         <section className="obres-b">
-          <div className="tit-b"><h2>{ob?t("Obres en curs"):t("Expedients en curs")}</h2>{enCursT.length>enCurs.length&&<button type="button" className="link" onClick={()=>obrirPaquet?obrirPaquet("oberts"):setScreen?.("Treballs / Expedients")}>{t("Veure-les totes ({n})",{n:enCursT.length})}</button>}</div>
+          <div className="tit-b"><h2>{ob?(mesObertes659.length?t("Obres obertes"):t("Obres en curs")):t("Expedients en curs")}</h2>{enCursT.length>enCurs.length&&<button type="button" className="link" onClick={()=>obrirPaquet?obrirPaquet("oberts"):setScreen?.("Treballs / Expedients")}>{t("Veure-les totes ({n})",{n:enCursT.length})}</button>}</div>
           {enCurs.length?<div className="graella-b">{enCurs.map(({o,pct})=>{const na=nAv(o.id);return <button type="button" key={o.id} className="obra-b" onClick={()=>openObraTab?.(o.id,"Resum")}>
             <ObraThumb878275 o={o} nom={quiObra878336(o,clients)||o.nom}/>
             {na>0&&<span className="av-b">{na===1?t("1 pendent"):t("{n} pendents",{n:na})}</span>}
             <span className="tx"><b>{o.nom}</b><small>{[codiCurt878270(o),quiObra878336(o,clients),o.poblacio].filter(Boolean).join(" · ")}</small></span>
-            {ob?<span className="pc"><span className="bar" aria-hidden="true"><i style={{width:`${Math.max(0,Math.min(100,pct||0))}%`}}/></span><small>{pct==null?t("Sense certificacions"):t("{p} % certificat",{p:Math.round(pct)})}</small></span>
+            {ob&&paquetOk878314("execucio",o.estat)?<span className="pc"><span className="bar" aria-hidden="true"><i style={{width:`${Math.max(0,Math.min(100,pct||0))}%`}}/></span><small>{pct==null?t("Sense certificacions"):t("{p} % certificat",{p:Math.round(pct)})}</small></span>
               :<span className={"est est-v878299 est-"+estatTone878299(o.estat)}>{i18nT(normalizeExpedientStatus878136(o.estat))}</span>}
           </button>})}</div>:<p className="buit-b">{ob?t("No hi ha obres en execució."):t("No hi ha expedients oberts.")}</p>}
         </section>
@@ -23781,7 +23785,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.658",
+    app_version:"87.659",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

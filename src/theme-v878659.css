@@ -1,0 +1,185 @@
+/* V87.659 · «Blau nit» a tota l'app (l'Héctor, 24/11/2026: de les tres direccions visuals, la A «Cartell d'obra» amb els colors «Blau nit»;
+   lletra 2: Inter per al text i Barlow Condensed per als títols, les xifres i els botons; cantonades «una mica arrodonides» (8 px); la barra de
+   progrés de l'obra, de color com abans; «fes ara ja totes les pantalles»). Només l'aspecte: cap dada ni cap pantalla canvia de lloc.
+   El blau de les accions és el de sempre (així el color propi de cada empresa continua anant); el blau nit, per a les barres i les capçaleres.
+   Prefix «html:root:root body»: guanya les regles d'abans (moltes porten «html:root body … !important»).
+   L'estat d'abans: etiqueta git «abans-blau-nit» (V87.656). */
+
+/* ── La lletra estreta (dins de l'app: va sense cobertura). El text continua amb l'Inter. ── */
+@font-face{font-family:"CO Cond";src:url("./fonts/barlow-condensed-latin-500-normal.woff2") format("woff2");font-weight:100 549;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Cond";src:url("./fonts/barlow-condensed-latin-600-normal.woff2") format("woff2");font-weight:550 649;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Cond";src:url("./fonts/barlow-condensed-latin-700-normal.woff2") format("woff2");font-weight:650 1000;font-style:normal;font-display:swap}
+
+/* ── Colors ── */
+html:root:root,html:root:root[data-visual]{
+  --co-display:"CO Cond","Barlow Condensed","Arial Narrow",sans-serif;
+  --co-nit:#16263D;--co-nit-2:#22354F;--co-clar:#8DB6F5;--co-avis:#C2410C;
+  --co-bg:#F0F2F5;--co-surface:#FFFFFF;--co-surface-2:#F4F6F8;
+  --co-line:#D2D8DF;--co-line-strong:#AEB8C4;
+  --co-ink:#16263D;--co-ink-2:#3F4E63;--co-ink-3:#58667A;
+  --co-radius:8px;--co-radius-sm:6px;--co-shadow:none;
+}
+html:root:root body{background:var(--co-bg)!important;color:var(--co-ink)}
+
+/* ── Menú de l'esquerra (ordinador i menú obert del mòbil): blau nit, amb la ratlla blava a dalt ── */
+html:root:root body .sidebar{background:var(--co-nit)!important;color:#E6ECF4!important;border-right:0!important;box-shadow:inset 0 6px 0 var(--co-accent)!important}
+html:root:root body .sidebar .brand,html:root:root body .sidebar .brand span{color:#FFFFFF!important}
+html:root:root body .sidebar .brand span{font-family:var(--co-display)!important;font-weight:700!important;font-size:20px!important;letter-spacing:.01em!important}
+html:root:root body .sidebar .brand::before{border-radius:6px!important}
+html:root:root body .side-nav .menu-btn{color:rgba(255,255,255,.82)!important;background:transparent!important;border-radius:6px!important;font-size:15px!important;font-weight:500!important}
+html:root:root body .side-nav .menu-btn svg{color:rgba(255,255,255,.82)!important}
+html:root:root body .side-nav .menu-btn:hover{background:rgba(255,255,255,.07)!important;color:#FFFFFF!important}
+html:root:root body .side-nav .menu-btn.active{background:rgba(255,255,255,.11)!important;color:#FFFFFF!important;font-weight:600!important;box-shadow:inset 4px 0 0 var(--co-clar)!important}
+html:root:root body .side-nav .menu-btn.active svg{color:#FFFFFF!important}
+html:root:root body .side-nav .compta-cap-v878658.dins{color:#FFFFFF!important;font-weight:700!important;background:transparent!important;box-shadow:none!important}
+html:root:root body .side-nav .compta-cap-v878658.dins svg{color:#FFFFFF!important}
+html:root:root body .side-nav .compta-sub-v878658.obert{border-left-color:rgba(255,255,255,.18)!important}
+html:root:root body .sidebar .active-user-v8780{background:rgba(255,255,255,.08)!important;color:rgba(255,255,255,.86)!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:6px!important}
+html:root:root body .sidebar .active-user-v8780 *{color:inherit!important}
+html:root:root body .sidebar .logout-mini-v8778,html:root:root body .sidebar .collapse-btn{background:transparent!important;color:#FFFFFF!important;border:1px solid rgba(255,255,255,.3)!important;border-radius:6px!important}
+html:root:root body .sidebar .close-menu{color:#FFFFFF!important;background:transparent!important;border-color:rgba(255,255,255,.3)!important}
+html:root:root body .nav-version-v878264{color:rgba(255,255,255,.6)!important}
+html:root:root body .cloud-badge-v878257{background:var(--co-nit-2)!important;color:#E6ECF4!important;border-color:rgba(255,255,255,.16)!important;box-shadow:none!important;border-radius:6px!important}
+
+/* ── Barra de dalt i barra de baix (mòbil i tauleta) ── */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body .app-head-v878268{background:var(--co-nit)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:0!important;box-shadow:inset 0 4px 0 var(--co-accent)!important;color:#FFFFFF!important}
+  html:root:root body .app-head-v878268 .title-v878268{color:#FFFFFF!important;font-family:var(--co-display)!important;font-weight:700!important;font-size:22px!important}
+  html:root:root body .app-head-v878268 .back-v878268,html:root:root body .app-head-v878268 .back-v878268 *{color:var(--co-clar)!important;background:transparent!important}
+  html:root:root body .app-head-v878268 .brand-v878268:not(.amb-logo-v878351){background:var(--co-accent)!important;color:#FFFFFF!important;border-radius:6px!important}
+  html:root:root body .app-head-v878268 button:not(.brand-v878268):not(.back-v878268){background:transparent!important;border-color:rgba(255,255,255,.3)!important;color:#FFFFFF!important}
+  html:root:root body .bottom-nav-v878268{background:var(--co-nit)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-top:0!important;box-shadow:none!important}
+  html:root:root body .bottom-nav-v878268>button,html:root:root body .bottom-nav-v878268>label{color:rgba(255,255,255,.8)!important;background:transparent!important}
+  html:root:root body .bottom-nav-v878268>button span,html:root:root body .bottom-nav-v878268>label span{font-size:12.5px!important;font-weight:500!important;color:inherit!important}
+  html:root:root body .bottom-nav-v878268>button.on,html:root:root body .bottom-nav-v878268>button[aria-current="page"]{color:var(--co-clar)!important}
+  html:root:root body .bottom-nav-v878268>button.on span,html:root:root body .bottom-nav-v878268>button[aria-current="page"] span{font-weight:700!important}
+  html:root:root body .bottom-nav-v878268.accions-v878484 .acc,html:root:root body .bottom-nav-v878268.accions-v878484>label.acc{color:#FFFFFF!important}
+  html:root:root body .bottom-nav-v878268.accions-v878484 .acc>svg,html:root:root body .bottom-nav-v878268.accions-v878484 .acc:active>svg{background:transparent!important;color:#FFFFFF!important;padding:3px!important;border-radius:0!important;box-sizing:border-box!important;width:28px!important;height:28px!important}
+  html:root:root body .bottom-nav-v878268>button:not(.acc)>svg{color:inherit!important}
+}
+
+/* ── La capçalera de l'obra, com el cartell de la tanca: blau nit amb la ratlla blava ── */
+html:root:root body .obra-bar-info-v878269{background:var(--co-nit)!important;color:#FFFFFF!important;border-radius:8px!important;padding:12px 14px!important;box-shadow:inset 0 5px 0 var(--co-accent)!important;margin-bottom:10px!important}
+html:root:root body .obra-bar-info-v878269 .obra-bar-txt-v878269 h2{color:#FFFFFF!important;font-family:var(--co-display)!important;font-weight:700!important;font-size:25px!important;line-height:1.1!important;letter-spacing:0!important}
+html:root:root body .obra-bar-info-v878269 .obra-bar-txt-v878269 small,html:root:root body .obra-bar-info-v878269 .obra-bar-txt-v878269 small *{color:rgba(255,255,255,.78)!important}
+html:root:root body .obra-bar-info-v878269 .obra-back-v878269,html:root:root body .obra-bar-info-v878269 .obra-back-v878269 *{color:var(--co-clar)!important;background:transparent!important;border-color:transparent!important}
+html:root:root body .obra-bar-info-v878269 .obra-bar-right-v878269 button:not(.primary){background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.28)!important;color:#FFFFFF!important}
+html:root:root body .obra-bar-info-v878269 .obra-bar-right-v878269 button svg{color:#FFFFFF!important}
+html:root:root body .obra-bar-info-v878269 .foto-obra-v878549{border-radius:6px!important}
+
+/* ── Títols: lletra estreta, sense majúscules ── */
+html:root:root body .main h1,html:root:root body .modal h1,html:root:root body .modal h2{font-family:var(--co-display)!important;font-weight:700!important;letter-spacing:0!important}
+html:root:root body .main h2,html:root:root body .main h3{font-family:var(--co-display)!important;font-weight:600!important;letter-spacing:0!important}
+/* res en majúscules fet amb estils (les dades escrites en majúscules, com els capítols d'un BC3, queden igual) */
+html:root:root body .main *,html:root:root body .modal *{text-transform:none!important}
+html:root:root body .main :is(th,label>span,.eyebrow,small),html:root:root body .modal :is(th,label>span,.eyebrow){letter-spacing:normal!important}
+
+/* ── Xifres: lletra estreta ── */
+html:root:root body :is(.xifres-v878426 .x b,.fu-item-v878253>b,.obra-hero-kpis-v878252 b,.home-kpis-v878251 b,.temps-kpis-v878255 b,.rc-kpis-v878343 b,.pres-estats-v878317 b,.fe-estats-v878373 b,.exp-paquets-v878314 b,.budget-grand-total b,.kpi strong){font-family:var(--co-display)!important;font-weight:700!important;letter-spacing:0!important;font-variant-numeric:tabular-nums}
+html:root:root body .main td,html:root:root body .modal td{font-variant-numeric:tabular-nums}
+
+/* ── Botons: lletra estreta i cantonades de 6 px; el principal, blau amb el text blanc ── */
+html:root:root body button.primary,html:root:root body .primary{background:var(--co-accent)!important;border-color:var(--co-accent)!important;color:#FFFFFF!important;box-shadow:none!important;border-radius:6px!important;font-family:var(--co-display)!important;font-weight:600!important;letter-spacing:.01em!important}
+html:root:root body .primary *{color:#FFFFFF!important}
+html:root:root body .secondary{border:1.5px solid var(--co-line-strong)!important;border-radius:6px!important;box-shadow:none!important;font-family:var(--co-display)!important;font-weight:600!important;letter-spacing:.01em!important;color:var(--co-ink)!important}
+html:root:root body .secondary:hover{border-color:var(--co-ink-2)!important}
+html:root:root body :is(button.primary,.primary,.secondary):not(.small):not(.mini):not(.link):not(.action-menu-panel-v87213 *){font-size:16px!important}
+html:root:root body :is(.action-menu-v87213>summary,.mes-v878342>summary,.mes-v878525>summary,.mes-v878317>summary){border-radius:6px!important;font-family:var(--co-display)!important;font-weight:600!important;font-size:16px!important}
+html:root:root body input:not([type=checkbox]):not([type=radio]):not([type=range]),html:root:root body select,html:root:root body textarea{border-radius:6px!important}
+
+/* ── Targetes plegables (es manté com funcionen: principals, subtargetes i files) ── */
+/* la vora marcada de les targetes principals (decisió de la V87.507), en gris blavós */
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366){border-radius:8px!important;box-shadow:none!important;border:1.5px solid #8FA0B3!important;background:var(--co-surface)!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)>summary{border-radius:7px!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)>summary :is(b,.t>b){font-family:var(--co-display)!important;font-weight:600!important;font-size:18.5px!important;letter-spacing:0!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)>summary>svg:first-child{background:transparent!important;color:var(--co-ink-2)!important;border-radius:0!important}
+/* oberta: la vora marcada i la capçalera blau nit amb el text blanc (abans, blau) */
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)[open]{border:1.5px solid var(--co-nit)!important;box-shadow:none!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)[open]>summary{background:var(--co-nit)!important;color:#FFFFFF!important;border-radius:6px 6px 0 0!important;box-shadow:inset 0 4px 0 var(--co-accent)!important;border-bottom:0!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)[open]>summary *:not(.n):not(em.mg-n-v878380):not(button):not(button *):not(.secondary):not(.secondary *){color:#FFFFFF!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)[open]>summary>svg:first-child{background:transparent!important;color:#FFFFFF!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369,details.ajustos-bloc-v878366)[open]>summary .chev{background:rgba(255,255,255,.14)!important;color:#FFFFFF!important}
+/* els avisos oberts continuen en taronja (diuen que hi ha alguna cosa a mirar) */
+html:root:root body details.card.bloc-v878426.avisos-v878426[open]>summary{background:var(--co-avis)!important;box-shadow:none!important}
+/* les altres capçaleres que s'obrien en blau fort, en blau nit */
+html:root:root body :is(.parte-ed-v878349 details.pe-feina-v878483,.parte-ed-v878349 details.pe-pres-v878494,.expedients-page-v8741 .expf-v878275,.fases-v878342 .mes-v878342.opcions-v878500,.llistat-v878501 .ll-camps-v878501)[open]>summary{background:var(--co-nit)!important;border-color:var(--co-nit)!important;color:#FFFFFF!important}
+html:root:root body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350{background:var(--co-nit)!important}
+html:root:root body :is(.cal-v878515,.fitxa-treb-v878516)>details.card.bloc-v878426[open]{border:1.5px solid var(--co-nit)!important}
+/* subtargetes i files: blanques, vora fina, sense ombra */
+html:root:root body :is(details.sub-v878426,details.fila-v878426,.carta-llista-v878518 details){border-radius:6px!important;box-shadow:none!important}
+html:root:root body .card:not(details){border-radius:8px!important;box-shadow:none!important}
+html:root:root body .modal,html:root:root body .modal-card{border-radius:10px!important}
+
+/* ── Xips i estats: cantonades de 6 px ── */
+html:root:root body :is(.badge,.est-v878299,.pill){border-radius:6px!important}
+html:root:root body .exp-paquets-v878314>button{border-radius:6px!important}
+
+/* ── Inici del mòbil: rajoles sense el quadrat de color de la icona; la xifra, gran ── */
+html:root:root body .inici-menu-v878484 .hola small{font-size:14.5px!important;font-weight:500!important;color:var(--co-ink-3)!important}
+html:root:root body .inici-menu-v878484 .hola h1{font-family:var(--co-display)!important;font-weight:700!important;font-size:30px!important;line-height:1.08!important;color:var(--co-ink)!important}
+html:root:root body .inici-menu-v878484 .graella{gap:8px!important}
+html:root:root body .raj-v878484{background:var(--co-surface)!important;border:1px solid var(--co-line)!important;border-radius:8px!important;box-shadow:none!important;padding:12px 12px 13px!important;min-height:108px!important;gap:6px!important}
+html:root:root body .raj-v878484 .ico{width:auto!important;height:auto!important;background:transparent!important;border-radius:0!important;color:var(--co-ink)!important}
+html:root:root body .raj-v878484 .ico svg{width:23px!important;height:23px!important;stroke-width:2!important}
+html:root:root body .raj-v878484 .num{font-family:var(--co-display)!important;font-weight:700!important;font-size:32px!important;line-height:.9!important;color:var(--co-ink)!important}
+html:root:root body .raj-v878484 .num.txt{font-family:var(--co-display)!important;font-size:17px!important;font-weight:600!important;color:var(--co-ink-3)!important;padding-top:2px!important}
+html:root:root body .raj-v878484 .tt b{font-family:var(--co-display)!important;font-weight:600!important;font-size:20px!important;line-height:1.1!important;color:var(--co-ink)!important}
+html:root:root body .raj-v878484 .tt small{font-size:13.5px!important;color:var(--co-ink-3)!important}
+html:root:root body .raj-v878484.avis{border-color:var(--co-line)!important;box-shadow:inset 5px 0 0 var(--co-avis)!important;padding-left:16px!important}
+html:root:root body .raj-v878484.avis .ico,html:root:root body .raj-v878484.avis .ico svg{color:var(--co-avis)!important;background:transparent!important}
+html:root:root body .raj-v878484.avis .num{color:var(--co-avis)!important}
+html:root:root body .raj-v878484:focus-visible{outline:3px solid var(--co-accent)!important;outline-offset:2px}
+html:root:root body .raj-v878484.on{border-color:var(--co-ink)!important;box-shadow:inset 0 0 0 1px var(--co-ink)!important}
+html:root:root body .inici-menu-v878484 .nova-obra-v878484{border-radius:8px!important;border:1.5px dashed var(--co-line-strong)!important;background:transparent!important;font-family:var(--co-display)!important;font-weight:600!important;font-size:17px!important;color:var(--co-ink)!important}
+html:root:root body .torna-inici-v878495{border-radius:6px!important;box-shadow:none!important;border:1px solid var(--co-line-strong)!important;background:var(--co-surface)!important}
+
+/* ── Inici de la tauleta i l'ordinador ── */
+html:root:root body .inici-b-v878536 .hola-b small{font-size:14.5px!important;color:var(--co-ink-3)!important;font-weight:500!important}
+html:root:root body .inici-b-v878536 .hola-b h1{font-family:var(--co-display)!important;font-weight:700!important;font-size:clamp(26px,2.6vw,34px)!important;line-height:1.1!important;color:var(--co-ink)!important}
+/* sense el tros de frase en blau: tota la frase igual */
+html:root:root body .inici-b-v878536 .hola-b h1 .acc{color:inherit!important;font-weight:inherit!important}
+html:root:root body .inici-b-v878536 h2{font-weight:700!important;font-size:21px!important;color:var(--co-ink)!important}
+html:root:root body .inici-b-v878536 h3{font-family:var(--co-display)!important;font-weight:600!important;font-size:16px!important;color:var(--co-ink-3)!important}
+html:root:root body .inici-b-v878536 .obra-b{background:var(--co-surface)!important;border:1px solid var(--co-line)!important;border-radius:8px!important;box-shadow:none!important}
+html:root:root body .inici-b-v878536 .obra-b:hover{border-color:var(--co-ink-2)!important}
+/* la foto de l'obra, de la mida d'ara; sense foto, les inicials sobre gris blavós (abans, colors pastel) */
+html:root:root body .inici-b-v878536 .obra-b .obra-thumb-v878275{border-radius:6px!important}
+html:root:root body .obra-thumb-v878275:not(.foto){background:#E3E9F0!important;color:var(--co-nit)!important}
+html:root:root body .obra-thumb-v878275:not(.foto) i{font-family:var(--co-display)!important;font-weight:700!important;font-style:normal!important;color:#3F5574!important}
+html:root:root body .inici-b-v878536 .obra-b .tx b{font-family:var(--co-display)!important;font-weight:600!important;font-size:19px!important;line-height:1.15!important;color:var(--co-ink)!important}
+html:root:root body .inici-b-v878536 .obra-b .tx small{font-size:13.5px!important;color:var(--co-ink-3)!important}
+html:root:root body .inici-b-v878536 .obra-b .av-b{border-radius:5px!important;background:var(--co-avis)!important;border-color:var(--co-avis)!important;color:#FFFFFF!important;box-shadow:none!important;font-family:var(--co-display)!important;font-weight:600!important;font-size:14px!important}
+html:root:root body .inici-b-v878536 :is(.avui-b,.temps-obres-v878538,.dreta-b>section,.dreta-b>div){border-radius:8px!important;box-shadow:none!important;border-color:var(--co-line)!important}
+html:root:root body .inici-b-v878536 .cita-b .h{font-family:var(--co-display)!important;font-weight:600!important;font-size:16px!important}
+html:root:root body .inici-b-v878536 .rajoles-b .raj-v878484{min-height:88px!important}
+
+/* ── Els quatre blocs de l'obra (Fitxa, Dia a dia, Pressupost, Comptabilitat): el triat, en blau nit amb la ratlla blava a baix ── */
+html:root:root body .obra-blocs-v878299>button{border-radius:8px!important;box-shadow:none!important;border:1px solid var(--co-line-strong)!important;background:var(--co-surface)!important}
+html:root:root body .obra-blocs-v878299>button svg{background:transparent!important;color:var(--co-ink-2)!important;border-radius:0!important;box-shadow:none!important}
+html:root:root body .obra-blocs-v878299>button b{font-family:var(--co-display)!important;font-weight:600!important;font-size:18.5px!important;letter-spacing:0!important}
+html:root:root body .obra-blocs-v878299>button.on{background:var(--co-nit)!important;border-color:var(--co-nit)!important;box-shadow:inset 0 -4px 0 var(--co-accent)!important}
+html:root:root body .obra-blocs-v878299>button.on *{color:#FFFFFF!important}
+html:root:root body .obra-bloc-panel-v878299{border-radius:8px!important}
+/* el text de la dreta de la capçalera de l'obra («Estat»…), blanc sobre el blau nit */
+html:root:root body .obra-bar-info-v878269 .obra-bar-right-v878269 :is(label,small,label>span){color:#FFFFFF!important}
+/* botons per al dit (norma de la V87.392): amb la lletra estreta, com a mínim 40 px d'alt al mòbil i la tauleta */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body :is(button.primary,.primary,.secondary):not(.small):not(.mini):not(.link):not(.action-menu-panel-v87213 *){min-height:40px!important}
+}
+/* una targeta oberta dins d'una altra d'oberta (p. ex. «Per pagar» › «Vencen més tard»): la capçalera clara amb la ratlla blau nit, perquè no
+   quedin dues franges fosques una sota l'altra */
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369)[open] :is(details.card.bloc-v878426,details.card.plega-v878369)[open]{border:1px solid var(--co-line-strong)!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369)[open] :is(details.card.bloc-v878426,details.card.plega-v878369)[open]>summary{background:var(--co-surface-2)!important;box-shadow:inset 4px 0 0 var(--co-nit)!important;border-bottom:1px solid var(--co-line)!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369)[open] :is(details.card.bloc-v878426,details.card.plega-v878369)[open]>summary *:not(.n):not(em.mg-n-v878380){color:var(--co-ink)!important}
+html:root:root body :is(details.card.bloc-v878426,details.card.plega-v878369)[open] :is(details.card.bloc-v878426,details.card.plega-v878369)[open]>summary .chev{background:var(--co-surface)!important;color:var(--co-ink)!important}
+/* el bloc de l'obra amb el desplegable obert (sense ser el triat): clar, amb el text fosc */
+html:root:root body .obra-blocs-v878299.obra-blocs-v878299>button.open:not(.on){background:var(--co-surface-2)!important;border-color:var(--co-nit)!important}
+html:root:root body .obra-blocs-v878299.obra-blocs-v878299>button.open:not(.on) :is(b,small,i,span){color:var(--co-ink)!important}
+/* el triat: tot el text blanc (hi havia regles que posaven el subtítol en blau) */
+html:root:root body .obra-blocs-v878299.obra-blocs-v878299>button.on.on :is(b,small,i,span){color:#FFFFFF!important}
+/* al mòbil, els menús «Opcions» / «Accions» s'obren com un full des de baix: mentre són oberts, la barra de baix s'amaga (abans en tapava l'última
+   opció, p. ex. «Descarregar en BC3»); el fons ja queda enfosquit */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body:has(details[open]>.action-menu-panel-v87213) .bottom-nav-v878268{visibility:hidden!important}
+}
+html:root:root body .obra-rajoles-v878485 .rajoles-v878485:has(>button.open)>button.on:not(.open) .t :is(small,b,i){color:#FFFFFF!important}

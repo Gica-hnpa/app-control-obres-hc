@@ -4980,3 +4980,27 @@
     v484 19/19, v496 21/21, v507 24/24, v562 18/18, v553 10/10, despeses329 34/34, pantalles 13/13, v473 28/28, v521 23/23, navtest 32/32,
     menustest 48/48, menutecnic 13/13, v653 37/37, v652 23/23, mobiltest 22/22, v566 10/10, v618 13/13, v575 22/22, expedients 21/21,
     obratest 34/34, accessibilitat391 net (0 textos de menys de 12 px), i18n tot traduït.
+- **V87.659 · «Blau nit» a tota l'app** (l'Héctor, 24/11/2026: de les tres direccions visuals de la revisió, la A «Cartell d'obra» amb els colors
+  «Blau nit»; lletra 2; «les cantonades una mica arrodonides»; «la barra en color del progrés de l'obra la vull mantenir»; «fes ara ja totes les
+  pantalles… i quan ho tinguis ho penges tot»). Tot és a `src/theme-v878659.css` (prefix `html:root:root body`, que guanya les regles d'abans) i
+  la lletra estreta, a `src/fonts/barlow-condensed-latin-{500,600,700}-normal.woff2` (OFL, `LICENSE-barlow.txt`). Només l'aspecte.
+  - Lletra: el text continua amb l'Inter; els títols, les xifres i els botons, amb la Barlow Condensed (`--co-display`). Sense majúscules fetes amb
+    estils a cap pantalla (les dades escrites en majúscules, com els capítols d'un BC3, queden igual).
+  - Colors: el menú de l'ordinador, la barra de dalt i la de baix del mòbil, la capçalera de l'obra (com el cartell de la tanca) i les capçaleres
+    de les targetes obertes, en blau nit (#16263D) amb una ratlla blava; el blau de les accions, el de sempre (el color propi de cada empresa
+    continua anant); fons #F0F2F5. Una targeta oberta dins d'una altra, amb la capçalera clara.
+  - Formes: cantonades de 8 px a les targetes i 6 px als botons i xips; sense ombres; la vora marcada de les targetes principals (V87.507) en gris
+    blavós; sense el quadrat de color darrere de les icones (rajoles de l'Inici, blocs de l'obra, targetes).
+  - Inici: rajoles amb la xifra gran i «Pendent» amb una franja taronja; a l'ordinador, la frase del dia sense el tros en blau, les obres sense
+    foto amb les inicials sobre gris blavós (la mida de les fotos, com era) i, a la constructora amb menys de 4 obres en curs, també les obertes
+    («Obres obertes»); la columna de la dreta (Avui, El temps), igual.
+  - Abans de tocar res: etiqueta git `abans-blau-nit` (V87.656). Proves de la lletra i l'Inici: `docs/Blau nit a l'Inici 2026-11-24.pdf` i
+    `docs/Blau nit tres lletres 2026-11-24.pdf`. Eines noves: `tools/proves/cap659.mjs` (captures d'una llista de pantalles amb l'origen de cada
+    color, `probe`).
+  - Arreglat després del repàs de les 160 pantalles: el text «Estat» i el subtítol del bloc triat, blancs sobre el blau nit; el botó «100 %» de
+    Certificacions amb la targeta oberta (text blanc sobre blanc); fons una mica més clar (un import blau de Honoraris quedava a 4,4:1); al mòbil,
+    mentre un menú «Opcions» / «Accions» és obert (full des de baix), la barra de baix s'amaga (en tapava «Descarregar en BC3»).
+  - Proves: `v536test` i `v538test` posades al dia («Obres obertes» quan n'hi ha menys de 4 en curs). En verd: accessibilitat391 net (0 de poc
+    contrast, 0 petits, 0 de menys de 12 px), i18n tot traduït, marca351 20/20, navtest 32/32, obratest 34/34, menustest 48/48, v536 11/11, v538 17/17,
+    v508 26/26, v507 24/24, expedients 21/21, pantalles 13/13, despeses329 34/34, v562 18/18, pressupost 27/27; `revisio655` a les 160 pantalles,
+    0 errors JS.
