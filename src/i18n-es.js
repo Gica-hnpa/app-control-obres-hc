@@ -6403,4 +6403,6 @@ export default {
   "Assegurança, col·legi, programes, telèfon…": "Seguro, colegio, programas, teléfono…",
   "avisos, feines i tràmits": "avisos, tareas y trámites",
   "Caixa": "Caja",
+  // V87.660
+  "Gestió i control d’obres": "Gestión y control de obras",
 };

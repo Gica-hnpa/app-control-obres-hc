@@ -587,7 +587,7 @@ function overlay(html) {
 function askLogin({ allowSkip = true, message = "" } = {}) {
   return new Promise(resolve => {
     const el = overlay(`
-      <div class="logo">CO</div>
+      <div class="g3c-entrada-v878660"><svg class="logo-g3c-v878660" width="64" height="64" viewBox="0 0 96 96" role="img" aria-label="G3C"><rect width="96" height="96" rx="21" fill="#13294A"/><path d="M61 24 A30 30 0 1 0 75.9 52.6 L66 52.6" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="miter"/><path d="M55.6 38.5 A15 15 0 1 0 49.9 64.5 L82 20" fill="none" stroke="#2D7FF9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b class="nom-g3c-v878660">G<i>3</i>C</b><small>${t("Gestió i control d’obres")}</small></div></div>
       <h1>${t("Entra al núvol")}</h1>
       <p>${t("Amb el teu compte veuràs les mateixes dades a l’ordinador, al mòbil i a la tauleta.")}</p>
       <form>

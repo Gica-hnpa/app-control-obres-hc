@@ -1,0 +1,33 @@
+/* V87.660 · El nom i el logo de l'app: «G3C» (logo F3: la G blanca i la C blava que acaba en una validació; l'Héctor, 24/11/2026).
+   Les empreses amb logo propi (Ajustos › Imatge de l'empresa) continuen veient el seu. */
+
+.logo-g3c-v878660{display:block;flex:none}
+
+/* menú de l'esquerra: el logo en lloc del quadrat «CO» i el nom G3C (el 3, blau) amb «Gestió i control d'obres» a sota */
+html:root:root body .sidebar .brand.g3c-v878660::before{display:none!important;content:none!important}
+html:root:root body .sidebar .brand.g3c-v878660{display:flex!important;align-items:center!important;gap:11px!important;min-width:0}
+html:root:root body .sidebar .brand.g3c-v878660 .logo-g3c-v878660{border-radius:9px;box-shadow:0 0 0 1px rgba(255,255,255,.10)}
+html:root:root body .sidebar .g3c-text-v878660{display:flex!important;flex-direction:column;gap:4px;line-height:1;min-width:0}
+html:root:root body .nom-g3c-v878660{font-family:var(--co-display)!important;font-weight:700!important;font-size:27px!important;letter-spacing:.04em!important;line-height:1!important;color:#FFFFFF!important;white-space:nowrap}
+html:root:root body .nom-g3c-v878660 i{font-style:normal!important;color:#2D7FF9!important}
+html:root:root body .sidebar .g3c-text-v878660 small{font-family:var(--co-display)!important;font-weight:500!important;font-size:12px!important;letter-spacing:.12em!important;text-transform:uppercase;color:#A9B6CC!important;white-space:nowrap}
+html:root:root body .app-shell.nav-collapsed .sidebar .g3c-text-v878660{display:none!important}
+
+/* barra de dalt del mòbil i la tauleta: el logo en lloc del quadrat «CO» */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body .app-head-v878268 .brand-v878268.g3c-v878660{background:transparent!important;padding:0!important;border:0!important;width:44px!important;height:44px!important;display:grid!important;place-items:center}
+  html:root:root body .app-head-v878268 .brand-v878268.g3c-v878660 .logo-g3c-v878660{width:44px;height:44px;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+}
+
+/* pantalla d'entrar: el logo i el nom a dalt */
+.cloud-overlay-v878257 .g3c-entrada-v878660{display:flex;align-items:center;gap:14px;margin:0 0 18px}
+.cloud-overlay-v878257 .g3c-entrada-v878660 .logo-g3c-v878660{border-radius:14px}
+.cloud-overlay-v878257 .g3c-entrada-v878660>div{display:flex;flex-direction:column;gap:6px;line-height:1}
+.cloud-overlay-v878257 .g3c-entrada-v878660 .nom-g3c-v878660{font-family:"CO Cond","Barlow Condensed","Arial Narrow",sans-serif!important;font-size:40px!important;color:#16263D!important}
+.cloud-overlay-v878257 .g3c-entrada-v878660 small{font-family:"CO Cond","Barlow Condensed","Arial Narrow",sans-serif;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#58667A}
+/* (arranjaments) al menú, només el logo i «G3C», ben gran (el lema hi quedava tallat); a la pantalla d'entrar, el nom en blau nit */
+html:root:root body .sidebar .brand.g3c-v878660 .g3c-text-v878660 small{display:none!important}
+html:root:root body .sidebar .brand.g3c-v878660 .nom-g3c-v878660{font-size:30px!important;color:#FFFFFF!important}
+html:root:root body .sidebar .brand.g3c-v878660 .nom-g3c-v878660 i{color:#2D7FF9!important}
+html:root:root body .cloud-overlay-v878257 .g3c-entrada-v878660 .nom-g3c-v878660{color:#16263D!important;font-size:40px!important}
+html:root:root body .cloud-overlay-v878257 .g3c-entrada-v878660 .nom-g3c-v878660 i{color:#2D7FF9!important}

@@ -10292,8 +10292,12 @@ function useMarca878351(){
 // V87.534 · el nom del menú: el que s'escriu a Imatge de l'empresa; si no, amb logo, el de l'empresa o el de l'emissor dels documents (el compte
 // de l'Héctor no té «Dades de l'empresa»: l'Héctor, 6/11/2026: «posa APP CONTROL D'OBRES i no puc canviar el nom al del meu despatx»)
 function nomMenu878534(nom=""){return String(llegeixMarca878351().nom||"").trim()||String(nom||"").trim()||String(emissorTecnic878396()?.nom||"").trim()}
-function MarcaApp878351({nom=""}){const {logo}=useMarca878351();const propi=String(llegeixMarca878351().nom||"").trim();const n=propi||(logo?nomMenu878534(nom):"");return <div className={`brand ${logo?"amb-logo-v878351":""}`}>{logo?<img className="marca-logo-v878351" src={logo} alt=""/>:null}<span>{n||"APP CONTROL D'OBRES"}</span></div>}
-function MarcaMobil878351({onMenu}){const {logo}=useMarca878351();return <button type="button" className={`brand-v878268 ${logo?"amb-logo-v878351":""}`} onClick={onMenu} aria-label={t("Menú")}>{logo?<img src={logo} alt=""/>:t("CO")}</button>}
+// V87.660 · el nom i el logo de l'app: «G3C» (l'Héctor, 24/11/2026: dels finalistes, el F3 —la G blanca i la C blava que acaba en una
+// validació—). Les empreses amb logo propi (Ajustos › Imatge de l'empresa) continuen veient el seu; als documents, el logo de cada client.
+function LogoG3C878660({mida=36,className=""}){return <svg className={"logo-g3c-v878660"+(className?" "+className:"")} width={mida} height={mida} viewBox="0 0 96 96" role="img" aria-label="G3C"><rect width="96" height="96" rx="21" fill="#13294A"/><path d="M61 24 A30 30 0 1 0 75.9 52.6 L66 52.6" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinejoin="miter"/><path d="M55.6 38.5 A15 15 0 1 0 49.9 64.5 L82 20" fill="none" stroke="#2D7FF9" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+function NomG3C878660(){return <span className="nom-g3c-v878660">G<i>3</i>C</span>}
+function MarcaApp878351({nom=""}){const {logo}=useMarca878351();const propi=String(llegeixMarca878351().nom||"").trim();const n=propi||(logo?nomMenu878534(nom):"");return <div className={`brand ${logo?"amb-logo-v878351":"g3c-v878660"}`}>{logo?<img className="marca-logo-v878351" src={logo} alt=""/>:<LogoG3C878660 mida={38}/>}{n?<span>{n}</span>:<span className="g3c-text-v878660"><NomG3C878660/><small>{t("Gestió i control d’obres")}</small></span>}</div>}
+function MarcaMobil878351({onMenu}){const {logo}=useMarca878351();return <button type="button" className={`brand-v878268 ${logo?"amb-logo-v878351":"g3c-v878660"}`} onClick={onMenu} aria-label={t("Menú")}>{logo?<img src={logo} alt=""/>:<LogoG3C878660 mida={44}/>}</button>}
 function MarcaEmpresa878351(){
   const[m,setM]=useState(()=>llegeixMarca878351());
   const{logo}=useMarca878351();
@@ -10302,7 +10306,7 @@ function MarcaEmpresa878351(){
   async function triaLogo(f){if(!f)return;try{const u=await compressImage878259(f,600,0.85);desaLogo878315("client:empresa",u)}catch(err){alert(err?.message||String(err))}}
   return <Card title={t("Imatge de l’empresa")} className="marca-v878351">
     <div className="logo-fila">{logo?<img src={logo} alt=""/>:<i>{t("Sense logo")}</i>}<label className="secondary">{logo?t("Canviar el logo"):t("Posar el logo")}<input type="file" accept="image/*" hidden onChange={x=>{const f=x.target.files?.[0];x.target.value="";triaLogo(f)}}/></label>{logo&&<button type="button" className="treure" onClick={()=>desaLogo878315("client:empresa","")}>{t("Treure")}</button>}</div>
-    <label className="nom-menu-v878534"><span>{t("Nom que surt al menú")}</span><input defaultValue={m.nom||""} placeholder={String(empresaInfo878259()?.nom||emissorTecnic878396()?.nom||"").trim()||"APP CONTROL D'OBRES"} maxLength={40} onBlur={e=>{const v=e.target.value.trim();if(v===(m.nom||""))return;const n={...m,nom:v};setM(n);desaMarca878351(n)}}/></label>
+    <label className="nom-menu-v878534"><span>{t("Nom que surt al menú")}</span><input defaultValue={m.nom||""} placeholder={String(empresaInfo878259()?.nom||emissorTecnic878396()?.nom||"").trim()||"G3C"} maxLength={40} onBlur={e=>{const v=e.target.value.trim();if(v===(m.nom||""))return;const n={...m,nom:v};setM(n);desaMarca878351(n)}}/></label>
     <h4>{t("Color")}</h4>
     <div className="paleta" role="radiogroup" aria-label={t("Color")}>
       {PALETA878351.map(([nom,c])=><button key={c} type="button" role="radio" aria-checked={color===c} aria-label={t(nom)} title={t(nom)} style={{background:c}} onClick={()=>posa(c)}>{color===c?<Check size={18} aria-hidden="true"/>:null}</button>)}
