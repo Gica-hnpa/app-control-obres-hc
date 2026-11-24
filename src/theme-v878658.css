@@ -1,0 +1,44 @@
+/* V87.658 · Comptabilitat (Facturació, Despeses, Caixa i bancs i Rendiment en un sol apartat), rajoles del mòbil i apartats nous de les
+   despeses del tècnic (l'Héctor, 24/11/2026). */
+
+/* el menú: «Comptabilitat» s'obre amb els quatre a sota quan s'hi és */
+html body .side-nav .compta-cap-v878658{display:flex;align-items:center;width:100%}
+html body .side-nav .compta-cap-v878658 .chev{margin-left:auto;flex:none;opacity:.6;transition:transform .15s}
+html body .side-nav .compta-cap-v878658[aria-expanded="true"] .chev{transform:rotate(180deg)}
+html body .side-nav .compta-cap-v878658.dins{font-weight:700;color:var(--co-ink,#152328)}
+/* els quatre, a sota i una mica entrats, amb una ratlla a l'esquerra; només quan s'hi és */
+html body .side-nav .compta-sub-v878658{display:none}
+html body .side-nav .compta-sub-v878658.obert{display:flex;margin-left:22px!important;width:calc(100% - 22px);min-height:38px;font-size:14px;border-left:2px solid var(--co-line,#DCE3E7);border-radius:0 10px 10px 0}
+html body .side-nav .compta-sub-v878658.obert.darrer{margin-bottom:6px!important}
+html body .side-nav .compta-sub-v878658 svg{width:17px;height:17px}
+html body .app-shell.nav-collapsed .side-nav .compta-sub-v878658.obert{margin-left:0!important;width:100%;border-left:0}
+html body .app-shell.nav-collapsed .side-nav .compta-cap-v878658 .chev{display:none}
+
+/* les pestanyes de dalt: Facturació · Despeses · Caixa i bancs · Rendiment */
+html body .compta-tabs-v878658{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 0 14px;padding:4px;width:fit-content;max-width:100%;box-sizing:border-box;
+  background:var(--co-surface-2,#EEF2F4);border:1px solid var(--co-line,#DCE3E7);border-radius:14px}
+html body .compta-tabs-v878658::-webkit-scrollbar{display:none}
+html body .compta-tabs-v878658>button{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;min-height:40px;padding:0 14px;border:0;border-radius:10px;background:transparent;
+  color:var(--co-ink-2,#334247);font-weight:600;font-size:14.5px;white-space:nowrap;cursor:pointer;box-shadow:none}
+html body .compta-tabs-v878658>button svg{width:18px;height:18px;flex:none}
+html body .compta-tabs-v878658>button:hover{background:rgba(255,255,255,.7)}
+/* la triada, blava amb el text blanc (mai text fosc sobre blau) */
+html body .compta-tabs-v878658>button.on,html body .compta-tabs-v878658>button.on *{background:var(--co-primary,#2563EB);color:#fff!important;-webkit-text-fill-color:#fff!important}
+html body .compta-tabs-v878658>button.on svg{background:transparent}
+/* al mòbil, les quatre a la vista: en columnes iguals, amb la icona a sobre (abans, «Caixa i ba…» i Rendiment quedaven amagats) */
+@media (max-width:700px){
+  html body .compta-tabs-v878658{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));width:100%;margin:0 0 12px;overflow:visible}
+  html body .compta-tabs-v878658>button{flex-direction:column;justify-content:center;gap:3px;min-height:54px;padding:6px 2px;font-size:12.5px;line-height:1.15;text-align:center;white-space:normal}
+  html body .compta-tabs-v878658>button svg{width:20px;height:20px}
+  html body .compta-tabs-v878658>button[data-curt]>.llarg-v878658{display:none}
+  html body .compta-tabs-v878658>button[data-curt]::after{content:attr(data-curt)}
+}
+/* Inici del mòbil: la darrera rajola, ampla quan és sola a la fila (icona a l'esquerra i el nom al costat) */
+@media (max-width:699px){
+  html body .inici-menu-v878484 .graella>.raj-v878484.ample-v878658{grid-column:1/-1;min-height:0;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px}
+  html body .inici-menu-v878484 .graella>.raj-v878484.ample-v878658 .top{flex:none}
+}
+
+/* despeses del tècnic: els colors dels apartats nous (franja de l'esquerra, com els altres) */
+html body .despesa-ed-v878311 .tipus-grups-v878329 .g-colab,html body .meves-llista-v878375 .grup-v878348.gm-colab{border-left-color:#DB2777}
+html body .despesa-ed-v878311 .tipus-grups-v878329 .g-despatx,html body .meves-llista-v878375 .grup-v878348.gm-despatx{border-left-color:#65A30D}

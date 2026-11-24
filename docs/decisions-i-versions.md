@@ -4942,3 +4942,41 @@
     pitjor. Noves: `maquetes656.mjs` (captures abans/després de les maquetes) i `EXTRA=1` a `revisio655.mjs`.
   - Tandes C (mòbil) i D (ordinador) i les propostes generals (G1: per sota de 1280 px, menú lateral sense rajoles ni barra de baix; G2: Inici
     compacte): només maquetes, a `docs/Propostes de disseny 2026-11-24.pdf`, esperant que l'Héctor triï.
+- **V87.658 · Revisió de disseny, tandes C (mòbil) i D (ordinador), i «Comptabilitat»** (l'Héctor, 24/11/2026, mirant el PDF «Propostes de
+  disseny»: «tot quasi bé, però la pantalla de les obres m'agrada com està ara amb el tamany que tenen les fotos» —la G2 no—; i, sobre la resta,
+  «com creus que serà millor?»). Inclou la V87.657 (tandes C i D, `src/theme-v878657.css`), que no es va publicar sola. Captures abans/després a
+  `docs/Canvis V87.658 2026-11-24.pdf`.
+  - **Comptabilitat** (`src/theme-v878658.css`, `comptaItems878658`, `ComptaGrup878658`, `ComptaTabs878658`): Facturació, Despeses, Caixa i bancs i
+    Rendiment en un sol apartat del menú, que s'obre amb els quatre a sota quan s'hi és, i pestanyes a dalt de cada pantalla (al mòbil, en quatre
+    columnes amb la icona a sobre i «Caixa»). La barra de dalt del mòbil diu «Comptabilitat». Recorda l'última pantalla a la pestanya del navegador (sessionStorage `ui_compta_v878658`: una clau «aco_…» al localStorage es puja al núvol). Al menú, el botó «Comptabilitat» i els quatre són botons germans (sense bloc al voltant: buscar «Facturació» al menú troba el botó). Amb
+    una sola d'aquestes pantalles (p. ex. només Despeses), sense grup. Cada pantalla és la de sempre.
+  - **Rajoles de l'Inici del mòbil**: Pendent · Expedients/Obres · Agenda · Contactes · Hores · Pressupostos (d'honoraris o d'obra) · Comptabilitat ·
+    El temps; si en queda una de sola a la fila, ocupa tota la fila. Fora «Encàrrecs» (repetia Expedients i sortia «Cap»): els encàrrecs amb
+    documents per presentar surten a «Pendent» («avisos, feines i tràmits») i a l'Inici de l'ordinador, al costat d'Avisos i Feines
+    (`encPendents878658`). Les llistes desades abans passen Facturació, Despeses, Caixa i Rendiment a «Comptabilitat»; el que es tria després a
+    Ajustos › Accessos ràpids es respecta (marca `aco_inici_v878658`).
+  - **Despeses del tècnic**: apartats nous «Col·laboradors» (topògraf, calculista, geotècnic, laboratori…) i «Despatx» (assegurança, col·legi,
+    programes, telèfon…); «Material» passa a «Material i aparells» (amb el lloguer d'aparells). Fora els requadres de dalt de «Les meves despeses»
+    (repetien la llista; els apartats sense cap despesa surten quan n'hi ha una, i a «Nova despesa» hi són tots).
+  - **Per pagar / Per cobrar**: «Vençudes», «Vencen aquesta setmana» i «Vencen més tard» (abans «Aquesta setmana» i «Més endavant»).
+  - **Mòbil (tanda C)**: Obres amb el cercador i «Filtres» al costat i els estats en xips (el triat, blau amb el text blanc); Hores de 6 files de
+    botons a 3 («Exportar CSV» dins de Filtres; «Oberts» / «Tots»); Contactes amb «Nou contacte» i un ⋯ (Importar, «Des de les despeses»,
+    Seleccionar); Despeses i Caixa sense targeta dins de targeta; la barra de baix amb les icones d'Inici i Més de la mateixa mida.
+  - **Ordinador (tanda D)**: fora la barra «‹ Inici» (el menú ja hi porta; queda «‹ Ajustos» a la Llibreria); Expedients amb els estats en xips,
+    «Filtres» al costat i el nom del treball sencer (taula d'amplades fixes); Ajustos amb el seu títol; la versió només al menú; a l'Inici, Avisos i
+    Feines només quan n'hi ha.
+  - **G1 · Ordinador amb zoom o finestra petita (900–1280 px amb ratolí)**: el menú a l'esquerra com a la pantalla gran, sense les rajoles de sota
+    l'Inici ni la barra de baix.
+  - **Encara no fet** (per a la tanda següent): dos «Opcions» al pressupost de l'obra; «Tornar» de dalt al mòbil a les pantalles del menú; «Afegir
+    foto» i «Compartir» del Resum abans de les xifres.
+  - L'Héctor ho va aprovar el 24/11/2026 a la nit: «fes ara ja totes les pantalles i els canvis q hi havia pendents com el tema despeses,
+    encàrrecs de tècnics, comptabilitat… i quan ho tinguis ho penges tot».
+  - Proves: noves `tools/proves/cap657.mjs` (captures d'una llista de pantalles; l'«abans», des d'un `git worktree` de la versió d'abans). Posades
+    al dia: `v508test` (rajoles noves, tràmits a Pendent, Comptabilitat treta i Facturació sola respectada, sense «‹ Inici» a l'ordinador),
+    `v484test` (rajoles de la constructora; la darrera, ampla), `despeses329test` (sense requadres de dalt, set tipus; sincronitza abans de tancar
+    l'ordinador: la pujada automàtica es fa 4 s després de l'últim canvi), `v536`/`v538` (Avisos i Feines només quan n'hi ha), `v496`/`v562` (sense
+    «‹ Inici» a l'ordinador), `v507`/`v521` (capçalera «Comptabilitat»; la v521 ja fallava des de la V87.656 per la píndola), `pantallestest` («Exportar
+    CSV» dins de Filtres al mòbil) i `v473test` (ja fallava: hores amb dos decimals des de la V87.584). En verd: v508 26/26, v536 11/11, v538 17/17,
+    v484 19/19, v496 21/21, v507 24/24, v562 18/18, v553 10/10, despeses329 34/34, pantalles 13/13, v473 28/28, v521 23/23, navtest 32/32,
+    menustest 48/48, menutecnic 13/13, v653 37/37, v652 23/23, mobiltest 22/22, v566 10/10, v618 13/13, v575 22/22, expedients 21/21,
+    obratest 34/34, accessibilitat391 net (0 textos de menys de 12 px), i18n tot traduït.

@@ -6390,4 +6390,17 @@ export default {
   "Plegar el menú": "Contraer el menú",
   "Desplegar el menú": "Desplegar el menú",
   "Tancar el menú": "Cerrar el menú",
+  // V87.657–658
+  "Vencen aquesta setmana": "Vencen esta semana",
+  "Vencen més tard": "Vencen más tarde",
+  "factures, despeses i caixa": "facturas, gastos y caja",
+  "Material i aparells": "Material y aparatos",
+  "Material, impressions i lloguer d’aparells": "Material, impresiones y alquiler de aparatos",
+  "Lloguer d’aparells": "Alquiler de aparatos",
+  "Col·laboradors": "Colaboradores",
+  "Topògraf, calculista, geotècnic, laboratori…": "Topógrafo, calculista, geotécnico, laboratorio…",
+  "Despatx": "Despacho",
+  "Assegurança, col·legi, programes, telèfon…": "Seguro, colegio, programas, teléfono…",
+  "avisos, feines i tràmits": "avisos, tareas y trámites",
+  "Caixa": "Caja",
 };

@@ -1,0 +1,135 @@
+/* V87.657 · Revisió de disseny, tandes C (mòbil) i D (ordinador) i proposta G1 (l'Héctor, 24/11/2026: «tot quasi bé», mirant el PDF
+   «Propostes de disseny 2026-11-24»; la G2, l'Inici amb les obres petites, no: «m'agrada com està ara amb el tamany que tenen les fotos»). */
+
+/* D3 · el títol de les pantalles que no en tenien a l'ordinador (Ajustos): amagat al mòbil i l'iPad, on el diu la barra de dalt */
+html body .titol-pc-v878657{display:none;margin:4px 0 6px;font-size:28px;font-weight:800;color:var(--co-ink,#152328);letter-spacing:-.01em}
+
+/* ── C1 · Obres i Expedients al mòbil: el cercador amb «Filtres» al costat i els estats en una línia de xips (la primera obra puja) ── */
+@media (max-width:700px){
+  html body .expedients-page-v8741>.card{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:10px 8px;position:relative}
+  html body .expedients-page-v8741>.card>*{grid-column:1/-1;margin:0!important}
+  html body .expedients-page-v8741>.card>.card-head{padding:0!important;border:0!important;background:transparent!important;min-height:0!important}
+  html body .expedients-page-v8741>.card>.exp-search-mobile-v878270{grid-column:1;margin:0!important}
+  html body .expedients-page-v8741>.card>details.expf-v878275{grid-column:2;grid-row:2;align-self:stretch;margin:0!important}
+  html body .expedients-page-v8741>.card>details.expf-v878275>summary{height:100%;min-height:46px;padding:0 14px!important;border-radius:14px!important;display:flex;align-items:center;gap:6px}
+  html body .expedients-page-v8741>.card>details.expf-v878275>summary>*:not(:first-child){display:none!important}
+  html body .expedients-page-v8741>.card>details.expf-v878275[open]{grid-column:1/-1;grid-row:auto}
+  html body .exp-paquets-v878314{display:flex!important;gap:8px!important;overflow-x:auto;grid-template-columns:none!important;padding:2px 0!important;scrollbar-width:none}
+  html body .exp-paquets-v878314>button{flex:0 0 auto!important;display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;min-height:40px!important;height:auto!important;padding:6px 16px!important;border-radius:999px!important;width:auto!important;min-width:0!important}
+  html body .exp-paquets-v878314>button small{font-size:14px!important;font-weight:600!important;text-transform:none!important;color:inherit!important;margin:0!important}
+  html body .exp-paquets-v878314>button b{font-size:14px!important;line-height:1!important;margin:0!important}
+  html body .exp-paquets-v878314 .det-v878497{display:none!important}
+  html body .exp-list-header-v8741{display:none!important}
+  html body .exp-year-v878270>h3{padding:4px 2px!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:15px!important}
+  html body .exp-year-v878270>h3::before{display:none!important}
+}
+/* el xip triat, blau amb el text blanc (mai text fosc sobre blau) */
+html body .exp-paquets-v878314>button:is(.on,[aria-selected="true"]),
+html body .exp-paquets-v878314>button:is(.on,[aria-selected="true"]) :is(small,b,span){color:#fff!important;-webkit-text-fill-color:#fff!important}
+
+/* ── C2 · Hores al mòbil: de 6 files de botons a 3 («Exportar CSV» passa a Filtres; «Oberts» / «Tots») ── */
+html body .temps-filters-v878255 .csv-v878657{display:none}
+@media (max-width:700px){
+  html body .temps-head-v878255>div:first-child{display:none!important}
+  html body .temps-head-v878255{padding:0!important;margin:0 0 10px!important;min-height:0!important}
+  html body .temps-head-v878255 .actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important}
+  html body .temps-head-v878255 .actions>button{min-height:44px!important;width:100%!important;margin:0!important;grid-column:auto!important;font-size:15px!important}
+  html body .temps-head-v878255 .actions>button.primary{order:-1}
+  html body .temps-head-v878255 .actions>button:first-child{display:none!important}
+  html body .temps-filters-v878255 .csv-v878657{display:inline-flex;justify-content:center;min-height:40px}
+  html body .temps-filters-v878255{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center}
+  html body .temps-filters-v878255>.seg:first-child{grid-column:1}
+  html body .temps-filters-v878255>details.mes-v878525{grid-column:2;grid-row:1;margin:0!important}
+  html body .temps-filters-v878255>details.mes-v878525[open]{grid-column:1/-1;grid-row:auto}
+  html body .temps-filters-v878255>.seg:nth-child(2),html body .temps-filters-v878255>input{grid-column:1/-1}
+  html body .temps-filters-v878255 .seg{min-height:0!important;padding:3px!important}
+  html body .temps-filters-v878255 .seg button{min-height:38px!important;padding:0 6px!important;font-size:13.5px!important;white-space:nowrap}
+  /* el nom curt («Oberts», «Tots») en lloc del llarg, que continua sent el text del botó */
+  html body .temps-filters-v878255 .seg button[data-curt]>.llarg-v878657{display:none}
+  html body .temps-filters-v878255 .seg button[data-curt]::after{content:attr(data-curt)}
+}
+
+/* ── C3 · Contactes al mòbil: «Nou contacte» i un ⋯ amb la resta ── */
+html body .botons-v878553.mob-v878657{display:flex!important;flex-wrap:nowrap!important;gap:8px!important;align-items:stretch}
+html body .botons-v878553.mob-v878657>.primary{min-height:44px}
+html body .botons-v878553.mob-v878657 .ct-mes-v878657{position:relative}
+html body .botons-v878553.mob-v878657 .ct-mes-v878657>summary{min-width:48px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px!important}
+html body .botons-v878553.mob-v878657 .ct-mes-v878657 .action-menu-panel-v87213{right:0;left:auto;min-width:240px}
+html body .botons-v878553.mob-v878657 .ct-mes-v878657 .action-menu-panel-v87213{padding:6px!important}
+html body .botons-v878553.mob-v878657 .ct-mes-v878657 .action-menu-panel-v87213>button{width:100%;justify-content:flex-start;min-height:44px;border:0!important;box-shadow:none!important;background:transparent!important;border-radius:10px!important;margin:0!important}
+html body .botons-v878553.mob-v878657 .ct-mes-v878657 .action-menu-panel-v87213>button+button{border-top:1px solid #EEF2F4!important;border-radius:0!important}
+
+/* ── C4 · Despeses i Caixa al mòbil: el grup de dins ja no és una targeta, i cada factura es llegeix sencera ── */
+@media (max-width:700px){
+  html body .mov-v878521{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"tb xb" "ts ts" "xs xs";row-gap:3px!important}
+  html body .mov-v878521 .t,html body .mov-v878521 .x{display:contents!important}
+  html body .mov-v878521 .t b{grid-area:tb}
+  html body .mov-v878521 .x b{grid-area:xb;align-self:start}
+  html body .mov-v878521 .t small{grid-area:ts;-webkit-line-clamp:1!important}
+  html body .mov-v878521 .x small{grid-area:xs;justify-self:start;text-align:left}
+  html body .perpagar-v878575>.cos{padding:10px 10px 4px!important}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521,
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521[open]{border:0!important;box-shadow:none!important;outline:0!important;background:transparent!important;padding:0!important;margin:0!important;border-radius:0!important}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521>summary{background:transparent!important;color:var(--co-ink,#152328)!important;padding:4px 2px 6px!important;box-shadow:none!important;border:0!important;min-height:0!important;border-radius:0!important}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521>summary *{color:var(--co-ink,#152328)!important;-webkit-text-fill-color:var(--co-ink,#152328)!important}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521>summary>.t>b{font-size:14px!important}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521>summary>svg:first-child{color:var(--co-ink-3,#5F7075)!important;background:var(--co-surface-2,#F1F4F6)!important;border-radius:8px}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.card.bloc-v878426.mov-grup-v878521>summary>svg:last-child{background:var(--co-surface-2,#F1F4F6)!important;color:var(--co-ink,#152328)!important;border-radius:999px}
+  html body .albarans-v878259 .perpagar-v878575>.cos>details.mov-grup-v878521>.cos{padding:0!important;background:transparent!important;border:0!important}
+}
+
+/* ── C5 · La barra de baix: les icones d'Inici i Més, de la mateixa mida que les altres, i els noms alineats ── */
+html body .bottom-nav-v878268>button:not(.acc)>svg{box-sizing:border-box!important;width:28px!important;height:28px!important;padding:3px!important}
+
+/* ── D1 · Expedients a l'ordinador: els estats en xips amb «Filtres» al costat i la taula a tota l'amplada ── */
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine){
+  html body .expedients-page-v8741>.card{display:grid!important;grid-template-columns:minmax(0,1fr) auto;column-gap:10px}
+  html body .expedients-page-v8741>.card>*{grid-column:1/-1}
+  html body .expedients-page-v8741>.card>.exp-paquets-v878314{grid-column:1;align-self:center}
+  html body .expedients-page-v8741>.card>details.expf-v878275{grid-column:2;align-self:center;margin:0!important}
+  html body .expedients-page-v8741>.card>details.expf-v878275[open]{grid-column:1/-1}
+  html body .expedients-page-v8741>.card>details.expf-v878275>summary>*:not(:first-child){display:none!important}
+  html body .expedients-page-v8741>.card>details.expf-v878275>summary{min-height:40px;padding:0 16px!important;border-radius:999px!important}
+  html body .exp-paquets-v878314{display:flex!important;gap:8px!important;flex-wrap:wrap;grid-template-columns:none!important;margin:2px 0 10px!important}
+  html body .exp-paquets-v878314>button{flex:0 0 auto!important;display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;min-height:40px!important;height:auto!important;padding:6px 16px!important;border-radius:999px!important;width:auto!important;min-width:0!important}
+  html body .exp-paquets-v878314>button small{font-size:14px!important;font-weight:600!important;text-transform:none!important;color:inherit!important;margin:0!important}
+  html body .exp-paquets-v878314>button b{font-size:14px!important;line-height:1!important;margin:0!important}
+  html body .exp-paquets-v878314 .det-v878497{display:none!important}
+  html body .exp-list-header-v8741{display:none!important}
+  html body table.exp-table-v878289{width:100%!important;table-layout:fixed!important}
+  /* el nom del treball es queda l'espai que sobra (abans, uns 140 px i tallat): taula d'amplades fixes */
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289{table-layout:fixed!important;width:100%!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(1){width:138px!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(2){width:66px!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(3){width:11%!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(4){width:9%!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(5){width:auto!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(6){width:10%!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(7){width:11%!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(8){width:196px!important}
+  html body table.exp-table-v878289 td small{white-space:normal!important}
+  /* D3 · el títol de la pàgina d'Ajustos (al mòbil i l'iPad el diu la barra de dalt) */
+  html body .titol-pc-v878657{display:block}
+  /* la versió només al menú (abans, també a baix a la dreta) */
+  html body::after{display:none!important}
+}
+
+/* ── G1 · Ordinador amb el zoom de Windows o finestra petita (de 900 a 1280 px, amb ratolí): el menú a l'esquerra, com a la pantalla gran,
+   i fora les rajoles de sota l'Inici i la barra de baix, que repetien el menú ── */
+@media (min-width:900px) and (max-width:1280px) and (hover:hover) and (pointer:fine){
+  html body .sidebar{transform:none!important;width:256px!important;left:0!important;top:0!important;bottom:0!important;z-index:70!important;box-shadow:none!important;visibility:visible!important}
+  html body .sidebar .close-menu{display:none!important}
+  html body .overlay{display:none!important}
+  html body .main{margin-left:256px!important;width:calc(100% - 256px)!important;max-width:none!important;padding:20px 24px 24px!important}
+  html body .app-head-v878268{display:none!important}
+  html body .bottom-nav-v878268{display:none!important}
+  html body .inici-b-v878536 .rajoles-b{display:none!important}
+  html body .app-shell{padding-bottom:0!important}
+  html body .cloud-badge-v878257{top:auto!important;bottom:12px!important;left:12px!important;right:auto!important}
+  html body .exp-search-mobile-v878270{top:8px!important}
+  html body .titol-pc-v878657{display:block}
+  html body::after{display:none!important}
+  /* el nom de l'app en dues línies, com a la pantalla gran (a tota l'amplada: el ☰ de plegar no hi és) */
+  html body .app-shell:not(.nav-collapsed) .sidebar .sidebar-head>.brand,html body .app-shell .sidebar .sidebar-head>.brand{grid-column:1/-1!important;font-size:16px!important}
+  html body .sidebar .sidebar-head>.brand>span{white-space:normal!important;text-overflow:clip!important;display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.15}
+}

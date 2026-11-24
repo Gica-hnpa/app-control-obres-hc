@@ -167,11 +167,14 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.656 a Render):**
-- **Revisió de disseny** (V87.655–656, 23–24/11/2026): «Cal arreglar» 1–5 (`src/theme-v878655.css`) i «Convindria» tandes A i B
-  (`src/theme-v878656.css`: textos tallats, etiquetes sense majúscules, un sol estil de xifres, nom del pressupost primer i número petit, títol
-  de la barra sense requadre). Tandes C i D i propostes generals G1–G2: maquetes a `docs/Propostes de disseny 2026-11-24.pdf`, esperant que
-  l'Héctor triï; després, a la còpia, captures abans/després i publicar amb el seu sí.
+**Estat (publicada la V87.658 a Render):**
+- **Revisió de disseny** (V87.655–658, 23–24/11/2026): «Cal arreglar» 1–5 (`theme-v878655.css`), «Convindria» A i B (`theme-v878656.css`), C
+  (mòbil) i D (ordinador) i la G1 (900–1280 px amb ratolí: menú a l'esquerra) a `theme-v878657.css`. La G2 (Inici amb les obres petites), no.
+  Queden: dos «Opcions» al pressupost de l'obra, «Tornar» de dalt al mòbil a les pantalles del menú, «Afegir foto» / «Compartir» del Resum abans
+  de les xifres. Captures abans/després: `docs/Canvis V87.658 2026-11-24.pdf`.
+- **Comptabilitat** (V87.658, `theme-v878658.css`): Facturació, Despeses, Caixa i bancs i Rendiment en un sol apartat del menú, amb pestanyes;
+  rajoles del mòbil Pendent · Expedients/Obres · Agenda · Contactes · Hores · Pressupostos · Comptabilitat · El temps (fora «Encàrrecs»: els
+  tràmits per presentar, a Pendent); despeses del tècnic amb «Col·laboradors», «Despatx» i «Material i aparells»; «Vencen més tard».
 - **Paquets per compte** (V87.653): cada perfil té una base i paquets (Honoraris, Pressupost i certificacions / «Direcció d'obra», Encàrrecs
   tècnics, Hores i rendiment, Control d'obra, Personal i fitxatge, Factures i comptabilitat); el que no té el compte no surt. Els posa l'Héctor
   a Ajustos › Comptes del núvol › «Paquets dels comptes» (cal l'SQL `aco_paquets_v878653.sql`). El «Tècnic amb gestió» ja és el Tècnic amb
