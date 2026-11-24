@@ -6405,4 +6405,8 @@ export default {
   "Caixa": "Caja",
   // V87.660
   "Gestió i control d’obres": "Gestión y control de obras",
+  "Obrir el menú": "Abrir el menú",
+  "Logo de l’empresa": "Logo de la empresa",
+  "Validar 1 parte?": "¿Validar 1 parte?",
+  "Validar {n} partes?": "¿Validar {n} partes?",
 };

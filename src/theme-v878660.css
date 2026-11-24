@@ -31,3 +31,42 @@ html:root:root body .sidebar .brand.g3c-v878660 .nom-g3c-v878660{font-size:30px!
 html:root:root body .sidebar .brand.g3c-v878660 .nom-g3c-v878660 i{color:#2D7FF9!important}
 html:root:root body .cloud-overlay-v878257 .g3c-entrada-v878660 .nom-g3c-v878660{color:#16263D!important;font-size:40px!important}
 html:root:root body .cloud-overlay-v878257 .g3c-entrada-v878660 .nom-g3c-v878660 i{color:#2D7FF9!important}
+
+/* el botó ☰ de dalt del mòbil, a la vista (abans només s'obria el menú tocant el logo) */
+.menu-obre-v878660{display:none}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body .app-head-v878268 .menu-obre-v878660{display:grid!important;place-items:center;flex:none;width:44px;height:44px;margin:0 2px 0 -6px;padding:0;border:0!important;border-radius:8px;background:transparent!important;color:#FFFFFF!important;cursor:pointer}
+  html:root:root body .app-head-v878268 .menu-obre-v878660 svg{width:26px;height:26px;color:#FFFFFF!important}
+  html:root:root body .app-head-v878268 .menu-obre-v878660:active{background:rgba(255,255,255,.12)!important}
+}
+
+/* ── «Combinat de A i C» (l'Héctor, 24/11/2026) ── */
+/* el nom G3C, tot d'un color (sense el 3 en blau: el blau ja el porta el logo) */
+html:root:root body .nom-g3c-v878660 i,html:root:root body .sidebar .brand.g3c-v878660 .nom-g3c-v878660 i,html:root:root body .cloud-overlay-v878257 .g3c-entrada-v878660 .nom-g3c-v878660 i{color:inherit!important}
+/* barra de dalt del mòbil: el logo i el nom G3C, sempre */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body .app-head-v878268 .brand-v878268.amb-nom-v878660{width:auto!important;height:44px!important;display:inline-flex!important;align-items:center;gap:8px;padding:0 4px 0 0!important}
+  html:root:root body .app-head-v878268 .brand-v878268.amb-nom-v878660 .logo-g3c-v878660{width:34px;height:34px;border-radius:8px}
+  html:root:root body .app-head-v878268 .brand-v878268.amb-nom-v878660 .nom-g3c-v878660{font-size:24px!important;color:#FFFFFF!important}
+  html:root:root body .app-head-v878268 .brand-v878268.amb-nom-v878660+.title-v878268{color:rgba(255,255,255,.72)!important;font-weight:600!important;margin-left:6px}
+}
+/* menú amb el logo de l'empresa: a dalt, gran i sobre blanc */
+html:root:root body .sidebar .brand.empresa-dalt-v878660::before{display:none!important;content:none!important}
+html:root:root body .sidebar .brand.empresa-dalt-v878660{display:flex!important;flex:1 1 auto;min-width:0}
+html:root:root body .sidebar .empresa-card-v878660{display:flex;align-items:center;justify-content:center;background:#FFFFFF;border-radius:8px;padding:7px 12px;max-width:100%;min-height:52px}
+html:root:root body .sidebar .empresa-card-v878660 img.marca-logo-v878351{max-height:40px!important;max-width:100%!important;width:auto;height:auto;border-radius:0!important;object-fit:contain}
+/* peu del menú: G3C i la versió */
+html:root:root body .nav-version-v878264.g3c-peu-v878660{display:flex!important;align-items:center;gap:8px;margin-top:auto}
+html:root:root body .nav-version-v878264.g3c-peu-v878660 .logo-g3c-v878660{border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+html:root:root body .nav-version-v878264.g3c-peu-v878660 .nom-g3c-v878660{font-size:18px!important;color:#FFFFFF!important}
+/* Inici: el logo de l'empresa a la salutació */
+html:root:root body :is(.inici-menu-v878484 .hola,.inici-b-v878536 .hola-b).amb-logo-v878660{display:flex!important;align-items:center;gap:14px}
+html:root:root body .hola-tx-v878660{display:flex;flex-direction:column;min-width:0}
+html:root:root body .hola-logo-v878660{flex:none;display:flex;align-items:center;justify-content:center;background:#FFFFFF;border:1px solid var(--co-line);border-radius:8px;padding:6px 10px;height:58px;max-width:42%}
+html:root:root body .hola-logo-v878660 img{max-height:44px;max-width:100%;object-fit:contain;display:block}
+@media (max-width:700px){html:root:root body .inici-menu-v878484 .hola.amb-logo-v878660 .hola-logo-v878660{height:50px;padding:5px 8px}html:root:root body .inici-menu-v878484 .hola.amb-logo-v878660 .hola-logo-v878660 img{max-height:38px}}
+/* (arranjaments) mòbil: el logo de l'empresa a sobre de la salutació; ordinador i tauleta: al costat */
+html:root:root body .inici-menu-v878484 .hola.amb-logo-v878660{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+html:root:root body .inici-menu-v878484 .hola.amb-logo-v878660 .hola-logo-v878660{max-width:70%;height:48px}
+html:root:root body .inici-b-v878536 .cap-b .hola-b.amb-logo-v878660{display:flex!important;flex-direction:row!important;align-items:center!important;gap:16px!important}
+html:root:root body .inici-b-v878536 .cap-b .hola-b.amb-logo-v878660 .hola-logo-v878660{order:-1;height:64px;max-width:240px}
