@@ -1,0 +1,79 @@
+/* V87.656 · Revisió de disseny, «Convindria» tanda A (l'Héctor, 23/11/2026): textos tallats, etiquetes en majúscules, la barra de progrés
+   del Resum i el menú de l'ordinador. Només com es veu el text; cap pantalla canvia de lloc. */
+
+/* 13 · Textos tallats amb «…» en llocs clau: fins a dues línies */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  /* el nom de l'obra a la capçalera fixa del mòbil i l'iPad (la píndola blava de les altres pantalles, com era) */
+  html body .app-head-v878268 .title-v878268:not(.pant-v878507){white-space:normal!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.15!important;overflow-wrap:anywhere}
+}
+@media (max-width:700px){
+  /* el codi, el client i el treball de l'obra, en una línia sencera a sobre del rellotge, l'estat i el ⋯ (abans, 115 px i tallats) */
+  html body .obra-bar-info-v878269{flex-wrap:wrap;row-gap:6px!important}
+  html body .obra-bar-txt-v878269{flex:1 0 100%}
+  html body .obra-bar-txt-v878269 small{white-space:normal!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.3}
+  html body .obra-bar-right-v878269{flex:1 0 100%}
+  html body .obra-bar-right-v878269>:last-child{margin-left:auto}
+}
+html body :is(
+  .obra-followup-v878253 .fu-item-v878253>b,.obra-followup-v878253 .fu-item-v878253>span,   /* Resum: pròxima cita, feines pendents, última acta */
+  .raj-v878484 .tt small,                                                                   /* Inici: «personal, fitxatge i calendari» */
+  .exp-card-v878270 .l3,.exp-card-v878270 .l1>span,                                          /* Obres i Expedients al mòbil: treball, poble i client */
+  .docs-carpetes-v878365 button>b,                                                           /* Documents: «03 · Amidaments / pressupost d’obra» */
+  .facturacio-v878337 .fe-row .qui b,.facturacio-v878337 .fe-row .qui small,                 /* Facturació: client i concepte */
+  .mov-v878521 .t b,.mov-v878521 .t small                                                    /* Despeses i Caixa: proveïdor i obra */
+){white-space:normal!important;display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+/* l'Agenda (setmana i dia): les feines de tot el dia, en dues línies; les cites, en una (en una cita d'una hora no n'hi caben dues), i el
+   títol sencer en passar-hi el ratolí */
+html body .agenda-v878256 .ag-chip>span{white-space:normal!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.25}
+
+/* 14 · Les etiquetes dels requadres de xifres, només amb la primera lletra en majúscula (en MAJÚSCULES es partien en dues línies o es tallaven:
+   «PRESSUPOST VIGENT», «EXPEDIENTS OBERTS», «PENDENTS DE COBRAR»). Les capçaleres de les taules, els dies i les dates queden com eren. */
+html body :is(
+  .fu-item-v878253>small,.obra-hero-kpis-v878252 small,.home-kpis-v878251 small,.exp-paquets-v878314>button small,
+  .pressupostos-v878316 .pres-estats-v878317>button small,.fe-estats-v878373>button small,.xifres-v878426 .x small,
+  .temps-kpis-v878255 small,.inici-treb-v878327 .kpis small,.gantt-sum-v878252 small
+){text-transform:none!important;letter-spacing:0!important}
+
+/* 19 · Barra de progrés del Resum: la pista grisa del total (abans, del color del fons) */
+html body .obra-hero-progress-v878252 .track{background:var(--co-line,#DCE3E7)!important}
+
+/* (punt 4, que quedava) el Planning a l'ordinador i l'iPad: les setmanes i els mesos a 12 px (eren de 10,5 px) */
+html body .gt-head-v878253 .bottom span,html body .gantt-track-v878252 .month{font-size:12px!important}
+
+/* 20 · Menú de l'ordinador: l'apartat triat, amb una ratlla de color a l'esquerra. El de sota el ratolí es posa gris i semblava un segon apartat triat. */
+html body .side-nav .menu-btn.active{box-shadow:inset 3px 0 0 currentColor}
+
+/* ── Tanda B (l'Héctor, 23/11/2026) ──────────────────────────────────────────────────────────────────────────────────────────────── */
+
+/* 8 · Un sol estil de requadres de xifres: el de la Facturació i el Rendiment de dins de l'obra (V87.426): blanc, vora fina i una franja de
+   color a l'esquerra. Abans, a Pressupostos la vora gruixuda era a dalt o tot el requadre era de color; a Facturació, el requadre sencer de
+   color; al Rendiment, el marge amb el fons verd. */
+html body .pressupostos-v878316 .pres-estats-v878317>button{position:relative;overflow:hidden;border-top:1px solid var(--co-line)!important;padding-left:16px!important}
+html body .pressupostos-v878316 .pres-estats-v878317>button::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c,#64748b)}
+html body .fe-estats-v878373>button{position:relative;overflow:hidden;padding-left:16px!important;background:var(--co-surface,#fff)!important;border-color:var(--co-line,#DCE3E7)!important}
+html body .fe-estats-v878373>button::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c8,#64748B)}
+html body .fe-estats-v878373>button:is(.e-pend,.e-env,.e-pendents){--c8:#D97706}
+html body .fe-estats-v878373>button:is(.e-cob,.e-acc,.e-acceptats){--c8:#16A34A}
+html body .fe-estats-v878373>button:is(.e-venc,.e-noacc){--c8:#DC2626}
+html body .fe-estats-v878373>button.e-facturats{--c8:#2563EB}
+html body .fe-estats-v878373>button[aria-pressed="true"]{border-color:var(--co-ink,#0f172a)!important;box-shadow:inset 0 0 0 1px var(--co-ink,#0f172a)!important}
+html body .rc-kpis-v878343>div{position:relative;overflow:hidden;padding-left:18px}
+html body .rc-kpis-v878343>div::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c8,#2563EB)}
+html body .rc-kpis-v878343>div:nth-child(2){--c8:#D97706}
+html body .rc-kpis-v878343>div:is(.good,.bad){background:var(--co-surface,#fff)!important;border-color:var(--co-line,#DCE3E7)!important}
+html body .rc-kpis-v878343>div.good{--c8:#16A34A}
+html body .rc-kpis-v878343>div.bad{--c8:#DC2626}
+
+/* 9 · El pressupost: el nom primer i, a sota, el número petit («Pressupost principal» / «P2026_0001») */
+html body .num-v878656{display:block;margin:1px 0 0;font-size:12.5px;font-weight:600;letter-spacing:.01em;opacity:.8;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* a la llista de Pressupostos del mòbil, l'obra a dalt i el número a sota, petit */
+@media (max-width:820px){
+  html body .pl-row-v878562{grid-template-areas:"qui imp" "num num" "est obre"!important}
+  html body .pl-row-v878562 .num b{font-size:12.5px!important;font-weight:600;color:var(--co-ink-3,#5F7075)}
+}
+/* amb una sola fase, a Amidaments i Certificacions la píndola de la fase no diu res (només n'hi ha una) i, amb el nom, quedava tallada */
+html body .fases-v878342:not(.rajoles-v878551) .llista:not(:has(>button:nth-child(2))){display:none}
+/* a la llista de Pressupostos del mòbil, el client en dues línies */
+@media (max-width:820px){
+  html body .pl-row-v878562 .qui small{white-space:normal!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+}

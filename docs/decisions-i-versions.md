@@ -4920,3 +4920,25 @@
     `marca351test` igual (ja fallava abans per això, no per l'app). Noves: `revisio655.mjs` (passa per 160 pantalles i en mesura marges,
     botons, lletra, contrast i textos tallats) i `captures654.mjs` (captures dels perfils i paquets). En verd: i18n, marca351 20/20, v534 29/29,
     navtest 32/32, obratest 34/34, menustest 48/48, expedients 21/21, pantalles 13/13, v653 37/37, tallades374; 0 errors a les 160 pantalles.
+- **V87.656 · Revisió de disseny, «Convindria» tandes A i B** (l'Héctor, 23/11/2026: «Ajunta-la amb la B»; el 24/11: «Sí, publica-les»).
+  Estils a `src/theme-v878656.css` i quatre canvis petits a `App.jsx`; cap pantalla canvia de lloc.
+  - Punt 7 («Treure el requadre»): el nom de la pantalla de la barra de dalt (mòbil i iPad) ja no porta el requadre blau amb la icona (V87.507):
+    el nom sol, com dins de l'obra.
+  - Punt 9 («Nom primer, número petit»): a la targeta del pressupost, «Pressupost principal» i, a sota, el número petit («P2026_0001»)
+    (`titolPres878656`); a la llista de Pressupostos del mòbil, l'obra a dalt i el número a sota.
+  - Punt 8: un sol estil de requadres de xifres (Pressupostos, Facturació i Rendiment): blanc, vora fina i una franja de color a l'esquerra.
+  - A Facturació, Rendiment i Despeses de l'obra només es tria la fase: sense «Nova fase» ni «Opcions» (`FasesObra878342 nomesTria`); amb una
+    sola fase, el selector no surt. Amb una sola fase, a Amidaments i Certificacions tampoc surt la píndola (no deia res i quedava tallada).
+  - Textos tallats amb «…» en dues línies: nom de l'obra a la capçalera del mòbil i l'iPad, codi/client/treball a la barra de l'obra del mòbil
+    (a tota l'amplada, a sobre del rellotge, l'estat i el ⋯), Resum (pròxima cita, feines pendents, última acta), rajoles de l'Inici, Obres i
+    Expedients al mòbil, carpetes de Documents, Facturació, Despeses i Caixa, el client a la llista de Pressupostos del mòbil. Agenda: les feines
+    de tot el dia en dues línies; les cites en una, amb el títol sencer en passar-hi el ratolí.
+  - Etiquetes dels requadres de xifres amb només la primera lletra en majúscula (en MAJÚSCULES es partien o es tallaven).
+  - Barra de progrés del Resum amb la pista grisa; setmanes i mesos del Planning a 12 px; al menú de l'ordinador, l'apartat triat amb una
+    ratlla de color a l'esquerra.
+  - Proves posades al dia (miraven com era abans): v507 24/24 i v508 26/26 (títol sense requadre), fases342 27/27, v528 13/13 (el número a
+    `.num-v878656`), rendiment343 18/18 i fact373 22/22 (ja fallava amb la V87.655: les anul·lades van a «Anul·lades (n)» des de la V87.614).
+    En verd: v624, v534, v601, v562, pressuposttest 27/27, obratest 34/34, accessibilitat391 net, i18n; `revisio655` 0 errors JS i cap pantalla
+    pitjor. Noves: `maquetes656.mjs` (captures abans/després de les maquetes) i `EXTRA=1` a `revisio655.mjs`.
+  - Tandes C (mòbil) i D (ordinador) i les propostes generals (G1: per sota de 1280 px, menú lateral sense rajoles ni barra de baix; G2: Inici
+    compacte): només maquetes, a `docs/Propostes de disseny 2026-11-24.pdf`, esperant que l'Héctor triï.
