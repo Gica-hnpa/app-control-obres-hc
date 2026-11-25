@@ -5070,3 +5070,37 @@
   - Prova nova `v662test` (G3C a dalt amb el logo de l'empresa i amb el menú plegat; IVA 10 % del pressupost → proforma «IVA 10%», «Fer factura»
     al 10 % i la factura creada amb la quota del 10 %; constructora i tècnic al mòbil a 390 i 360 px: cap estat tallat a l'Inici, la llista, els
     filtres oberts ni la fitxa de l'obra, i cap nom tallat a la barra de baix).
+- **V87.663 · Repàs de la constructora amb l'Héctor (primera tanda)** (25/11/2026, tarda; llista sencera a `docs/repas-constructora-2026-11-25.md`).
+  L'Héctor: «millor anar apuntant i després una sola versió» (memòria `repas-apuntar-i-despres-versio`).
+  - **Entrar:** tornant a l'app després de **més de 30 minuts al fons**, la pantalla d'entrar i, si no hi ha cap finestra a mig fer, l'Inici
+    (`tornaDelFons878663`, `llargFons878663`, sessionStorage `nuvol-aco-amagada-v878663`; també si el mòbil havia tancat la pàgina i la recarrega;
+    el cicle del núvol s'atura mentre es demana la contrasenya). Les proves: `aco-proves-minuts-fons-v878663`. **Més ràpid després d'«Entrar»**
+    (mesurat amb `v663velocitat`, mòbil lent simulat: 0,98 s): l'empremta de la contrasenya es fa de fons i la llista de les obres compartides es
+    demana alhora que els canvis del núvol (`sharedCycle(canApply, pre)`).
+  - **Contactes:** els proveïdors nous de les despeses es posen sols a Contactes, al grup que toca (Industrials o Magatzems de materials), marcats
+    `nou878663`, amb un avís a Contactes («N contactes nous de les despeses», els noms i «Ja els he mirat») i a la llista d'avisos de l'Inici
+    (`contactesNousDespeses878663`, `avisContactesNous878663`). Els proveïdors ja vistos es recorden (`aco_prov_vistos_v878663`): un contacte
+    esborrat no torna; la primera vegada, els d'abans només es recorden (per a aquests, «Des de les despeses»). «Seleccionar» → «Cancel·lar»
+    (Moure i Eliminar ja tanquen la selecció). Fitxa del contacte a l'ordinador: les dades a la vista i un sol botó «Editar» amb requadre (al mòbil,
+    com abans, amb «Veure dades»). Fora les «Partides habituals» de la fitxa (decisió: al pressupost, el preu que ja es va fer al mateix client,
+    sol; **recordar-ho a l'Héctor quan es miri Pressupost**).
+  - **Inici:** a les rajoles de les obres, el client i el lloc sencers (abans tallats), el tipus de treball, el codi postal i «Creat el …».
+  - **Obres:** fora «Importar» (decisió: no és pràctic; les obres d'abans, a mà) i fora el bloc «Filtres» (a «Client» no hi sortien els clients de
+    les obres compartides). El cercador troba per any, número, estat, client (també el de les compartides), promotor, nom, tipus de treball,
+    adreça, codi postal i població, sense accents, i diverses paraules alhora es combinen («2025 tancat»). Des de l'Inici, «Obres en estat X»
+    posa l'estat al cercador. A les obres compartides de la constructora, sense el número de qui la comparteix (només el nom). Codi postal davant
+    de la població (`pobCP878663`: taula, targetes del mòbil i Inici). Taula de l'ordinador: l'adreça més ampla i el nom del treball menys; les
+    franges de l'any ocupen les columnes que es veuen (sense la columna «Compartida per» quedava una columna buida que aprimava el nom).
+  - **Colors d'estat ben diferents** (el client de Socoterm): Pressupostat blau · Pendent de resposta ambre · En revisió lila · Acceptat cian ·
+    En procés verd clar · En curs / Actiu verd ple amb lletra blanca · Pendent de tancar rosa · Tancat negre · Anul·lat gris · No acceptat vermell.
+  - **Menú:** Inici · Contactes · Obres · Pressupostos · Agenda · Control horari · Comptabilitat · Empresa · Ajustos (cada paquet només en treu
+    opcions). Control horari (Personal · Fitxatge · Calendari laboral · Les meves hores) i Empresa (Dades · Treballadors · Documentació ·
+    Industrials · Calendari laboral), desplegables com Comptabilitat (`MenuGrup878663`, `useVistaMenu878663`). «Calendari» → «Calendari laboral».
+  - **Per decidir amb captures** (pàgina de propostes): Obres a l'ordinador (barra blau nit, tot a l'amplada, cinc columnes), Obres al mòbil
+    plegable per nivells, Control horari › Personal (una sola taula, setmana o mes) i els paquets (cada paquet, el mateix nom al menú i a l'obra).
+  - Proves: `v663test` (27), `v663velocitat`; eina `explora663` (botons que semblen text) i `captures663`. Posades al dia: `v662test` (sense
+    «Filtres», peu amb la versió que sigui), `v566test` (els proveïdors nous ja hi són sols; els d'abans, amb el botó), `habitualstest` (la fitxa
+    ja no les mostra; el pressupost sí), `v515`/`v516`/`v517`/`fitxatge357`/`empresa339`/`v653` (els grups del menú només s'obren: s'entra per
+    l'apartat; «Calendari laboral»), `fitxestest` (obre la targeta plegada «Contacte i enllaços» abans de llegir-la: fallava des de la V87.464) i
+    `v516test` #11 (les rajoles han d'omplir la targeta, no 340 px fixos: des de la V87.518 són subtargetes). **Retirades** a `tools/proves/retirades/`: `expfiltrestest` i `importobres358test` (Filtres i Importar ja
+    no hi són). Taula d'Obres a menys de 1.600 px: amplades repartides (el nom del treball s'havia quedat a 98 px; `expcolstest`).

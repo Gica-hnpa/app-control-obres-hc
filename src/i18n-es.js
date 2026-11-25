@@ -6411,4 +6411,15 @@ export default {
   "Validar {n} partes?": "¿Validar {n} partes?",
   // V87.661
   "Sense connexió només es pot entrar amb el compte d’aquest aparell.": "Sin conexión solo se puede entrar con la cuenta de este dispositivo.",
+  // V87.663
+  "Creat el {d}": "Creado el {d}",
+  "1 contacte nou de les despeses": "1 contacto nuevo de los gastos",
+  "{n} contactes nous de les despeses": "{n} contactos nuevos de los gastos",
+  "Contactes nous de les despeses": "Contactos nuevos de los gastos",
+  "S’han posat sols al grup que toca: comprova’ls i, si cal, canvia’ls de grup.": "Se han puesto solos en su grupo: revísalos y, si hace falta, cámbialos de grupo.",
+  "Ja els he mirat": "Ya los he revisado",
+  "Calendari laboral": "Calendario laboral",
+  "Buscar per any, número, estat, client, treball, adreça o població…": "Buscar por año, número, estado, cliente, trabajo, dirección o población…",
+  "Obra, client, estat, any o població…": "Obra, cliente, estado, año o población…",
+  "Expedient, client, any o població…": "Expediente, cliente, año o población…",
 };

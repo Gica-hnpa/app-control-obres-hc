@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.662";
+const VERSION = "V87.663";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -205,10 +205,34 @@ const realStore = () => sessStore() || localStorage;
 function marcaOberta878661(si = true) { try { if (si) sessionStorage.setItem(OBERTA_KEY, "1"); else sessionStorage.removeItem(OBERTA_KEY); } catch {} }
 function calEntrar878661() {
   try {
-    if (sessionStorage.getItem(OBERTA_KEY) === "1") return false;
     if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(CLOUD_URL) && realStore().getItem("aco-proves-bloqueig-v878661") !== "1") return false;
+    if (sessionStorage.getItem(OBERTA_KEY) === "1") return llargFons878663();
   } catch {}
   return true;
+}
+// V87.663 · Tornar a l'app després de més de 30 minuts al fons (l'Héctor, 25/11/2026: «que et demani la contrasenya» i l'Inici). El mòbil no
+// tanca l'app: la deixa al fons i, en tornar-hi, continuava on era i sense contrasenya. Quan l'app passa al fons es desa l'hora
+// (sessionStorage, «nuvol-aco-amagada-v878663»); en tornar, si fa més de 30 minuts, la pantalla d'entrar i, si no hi ha cap finestra a mig fer,
+// l'Inici. Si el mòbil havia tancat la pàgina i la torna a carregar, el mateix en arrencar. Les proves poden canviar els minuts amb
+// «aco-proves-minuts-fons-v878663».
+const AMAGADA_KEY = "nuvol-aco-amagada-v878663";
+let bloquejat878663 = false;
+function minutsFons878663() { try { const m = +realStore().getItem("aco-proves-minuts-fons-v878663"); return m > 0 ? m : 30; } catch { return 30; } }
+function llargFons878663() { try { const t = +sessionStorage.getItem(AMAGADA_KEY) || 0; return !!t && Date.now() - t > minutsFons878663() * 60000; } catch { return false; } }
+async function tornaDelFons878663() {
+  let llarg = false;
+  try { llarg = !!session && active && !bloquejat878663 && calEntrar878661(); sessionStorage.removeItem(AMAGADA_KEY); } catch {}
+  if (!llarg) return;
+  bloquejat878663 = true;
+  const abans = session?.user_id;
+  try {
+    marcaOberta878661(false);
+    await askLogin({ allowSkip: false, anterior: session });
+    marcaOberta878661();
+    // un altre compte: es torna a obrir l'app amb aquell compte
+    if (session?.user_id !== abans) { try { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {} location.reload(); return; }
+    if (!holds) { try { window.dispatchEvent(new Event("aco-a-inici-v878663")); } catch {} }
+  } finally { bloquejat878663 = false; }
 }
 const empKey878661 = uid => `nuvol-aco-empremta__${uid}`;
 const hex878661 = a => Array.from(a, x => x.toString(16).padStart(2, "0")).join("");
@@ -643,7 +667,8 @@ function askLogin({ allowSkip = true, message = "", anterior = null } = {}) {
       const usuari = form.elements.email.value, pass = form.elements.password.value;
       try {
         await login(toEmail(usuari), pass);
-        await desaEmpremta878661(pass);
+        // V87.663 · l'empremta es fa de fons (0,15 s al mòbil que no cal esperar per obrir l'app)
+        desaEmpremta878661(pass);
         try { localStorage.setItem("nuvol-aco-correu", usuari.trim()); } catch {}
         el.remove(); resolve("ok");
       } catch (x) {
@@ -844,12 +869,12 @@ async function esborraCompartida(obraId) {
 // més tard) no es torna a baixar a cada volta.
 const shCache = new Map();
 const SH_LLISTA = "obra_id,owner,owner_email,owner_nom,lectors,editors,updated_at,updated_by";
-async function sharedCycle(canApply) {
+async function sharedCycle(canApply, pre = null) {
   if (sharedTableMissing) return { applied: 0, waiting: false };
   let rows;
   // V87.409.1 · primer només la llista (sense l'obra, les dades ni la foto). Abans es baixaven totes senceres a cada volta
   // (cada 20 s, a cada aparell obert): amb les 12 obres compartides, 3,8 MB cada vegada.
-  try { rows = await api(`/rest/v1/aco_shared?select=${SH_LLISTA}`); }
+  try { rows = pre ? await pre : await api(`/rest/v1/aco_shared?select=${SH_LLISTA}`); }
   catch (e) { if (e.status === 404 || /aco_shared/.test(e.message)) { sharedTableMissing = true; return { applied: 0, waiting: false }; } throw e; }
   const me = session.user_id, email = session.email;
   const sm = readArr(sharedMetaKey(), null) || { known: {} };
@@ -1017,7 +1042,8 @@ async function sharedInfo(obraId) {
 }
 // Un cicle: baixa el que ha canviat, puja el que és d'aquí i decideix si cal recarregar.
 async function cycle({ startup = false, returning = false } = {}) {
-  if (!active || !session) return;
+  // V87.663 · mentre es demana la contrasenya (tornant del fons), res: no es recarrega l'app amb la pantalla d'entrar a mig escriure
+  if (!active || !session || bloquejat878663) return;
   if (busy) { again = true; return; }
   busy = true; paint("busy");
   try {
@@ -1027,6 +1053,9 @@ async function cycle({ startup = false, returning = false } = {}) {
       await firstSync();
     }
     if (!meta.at) await loadAt();
+    // V87.663 · en obrir l'app, la llista de les obres compartides es demana alhora que els canvis (abans, després: un viatge més al núvol)
+    const shPre = startup && !sharedTableMissing ? api(`/rest/v1/aco_shared?select=${SH_LLISTA}`) : null;
+    shPre?.catch(() => {});
     const all = await pullSince(meta.cursor), rows = all.filter(r => !r.ja);
     let local = entries();
     meta.kc ||= {};
@@ -1120,14 +1149,14 @@ async function cycle({ startup = false, returning = false } = {}) {
       meta.cursor = maxTime(all, meta.cursor); saveMeta();
       // Obres compartides
       const canApply = startup || (!typing() && (returning || Date.now() - lastInput > 60000));
-      const sh = await sharedCycle(canApply);
+      const sh = await sharedCycle(canApply, shPre);
       if (sh.applied && !startup) { lastOk = new Date().toISOString(); await reloadSafely(); return; }
       lastOk = new Date().toISOString(); lastErr = ""; paint(sh.waiting || held.size ? "remote" : "ok");
     } else if (startup || tookTheirs || (!typing() && (returning || Date.now() - lastInput > 60000))) {
       applyRows(remote);
       meta.cursor = maxTime(all, meta.cursor); saveMeta();
       lastOk = new Date().toISOString(); lastErr = "";
-      if (startup) { try { await sharedCycle(true); } catch (e) { console.warn("Compartides:", e); } }
+      if (startup) { try { await sharedCycle(true, shPre); } catch (e) { console.warn("Compartides:", e); } }
       if (!startup) { await reloadSafely(); return; }
       paint("ok");
     } else {
@@ -1313,7 +1342,7 @@ const paquets = {
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
-  await desaEmpremta878661(pass); marcaOberta878661();
+  desaEmpremta878661(pass); marcaOberta878661();
   try { localStorage.setItem("nuvol-aco-correu", String(user).trim()); localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   try { await window.__acoStore?.flush?.(); } catch {}
@@ -1340,8 +1369,8 @@ function hook() {
   }
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => window.addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") { clearTimeout(timer); cycle(); }
-    else { cycle({ returning: true }); if (provaAt && Date.now() - provaAt > 3600e3) comprovaProva().then(r => { if (r?.acabada) location.reload(); }); if (paqAt && Date.now() - paqAt > 600e3) refrescaPaquets(); }
+    if (document.visibilityState === "hidden") { try { sessionStorage.setItem(AMAGADA_KEY, String(Date.now())); } catch {} clearTimeout(timer); cycle(); }
+    else { tornaDelFons878663().then(() => cycle({ returning: true })); if (provaAt && Date.now() - provaAt > 3600e3) comprovaProva().then(r => { if (r?.acabada) location.reload(); }); if (paqAt && Date.now() - paqAt > 600e3) refrescaPaquets(); }
   });
   window.addEventListener("online", () => cycle({ returning: true }));
   setInterval(() => { if (document.visibilityState === "visible") cycle(); }, 20000);
@@ -1368,6 +1397,7 @@ export async function startCloudSync() {
   }
   // V87.661 · cada vegada que s'obre l'app, la pantalla d'entrar (amb l'usuari ja posat i sense «Ara no»)
   if (session && calEntrar878661()) await askLogin({ allowSkip: false, anterior: session });
+  try { sessionStorage.removeItem(AMAGADA_KEY); } catch {}
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
     if (skipped) { applyCompanyContext(); return; }
