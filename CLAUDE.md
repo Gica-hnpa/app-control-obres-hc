@@ -167,7 +167,10 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.660 a Render):**
+**Estat (publicada la V87.661 a Render):**
+- **Entrar sempre** (V87.661, 25/11/2026): cada vegada que s’obre l’app (no en recarregar) demana usuari i contrasenya, amb l’usuari posat i la
+  contrasenya del navegador; sense connexió, amb una empremta de la contrasenya a l’aparell. No surt amb el Supabase de proves (localhost) llevat
+  de `aco-proves-bloqueig-v878661`. iPhone/iPad: `maximum-scale=1` (no s’engrandeix en tocar un camp: tots són de 13,5 px per una regla vella).
 - **G3C** (V87.660, 24/11/2026, `src/theme-v878660.css`): el nom de l’app és «G3C · Gestió i control d’obres», amb el logo F3 (menú, barra de dalt
   del mòbil, pantalla d’entrar, pestanya i icones). Amb logo d’empresa: el seu a dalt del menú i a la salutació de l’Inici; G3C a la barra i al peu.
   Botó ☰ al mòbil; «Comptabilitat» del menú només s’obre; l’avís de partes obre «Validar de cop» amb tots triats; «Validar» si no hi ha partides.

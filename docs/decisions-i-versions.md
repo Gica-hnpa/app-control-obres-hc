@@ -5027,4 +5027,25 @@
     («Validar» en un parte de només hores), `partes350test` (ja fallava: la llista ja no posa el punt volat), `accessibilitat391` i `revisio655` (el
     títol «Comptabilitat» del menú no és una pantalla). En verd: v660 14/14, v572 14/14, marca351 20/20, navtest 32/32, v507 24/24, v508 26/26,
     menutecnic 13/13, menustest 48/48, obratest 34/34, v536 11/11, v538 17/17, mobiltest 22/22, partes359 20/20, v494 24/24, accessibilitat391 net,
-    i18n tot traduït. Ja fallaven amb la V87.659 (proves velles, per posar al dia): partes352, v481 (pas 10), v483 i v422.
+    i18n tot traduït. Ja fallaven amb la V87.659 i es van posar al dia el 25/11/2026 (cap error de l'app: miraven com era abans): `partes352` (els camps del
+    material van dins d'una etiqueta: «.q input»…; 24/24), `v481` (un parte de només hores es desa i es valida des del resum; 12/12), `v483` («Altres
+    despeses» al parte, V87.555, i les hores en format 2,00, V87.584; 20/20) i `v422` (sense CIF, el camp en vermell i «Cal per fer la factura», V87.594;
+    15/15); `partes350` 31/31.
+- **V87.661 · Entrar sempre amb usuari i contrasenya, i l'iPhone que no s'engrandeix sol** (25/11/2026)
+  - L'Héctor: «vull que en entrar demani usuari i contrasenya sempre, però que si el guardo les dades es posin per entrar directe». Cada vegada que
+    s'obre l'app (una pestanya nova, l'app del mòbil o la de l'ordinador; **no** en recarregar, ni després de «Hi ha una versió nova») surt la
+    pantalla d'entrar amb l'usuari ja posat i sense «Ara no»; la contrasenya la posa el navegador si l'hi ha desada (Chrome a l'ordinador i a
+    Android; a l'iPhone, tocant el camp i el clauer d'iCloud). Amb connexió es comprova al núvol (pot entrar amb un altre compte).
+    Sense connexió, només el compte d'aquest aparell, comprovat amb una **empremta** de la contrasenya (PBKDF2-SHA256, 150.000 voltes, amb sal;
+    `nuvol-aco-empremta__<usuari>` al localStorage de debò, que no va al núvol ni al DADES; mai la contrasenya). Sense empremta (la primera vegada
+    després d'aquesta versió) es deixa entrar. Marca de «ja oberta» a `sessionStorage` (`nuvol-aco-oberta-v878661`). «Sortir» la treu.
+    Amb el Supabase de proves (localhost) no surt, perquè les proves tornen a obrir l'app sovint; la prova nova `bloqueig661test` l'activa amb
+    `aco-proves-bloqueig-v878661` = "1". Codi: `calEntrar878661`, `desaEmpremta878661`, `comprovaEmpremta878661` a `cloudSync.js`.
+  - Mòbil «que no surt en pantalla completa i l'he de minimitzar»: una regla vella de `styles.css` («UPDATE 33») posa tots els camps a 13,5 px i
+    l'iPhone engrandeix la pàgina en tocar un camp de menys de 16 px (i s'hi queda). A l'iPhone i l'iPad, `maximum-scale=1` al viewport (des de
+    `main.jsx`; amb dos dits encara es pot fer gran); a Android no es toca. Els camps d'entrar i de la benvinguda de l'empresa, a 16 px
+    (`theme-v878661.css`).
+  - Ordinador: l'app instal·lada amb Chrome («APP Control d'Obres») es queda la icona i el nom d'abans; per tenir G3C cal desinstal·lar-la (sense
+    marcar «esborrar també les dades») i tornar-la a instal·lar des de Render.
+  - Proves: `bloqueig661test` 21/21 (primera vegada, recarregar, tornar a obrir, contrasenya dolenta, sense connexió amb l'empremta, un altre compte,
+    «Sortir», iPhone i Android).

@@ -1,0 +1,5 @@
+/* V87.661 · Els camps de la pantalla d'entrar i de la benvinguda de l'empresa, a 16 px (com ja deien els seus estils): una regla vella
+   («UPDATE 33» de styles.css) posava tots els camps a 13,5 px i l'iPhone engrandeix la pantalla en tocar un camp de menys de 16 px
+   (l'Héctor, 25/11/2026: «quan s'obre l'app al mòbil no surt en pantalla completa i l'he de minimitzar»). */
+html body .cloud-overlay-v878257 input,
+html body .empresa-setup-v878259 input{font-size:16px!important}

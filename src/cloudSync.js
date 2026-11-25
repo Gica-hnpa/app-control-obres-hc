@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.660";
+const VERSION = "V87.661";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -192,6 +192,45 @@ async function login(email, password) {
   // V87.260 · l'Héctor ha entrat amb la contrasenya del núvol: aquest aparell torna a obrir el seu espai sol
   // (treu la marca que hi posa el portal de client; mateix nom que PORTAL_LOCK_KEY878260 a App.jsx).
   if (!companyOf(session.email)) { try { localStorage.removeItem("portal-bloqueig-app-control-obres"); } catch {} }
+}
+// V87.661 · Entrar sempre amb l'usuari i la contrasenya (l'Héctor, 25/11/2026: «vull que en entrar demani usuari i contrasenya sempre, però
+// que si el guardo les dades es posin per entrar directe»). Cada vegada que s'obre l'app (una pestanya nova, l'app del mòbil o la de
+// l'ordinador; no en recarregar) surt la pantalla d'entrar amb l'usuari ja posat, i la contrasenya la posa el navegador si la té desada.
+// Amb connexió es comprova al núvol. Sense connexió, amb una empremta de la contrasenya (PBKDF2, mai la contrasenya) que l'aparell desa a
+// cada entrada bona; si encara no n'hi ha cap (la primera vegada després d'aquesta versió), es deixa entrar amb el compte d'aquest aparell.
+// Amb el Supabase de proves (localhost) no surt, perquè les proves tornen a obrir l'app sovint: la prova bloqueig661 l'activa amb
+// «aco-proves-bloqueig-v878661» = "1".
+const OBERTA_KEY = "nuvol-aco-oberta-v878661";
+const realStore = () => sessStore() || localStorage;
+function marcaOberta878661(si = true) { try { if (si) sessionStorage.setItem(OBERTA_KEY, "1"); else sessionStorage.removeItem(OBERTA_KEY); } catch {} }
+function calEntrar878661() {
+  try {
+    if (sessionStorage.getItem(OBERTA_KEY) === "1") return false;
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(CLOUD_URL) && realStore().getItem("aco-proves-bloqueig-v878661") !== "1") return false;
+  } catch {}
+  return true;
+}
+const empKey878661 = uid => `nuvol-aco-empremta__${uid}`;
+const hex878661 = a => Array.from(a, x => x.toString(16).padStart(2, "0")).join("");
+async function empremta878661(pass, sal) {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey("raw", enc.encode(String(pass)), "PBKDF2", false, ["deriveBits"]);
+  return hex878661(new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: enc.encode(sal), iterations: 150000 }, k, 256)));
+}
+async function desaEmpremta878661(pass) {
+  try {
+    if (!session?.user_id || !globalThis.crypto?.subtle) return;
+    const sal = hex878661(crypto.getRandomValues(new Uint8Array(16)));
+    realStore().setItem(empKey878661(session.user_id), JSON.stringify({ sal, h: await empremta878661(pass, sal) }));
+  } catch {}
+}
+// true: és la contrasenya · false: no ho és · null: no se sap (no hi ha empremta o el navegador no ho permet)
+async function comprovaEmpremta878661(uid, pass) {
+  try {
+    const v = JSON.parse(realStore().getItem(empKey878661(uid)) || "null");
+    if (!v?.sal || !v?.h || !globalThis.crypto?.subtle) return null;
+    return (await empremta878661(pass, v.sal)) === v.h;
+  } catch { return null; }
 }
 // V87.262 · arxius (fotos, croquis, documents) a l'espai privat «aco-fitxers»; path = <propietari>/<obra>/<id>.
 async function storageFetch(path, opts = {}) {
@@ -584,7 +623,7 @@ function overlay(html) {
   document.body.appendChild(el);
   return el;
 }
-function askLogin({ allowSkip = true, message = "" } = {}) {
+function askLogin({ allowSkip = true, message = "", anterior = null } = {}) {
   return new Promise(resolve => {
     const el = overlay(`
       <div class="g3c-entrada-v878660"><svg class="logo-g3c-v878660" width="64" height="64" viewBox="0 0 96 96" role="img" aria-label="G3C"><rect width="96" height="96" rx="21" fill="#13294A"/><path d="M61 24 A30 30 0 1 0 75.9 52.6 L66 52.6" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="miter"/><path d="M55.6 38.5 A15 15 0 1 0 49.9 64.5 L82 20" fill="none" stroke="#2D7FF9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b class="nom-g3c-v878660">G<i>3</i>C</b><small>${t("Gestió i control d’obres")}</small></div></div>
@@ -598,14 +637,22 @@ function askLogin({ allowSkip = true, message = "" } = {}) {
         ${allowSkip ? `<button class="link" type="button" data-skip>${isLocalServer() ? t("Ara no · treballar només en aquest ordinador") : t("Ara no · treballar sense núvol en aquest aparell")}</button>` : ""}
       </form>`);
     const form = el.querySelector("form"), err = el.querySelector(".err"), btn = el.querySelector("button.primary");
-    const email = form.elements.email; email.value = localStorage.getItem("nuvol-aco-correu") || ""; (email.value ? form.elements.password : email).focus();
+    const email = form.elements.email; email.value = localStorage.getItem("nuvol-aco-correu") || (anterior ? (companyOf(anterior.email)?.username || anterior.email || "") : ""); (email.value ? form.elements.password : email).focus();
     form.addEventListener("submit", async e => {
       e.preventDefault(); err.textContent = ""; btn.disabled = true; btn.textContent = t("Entrant…");
+      const usuari = form.elements.email.value, pass = form.elements.password.value;
       try {
-        await login(toEmail(form.elements.email.value), form.elements.password.value);
-        try { localStorage.setItem("nuvol-aco-correu", form.elements.email.value.trim()); } catch {}
+        await login(toEmail(usuari), pass);
+        await desaEmpremta878661(pass);
+        try { localStorage.setItem("nuvol-aco-correu", usuari.trim()); } catch {}
         el.remove(); resolve("ok");
       } catch (x) {
+        // V87.661 · sense connexió, a la pantalla d'entrar de cada vegada: el compte d'aquest aparell, comprovat amb l'empremta desada
+        if (x.offline && anterior) {
+          if (toEmail(usuari) !== String(anterior.email || "").toLowerCase()) x = new Error(t("Sense connexió només es pot entrar amb el compte d’aquest aparell."));
+          else if ((await comprovaEmpremta878661(anterior.user_id, pass)) !== false) { session = anterior; el.remove(); resolve("ok"); return; }
+          else x = new Error(t("Usuari o contrasenya incorrectes."));
+        }
         err.textContent = x.offline ? t("No hi ha connexió amb el núvol. Revisa Internet i torna-ho a provar.")
           : /invalid login|invalid_grant|credentials/i.test(x.message) ? t("Usuari o contrasenya incorrectes.")
           : /not confirmed/i.test(x.message) ? t("Aquest correu encara no està confirmat a Supabase.")
@@ -1266,6 +1313,7 @@ const paquets = {
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
+  await desaEmpremta878661(pass); marcaOberta878661();
   try { localStorage.setItem("nuvol-aco-correu", String(user).trim()); localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   try { await window.__acoStore?.flush?.(); } catch {}
@@ -1276,7 +1324,7 @@ async function connect() { try { localStorage.removeItem(SKIP_KEY); sessionStora
 // tornar a entrar continuen sincronitzant. En recarregar surt «Entra al núvol».
 async function logout() {
   active = false;
-  writeSession(null);
+  writeSession(null); marcaOberta878661(false);
   try { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   try { await window.__acoStore?.flush?.(); } catch {}
@@ -1318,12 +1366,15 @@ export async function startCloudSync() {
       try { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
     }
   }
+  // V87.661 · cada vegada que s'obre l'app, la pantalla d'entrar (amb l'usuari ja posat i sense «Ara no»)
+  if (session && calEntrar878661()) await askLogin({ allowSkip: false, anterior: session });
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
     if (skipped) { applyCompanyContext(); return; }
     const r = await askLogin({ allowSkip: true });
     if (r === "skip") { try { (isLocalServer() ? localStorage : sessionStorage).setItem(SKIP_KEY, "1"); } catch {} applyCompanyContext(); return; }
   }
+  marcaOberta878661();
   applyCompanyContext();
   // V87.653 · els paquets: primer els de l'aparell (l'app s'obre al moment) i, mentrestant, els del núvol
   paquetsCau(); refrescaPaquets();

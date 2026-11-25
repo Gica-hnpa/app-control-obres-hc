@@ -312,6 +312,7 @@ import "./theme-v878657.css";
 import "./theme-v878658.css";
 import "./theme-v878659.css";
 import "./theme-v878660.css";
+import "./theme-v878661.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
@@ -321,6 +322,17 @@ import { startVersioNova } from "./versioNova.js";
 import { startErrors } from "./errorsApp878646.js";
 import { carregaXlsx } from "./excel878649.js";
 
+// V87.661 · iPhone i iPad: l'app no s'engrandeix sola en tocar un camp per escriure (l'Héctor, 25/11/2026: «quan s'obre l'app al mòbil no
+// surt en pantalla completa sempre i l'he de minimitzar»). Safari engrandeix la pàgina si la lletra del camp és més petita de 16 px i
+// després s'hi queda; amb «maximum-scale=1» ja no ho fa. A l'iPhone i l'iPad encara es pot fer gran amb dos dits; a Android no es toca
+// (allà sí que impediria fer-la gran).
+try {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+    const m = document.querySelector('meta[name="viewport"]');
+    if (m && !/maximum-scale/.test(m.content)) m.setAttribute("content", m.content + ", maximum-scale=1");
+  }
+} catch {}
 // V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
 // de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
 const signa878409 = (() => { try { return (/^#signa=([A-Za-z0-9_-]{40,})/.exec(location.hash || "") || [])[1] || ""; } catch { return ""; } })();

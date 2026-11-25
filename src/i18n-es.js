@@ -6409,4 +6409,6 @@ export default {
   "Logo de l’empresa": "Logo de la empresa",
   "Validar 1 parte?": "¿Validar 1 parte?",
   "Validar {n} partes?": "¿Validar {n} partes?",
+  // V87.661
+  "Sense connexió només es pot entrar amb el compte d’aquest aparell.": "Sin conexión solo se puede entrar con la cuenta de este dispositivo.",
 };
