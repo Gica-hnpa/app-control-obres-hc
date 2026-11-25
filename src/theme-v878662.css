@@ -1,0 +1,27 @@
+/* V87.662 · A l'ordinador, el logo de l'app a dalt del menú (l'Héctor, 25/11/2026: «el logo de l'app no es veu a dalt al PC»). Amb el logo de
+   l'empresa, el menú tenia el de l'empresa a dalt i G3C al peu; ara G3C a dalt de tot, el de l'empresa a sota i al peu només la versió.
+   Al mòbil i la tauleta G3C ja és a la barra de dalt: la franja no hi surt. */
+.g3c-dalt-v878662{display:none}
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .sidebar .g3c-dalt-v878662{display:flex;align-items:center;gap:10px;padding:2px 2px 12px;margin:0 0 12px;border-bottom:1px solid rgba(255,255,255,.12)}
+  html:root:root body .sidebar .g3c-dalt-v878662 .logo-g3c-v878660{border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+  html:root:root body .sidebar .g3c-dalt-v878662 .nom-g3c-v878660{font-family:var(--co-display)!important;font-size:26px!important;font-weight:700!important;line-height:1!important;color:#FFFFFF!important;letter-spacing:.02em}
+  html:root:root body .app-shell.nav-collapsed .sidebar .g3c-dalt-v878662{justify-content:center;padding:2px 0 10px}
+  html:root:root body .app-shell.nav-collapsed .sidebar .g3c-dalt-v878662 .nom-g3c-v878660{display:none!important}
+  /* el peu del menú, només la versió (G3C ja és a dalt) */
+  html:root:root body .nav-version-v878264.g3c-peu-v878660 .logo-g3c-v878660,
+  html:root:root body .nav-version-v878264.g3c-peu-v878660 .nom-g3c-v878660{display:none!important}
+}
+
+/* Al mòbil, l'estat de l'obra sencer a la capçalera (l'Héctor, 25/11/2026: «l'estat queda tallat, per exemple el pendent de resposta»). Una regla
+   de la V87.451 el limitava a 132 px i, amb la lletra del Blau nit, «Pendent de resposta» en fa uns 125 sense la fletxa: sortia «Pendent de resp». */
+@media (max-width:767px){
+  html body .obra-estat-v878269{flex:0 1 auto!important;min-width:0!important;max-width:100%!important}
+  html body .obra-estat-v878269 select{max-width:100%!important;width:auto!important;text-overflow:clip!important}
+}
+
+/* Als mòbils estrets (360 px), la barra de baix deia «Expedie…»: la lletra una mica més petita i menys marge perquè hi càpiguen els noms sencers */
+@media (max-width:380px){
+  html:root:root body .bottom-nav-v878268>button,html:root:root body .bottom-nav-v878268>label{padding-left:2px!important;padding-right:2px!important}
+  html:root:root body .bottom-nav-v878268>button span,html:root:root body .bottom-nav-v878268>label span{font-size:11.5px!important;letter-spacing:-.01em!important}
+}

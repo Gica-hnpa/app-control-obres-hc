@@ -167,7 +167,10 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.661 a Render):**
+**Estat (publicada la V87.662 a Render):**
+- **IVA del pressupost a la factura** (V87.662, 25/11/2026): la proforma i «Fer factura» agafen l’IVA del pressupost de l’obra (abans 21 %); el camí
+  certificació → proforma → factura es queda així (l’Héctor: amb VeriFactu caldrà la proforma). A l’ordinador, G3C a dalt del menú (amb el logo de
+  l’empresa a sota); al mòbil, l’estat de l’obra sencer. **A la tarda: repàs perfil per perfil i pantalla per pantalla amb l’Héctor.**
 - **Entrar sempre** (V87.661, 25/11/2026): cada vegada que s’obre l’app (no en recarregar) demana usuari i contrasenya, amb l’usuari posat i la
   contrasenya del navegador; sense connexió, amb una empremta de la contrasenya a l’aparell. No surt amb el Supabase de proves (localhost) llevat
   de `aco-proves-bloqueig-v878661`. iPhone/iPad: `maximum-scale=1` (no s’engrandeix en tocar un camp: tots són de 13,5 px per una regla vella).

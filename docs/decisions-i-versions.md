@@ -5049,3 +5049,24 @@
     marcar «esborrar també les dades») i tornar-la a instal·lar des de Render.
   - Proves: `bloqueig661test` 21/21 (primera vegada, recarregar, tornar a obrir, contrasenya dolenta, sense connexió amb l'empremta, un altre compte,
     «Sortir», iPhone i Android).
+- **V87.662 · L'IVA del pressupost a la proforma i a la factura, G3C a dalt del menú de l'ordinador i l'estat sencer al mòbil** (25/11/2026)
+  - El client de Socoterm, via l'Héctor: «a Ajustos ha posat un 10 % d'IVA i en imprimir li ha tornat a sortir el 21 %». L'IVA del pressupost
+    (targeta del pressupost › Ajustos › «IVA, descompte, observacions i forma de pagament», `ivaPres878580`, V87.580) només anava al PDF del
+    pressupost; la proforma, «Fer factura» i Facturació de l'obra agafaven la darrera factura de l'obra, la fitxa del client o el 21 %.
+    Ara `defFactura878472`, per ordre: la darrera factura de l'obra, **l'IVA del pressupost de l'obra**, la fitxa del client («IVA de sèrie»), 21 %.
+    L'IVA triat a mà per a una certificació (`factParams`) i les factures fetes no canvien. A la còpia del núvol del 25/11 només canvia una proforma:
+    la certificació 1 de CP EDEN PLAYA (Socoterm), del 21 al 10 %; cap obra de l'Héctor, Brava, Oriol ni Martí té IVA al pressupost.
+  - **Decisió de l'Héctor (25/11/2026):** el camí certificació → proforma → factura es queda com és (amb VeriFactu caldrà la proforma entremig).
+    Explicat: la proforma no és un pas a fer (l'app la fa sola per a cada certificació); «Certificar el 100 %» i després «Fer factura»; una
+    certificació amb factura queda tancada (per canviar-la, Facturació de l'obra › «Eliminar factura» si no s'ha enviat). No fet (proposat):
+    «100 %» que obri «Fer factura» de seguida i «Corregir» una certificació facturada.
+  - Ordinador (l'Héctor, amb la captura de l'Inici: «el logo de l'app no es veu a dalt al PC»): amb el logo de l'empresa, el menú tenia el de
+    l'empresa a dalt i G3C al peu. Ara una franja G3C a dalt de tot del menú (`G3CDalt878662`: el logo i «G3C» en blanc; amb el menú plegat, només
+    el logo), el de l'empresa a sota i al peu només la versió. Només on el menú és fix (≥1281 px, o de 900 a 1280 amb ratolí); al mòbil i la
+    tauleta G3C ja és a la barra de dalt. Sense logo d'empresa, com abans.
+  - Mòbil («l'estat queda tallat, per exemple el pendent de resposta»): a la capçalera de l'obra, una regla de la V87.451 limitava l'estat a 132 px
+    i amb la lletra del Blau nit sortia «Pendent de resp». Ara sense límit. De passada, a 360 px la barra de baix deia «Expedie…»: lletra d'11,5 px
+    i menys marge per sota de 380 px. `src/theme-v878662.css`.
+  - Prova nova `v662test` (G3C a dalt amb el logo de l'empresa i amb el menú plegat; IVA 10 % del pressupost → proforma «IVA 10%», «Fer factura»
+    al 10 % i la factura creada amb la quota del 10 %; constructora i tècnic al mòbil a 390 i 360 px: cap estat tallat a l'Inici, la llista, els
+    filtres oberts ni la fitxa de l'obra, i cap nom tallat a la barra de baix).
