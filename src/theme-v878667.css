@@ -1,0 +1,53 @@
+/* V87.667 · Agenda: el calendari del mes, compacte, amb les targetes al costat a l'ordinador i a sota al mòbil (l'Héctor, 26/11/2026: «a
+   l'esquerra un calendari i a la dreta les dues targetes… un calendari més petit i adequat a l'espai del PC… al mòbil el calendari i després a
+   sota les targetes»); el mateix dins de l'obra; triar el calendari de Google. */
+
+/* ── Agenda (pantalla) ── */
+html:root:root body .ag-mes-dos-v878667{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+html:root:root body .ag-mes-dos-v878667>.ag-targetes-v878664{margin:0!important}
+@media (min-width:1024px){
+  html:root:root body .ag-mes-dos-v878667{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:16px}
+  html:root:root body .ag-mes-dos-v878667>.ag-targetes-v878664{grid-template-columns:minmax(0,1fr)!important;position:sticky;top:12px}
+  html:root:root body .agenda-v878256 .ag-mes-dos-v878667 .ag-cell{min-height:86px!important;padding:3px 4px!important}
+  html:root:root body .agenda-v878256 .ag-mes-dos-v878667 .ag-dnum{font-size:12.5px}
+}
+@media (max-width:1023px){
+  html:root:root body .ag-mes-dos-v878667>.ag-targetes-v878664{grid-template-columns:minmax(0,1fr)!important}
+}
+
+/* ── Agenda de l'obra ── */
+html:root:root body .ag-obra-v878667{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+html:root:root body .ag-obra-v878667>.dreta{display:flex;flex-direction:column;gap:12px;min-width:0}
+html:root:root body .ag-obra-v878667>.dreta>*{margin:0!important}
+@media (min-width:1024px){html:root:root body .ag-obra-v878667{grid-template-columns:minmax(340px,1fr) minmax(0,1.15fr);gap:16px}}
+html:root:root body .cal-obra-v878667{border:1px solid var(--co-line-strong,#AEB8C4);border-radius:8px;background:#FFFFFF;overflow:hidden}
+html:root:root body .cal-obra-v878667>header{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#EDF0F4;border-bottom:1px solid var(--co-line,#D2D8DF)}
+html:root:root body .cal-obra-v878667>header b{flex:1;text-align:center;font:700 17px var(--co-display,inherit);color:var(--co-ink,#16263D)}
+html:root:root body .cal-obra-v878667>header button.secondary{min-width:36px;height:34px;padding:0 10px}
+html:root:root body .cal-obra-v878667 .g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+html:root:root body .cal-obra-v878667 .wd{padding:6px 0;text-align:center;font-size:11.5px;font-weight:700;color:var(--co-ink-3,#58667A);border-bottom:1px solid var(--co-line,#D2D8DF)}
+html:root:root body .cal-obra-v878667 .d,html:root:root body .cal-obra-v878667 .buit{min-height:66px;border-right:1px solid var(--co-line,#E2E8F0);border-bottom:1px solid var(--co-line,#E2E8F0)}
+html:root:root body .cal-obra-v878667 .g>:nth-child(7n){border-right:0}
+html:root:root body .cal-obra-v878667 .buit{background:#F8FAFC}
+html:root:root body .cal-obra-v878667 .d{all:unset;box-sizing:border-box;min-height:66px;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:4px;min-width:0;cursor:pointer;border-right:1px solid var(--co-line,#E2E8F0);border-bottom:1px solid var(--co-line,#E2E8F0)}
+html:root:root body .cal-obra-v878667 .d:hover{background:#F4F7FB}
+html:root:root body .cal-obra-v878667 .d:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+html:root:root body .cal-obra-v878667 .d b{display:grid;place-items:center;width:24px;height:24px;border-radius:99px;font-size:12.5px;font-weight:700;color:var(--co-ink,#16263D)}
+html:root:root body .cal-obra-v878667 .d.avui b{background:var(--co-nit,#16263D);color:#FFFFFF}
+html:root:root body .cal-obra-v878667 .d.sel{background:#EAF1FD;box-shadow:inset 0 0 0 2px #2563EB}
+html:root:root body .cal-obra-v878667 .d i{display:block;font-style:normal;font-size:11px;line-height:1.3;padding:1px 4px;border-radius:4px;background:#DBEAFE;color:#1E3A8A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:root:root body .cal-obra-v878667 .d i.f{background:#FEF3C7;color:#92400E}
+html:root:root body .cal-obra-v878667 .d em{font-style:normal;font-size:11px;color:var(--co-ink-3,#58667A);padding-left:2px}
+@media (max-width:767px){
+  html:root:root body .cal-obra-v878667 .d,html:root:root body .cal-obra-v878667 .buit{min-height:48px}
+  html:root:root body .cal-obra-v878667 .d{align-items:center}
+  html:root:root body .cal-obra-v878667 .d i{width:7px;height:7px;padding:0;border-radius:99px;font-size:0;background:#2563EB}
+  html:root:root body .cal-obra-v878667 .d i.f{background:#D97706}
+  html:root:root body .cal-obra-v878667 .d em{display:none}
+}
+html:root:root body .dia-sel-v878667{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px;padding:8px 10px;border-radius:6px;background:#EAF1FD}
+html:root:root body .dia-sel-v878667 b{text-transform:none;font-size:14px;color:#1E3A8A}
+
+/* ── Google Calendar: triar el calendari ── */
+html:root:root body .tria-cal-v878667{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+html:root:root body .tria-cal-v878667 select{height:32px;max-width:240px;padding:0 8px;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:6px;background:#FFFFFF}

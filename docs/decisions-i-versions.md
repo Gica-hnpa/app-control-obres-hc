@@ -5194,3 +5194,19 @@
     dalt del capítol. En adjudicar, el **% de marge** sobre els preus de l'industrial (0 % si ja l'hi ha posat; per defecte, el de l'última
     adjudicació de l'obra) i el que quedarà al pressupost; les partides noves van al capítol del pressupost. L'adjudicada, en **verd**.
   - Proves: `v666test` 13/13 (nova); v608, v611 i v612 posades al dia (el nom de la pestanya i el botó del comparatiu).
+- **V87.667 · Agenda: el calendari i les targetes al costat; el mateix dins de l'obra; triar el calendari de Google** (26/11/2026; l'Héctor: «a
+  l'esquerra un calendari i a la dreta les dues targetes… un calendari més petit i adequat a l'espai del PC, similar al de Google Calendar… i
+  fer el mateix que l'agenda dins de l'obra… al mòbil el calendari i després a sota les targetes… s'ha de poder sincronitzar amb el calendari
+  que escolleixi segons el Gmail aportat»).
+  - **Agenda (pantalla):** a la vista de mes, a l'ordinador, el mes a l'esquerra (més compacte) i, a la dreta, «Aquesta setmana» (o el dia triat)
+    i «Feines pendents», una sota l'altra; al mòbil, a sota del mes. Tocar un dia el tria també al mòbil. La primera vegada, s'obre al mes a tots
+    els aparells (`aco_agenda_mes_v878667`).
+  - **Agenda de l'obra** (`AgendaObra878667`): un calendari del mes de l'obra (`CalObra878667`: les cites en blau i les feines en groc; al mòbil,
+    punts) a l'esquerra i, a la dreta, «Visites i reunions» i «Feines pendents»; tocant un dia, «Visites i reunions» mostra les d'aquell dia
+    («Totes les cites» per tornar) i «Nova cita» ja hi posa la data. Al mòbil, el calendari a dalt.
+  - **Google Calendar:** a la targeta de Google, «Calendari» amb els calendaris del compte on es pot escriure (`llistaCalendaris` a
+    `googleCal.js`); per defecte, el de l'app («Control d'Obres»). Si es tria el principal, ja no es llegeix a part (sortiria dues vegades).
+  - Proves: `v664test` 11 (al costat), 12b (Agenda de l'obra) i 28 (mòbil); `gcaltest` 8 (triar el calendari).
+  - En canviar de calendari, totes les cites de l'app s'hi pugen (abans constaven com a «ja sincronitzades» amb l'anterior; `forca667`); les
+    que venien d'un altre calendari de Google no s'hi copien. La primera vegada al mes és per aparell (`aco-agenda-mes-v878667`, no va al núvol).
+    `veuagenda330test` posada al dia (el botó de connectar és a la llegenda des de la V87.597).

@@ -6477,4 +6477,9 @@ export default {
   "Marge sobre els preus de l’industrial": "Margen sobre los precios del industrial",
   "Al pressupost: {x}": "En el presupuesto: {x}",
   "0 %: els preus passen tal com són (si l’industrial ja hi ha posat el marge).": "0 %: los precios pasan tal cual (si el industrial ya ha puesto el margen).",
+  "Calendari de l’obra": "Calendario de la obra",
+  "Totes les cites": "Todas las citas",
+  "Cap cita aquest dia.": "Ninguna cita este día.",
+  "Un de nou per a l’app («{n}»)": "Uno nuevo para la app («{n}»)",
+  "principal": "principal",
 };

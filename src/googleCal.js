@@ -138,7 +138,9 @@ export async function syncGoogle({ events, put, del, st = {} }) {
   const out = { pujades: 0, baixades: 0, esborrades: 0 };
   st = { known: {}, lastPull: "", ...st, known: { ...(st.known || {}) } };
   const cal = await ensureCalendar(st);
-  if (cal !== st.calendarId) { st.calendarId = cal; st.known = {}; st.lastPull = ""; }
+  // V87.667 · un altre calendari (triat a l'Agenda o el de l'app que s'ha tornat a fer): les cites de l'app s'hi pugen totes
+  let forca = !!st.forca667; delete st.forca667;
+  if (cal !== st.calendarId) { st.calendarId = cal; st.known = {}; st.lastPull = ""; forca = true; }
   const C = `/calendars/${encodeURIComponent(cal)}/events`;
   const byId = new Map(events.map(e => [String(e.id), e]));
   // 1) El que ha canviat a Google
@@ -174,8 +176,9 @@ export async function syncGoogle({ events, put, del, st = {} }) {
   st.lastPull = maxUpd || calUpdated || st.lastPull;
   // 2) El que ha canviat a l'app
   for (const e of [...byId.values()]) {
-    if (e.gSynced && e.gSynced === signature(e)) continue;
-    const body = toGoogle(e), gid = e.gId || st.known[e.id] || gidFor(e.id);
+    if (!forca && e.gSynced && e.gSynced === signature(e)) continue;
+    if (forca && String(e.id).startsWith("gc-") && !st.known[e.id]) continue; // les que venien d'un altre calendari de Google no s'hi copien
+    const body = toGoogle(e), gid = (forca ? st.known[e.id] : (e.gId || st.known[e.id])) || gidFor(e.id);
     let res;
     try { res = await g(`${C}/${encodeURIComponent(gid)}`, { method: "PUT", body }); }
     catch (er) { if (er.status === 404 || er.status === 410) res = await g(C, { method: "POST", body: { ...body, id: gid } }); else throw er; }
@@ -195,4 +198,12 @@ export async function syncGoogle({ events, put, del, st = {} }) {
 export async function primaryEvents(fromIso, toIso) {
   const p = await g("/calendars/primary/events", { query: { timeMin: `${fromIso}T00:00:00Z`, timeMax: `${toIso}T23:59:59Z`, singleEvents: "true", orderBy: "startTime", maxResults: 250 } });
   return (p?.items || []).filter(x => x.status !== "cancelled").map(gv => ({ ...fromGoogle(gv, { id: `gp-${gv.id}`, tipus: "Google", obraId: "", avis: "" }), kind: "google", link: gv.htmlLink || "" }));
+}
+
+// V87.667 · els calendaris del compte de Google on l'app pot escriure (l'Héctor, 26/11/2026: «s'ha de poder sincronitzar amb el calendari que
+// escolleixi segons el Gmail aportat»). [{ id, nom, principal }]
+export async function llistaCalendaris() {
+  const list = []; let pageToken;
+  do { const p = await g("/users/me/calendarList", { query: { pageToken } }); list.push(...(p?.items || [])); pageToken = p?.nextPageToken; } while (pageToken);
+  return list.filter(c => !c.accessRole || c.accessRole === "owner" || c.accessRole === "writer").map(c => ({ id: c.id, nom: c.summaryOverride || c.summary || c.id, principal: !!c.primary }));
 }
