@@ -73,3 +73,28 @@ Estat de cada línia: ☐ per mirar · ✎ apuntat (per arreglar) · ✔ arregla
   horari › Personal), 28 (paquets).
 - **Recordar:** a la pantalla 12 (Pressupost), el preu que ja es va fer al mateix client, sol, sense targeta.
 - **Següent pantalla del repàs:** 4, Control horari (Personal ja mirat: proposta 31), després Pressupostos.
+
+## Repàs del 26/11/2026 (respostes a les propostes i pantalles noves)
+
+| # | Pantalla | Aparell | Què diu l'Héctor | Estat |
+|---|---|---|---|---|
+| 32 | Totes les pantalles | ordinador | Proposta 14/24 **acceptada**: la barra blau nit amb el títol i els botons principals, a totes les pantalles | ✔ V87.664 |
+| 33 | Obres › llista | ordinador | La columna **Promotor es queda**. Si el client i el promotor són la mateixa persona, només surt una vegada, a Promotor | ✔ V87.664 |
+| 34 | Obres › grups | tots | Només l'any, per a la constructora i l'administrador de finques. El **tècnic (amb gestió)** manté els grups dels clients a més dels expedients propis. L'any d'ara i tots els seus grups, **oberts de sèrie** | ✔ V87.664 |
+| 35 | Obres › llista | mòbil | Proposta 25 **acceptada** (plegable per nivells, com ja és) amb l'any d'ara obert | ✔ V87.664 |
+| 36 | Control horari › Personal | ordinador | Proposta 31 **acceptada**, més ordenada i amb línies fines entre files i columnes | ✔ V87.664 |
+| 37 | Control horari › Calendari | mòbil | El text surt tallat. Millor tot el mes i, a cada dia, les hores fetes i a quina obra | ✔ V87.664 |
+| 38 | Obra › bloc «Pressupost i certificacions» | tots (constructora) | Al mòbil deia només «Pressupost»; amb amidaments, comparatiu i certificacions: millor **«Control d'obra»**, i el **Planning** a dins (a «Dia a dia» no hi té sentit). Aclarit: dins de l'obra, no al menú de l'esquerra | ✔ V87.664 |
+| 39 | Obra › Agents | tots | En posar els tècnics de l'obra no surt el desplegable dels que ja són a Contactes, ni es pot crear un contacte nou que vagi sol al seu grup | ✔ V87.664 |
+| 40 | Obra › Dades › «Més dades» | tots | «Referència del client» no té sentit; la cadastral i l'idioma, fora del plegable, amb les altres dades | ✔ V87.664 |
+| 41 | Documents › carpeta de l'ordinador | ordinador | S'ha de poder treure la carpeta. Què són els arxius d'«Últims canvis»? (els que s'han copiat entre l'app i la carpeta) | ✔ V87.664 |
+| 42 | Targetes plegables | tots | La targeta oberta, amb una vora més fosca, per distingir-la del que hi ha a dins (p. ex. el mes dels partes) | ✔ V87.664 |
+| 43 | Partes d'obra | ordinador | Ordre: «Parte d'avui» (blau nit), «Diversos dies» i, al final, els llistats. «Diversos dies», d'un altre color i amb un nom més clar (fer diversos partes de cop), sense fer-ne una frase | ✔ V87.664 |
+| 44 | Partes d'obra | ordinador | La fila de la feina feta amb l'import, no a sota dels mesos: un plegable amb una gràfica de barres | ✔ V87.664 |
+| 45 | Parte (dins) | ordinador | Títol «Observacions» amb fons gris. A l'ordinador, les observacions a l'esquerra i els treballadors a la dreta (ara, el nom a l'esquerra i les hores i el cost a la vora dreta) | ✔ V87.664 |
+| 46 | Totes les targetes | tots | El títol de les targetes amb contingut a sota (p. ex. «Notes»), amb fons gris | ✔ V87.664 |
+| 47 | Nota / parte (dins) | mòbil | El mateix fons al voltant de la capçalera (el dia, què s'ha de fer…) | ✔ V87.664 |
+| 48 | Parte › Enviar | tots | Poder-lo enviar perquè el torni signat el responsable de validar-lo (director d'obra o d'execució), com a comprovant | ✔ V87.664 |
+| 49 | Parte | tots | PDF, Enviar i Tancar, a sota de la nota (es llegeix i l'acció es busca a baix) | ✔ V87.664 |
+| 50 | Obra › Actes | constructora | La constructora no fa actes (les fan els tècnics), però pot guardar-ne una que li enviïn: si no n'hi ha, poder-ne posar; si n'hi ha, la llista i prou | ✔ V87.664 |
+| 51 | Agenda | ordinador | A dalt, el calendari del mes (com el de l'Inici); a sota, les targetes de la setmana o del dia triat, l'una al costat de l'altra. Feines pendents igual. La «Nota de veu» en blau nit, la principal | ✔ V87.664 |

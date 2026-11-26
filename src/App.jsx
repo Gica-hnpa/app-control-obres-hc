@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.663";
+const APP_VERSION878264="87.664";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4027,11 +4027,11 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
     <div className="botons">
       {rec?.dir?<button type="button" className="primary" disabled={fent} onClick={()=>fes(()=>sincronitzaDespatx878625(st,{demana:true,manual:true}))}>{fent?t("Sincronitzant…"):t("Sincronitzar ara")}</button>:null}
       <button type="button" className={rec?.dir?"secondary":"primary"} disabled={fent} onClick={()=>fes(()=>triaDespatx878625(st))}>{rec?.dir?t("Canviar de carpeta"):t("Triar la carpeta")}</button>
-      {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de sincronitzar amb aquesta carpeta? No s’esborra res, ni de la carpeta ni de l’app.")))return;await desaDespatxRec878625(user,null);window.__acoDespatxNous878625=0;window.__acoDespatxPendent878625=false;avisaDespatx878625();setMsg("")}}>{t("Deixar de fer-ho")}</button>:null}
+      {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de sincronitzar amb aquesta carpeta? No s’esborra res, ni de la carpeta ni de l’app.")))return;await desaDespatxRec878625(user,null);window.__acoDespatxNous878625=0;window.__acoDespatxPendent878625=false;avisaDespatx878625();setMsg("")}}><X size={16} aria-hidden="true"/> {t("Treure la carpeta")}</button>:null}
     </div>
     {prog?<p className="msg prog-v878634" role="status">{prog.fase==="llegint"?t("Mirant la carpeta: obra {i} de {n}…",{i:prog.i,n:prog.n}):t("Sincronitzant: obra {i} de {n} · {a} arxius a la carpeta i {b} a l’app",{i:prog.i,n:prog.n,a:prog.a,b:prog.b})}</p>:msg&&<p className="msg" role="status">{msg}</p>}
     {!prog&&!fent&&err638==="cancel"?<div className="botons"><button type="button" className="secondary altra-v878638" onClick={()=>fes(()=>triaDespatx878625(st,{llegir:true}))}>{t("Provar-ho d’una altra manera")}</button></div>:null}
-    {rec?.dir&&rec.canvis?.length>0?<details className="canvis-v878625"><summary>{t("Últims canvis")} <span className="xifra">{rec.canvis.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><ul>{rec.canvis.map((c,i)=><li key={i}><b>{c.n}</b><small>{c.d==="app"?t("De la carpeta a l’app"):c.d==="act"?t("Canviat a la carpeta"):t("De l’app a la carpeta")} · {c.o} · {horaDespatx878625(c.at)}</small></li>)}</ul></details>:null}
+    {rec?.dir&&rec.canvis?.length>0?<details className="canvis-v878625"><summary><span className="tt-v878664"><b>{t("Arxius copiats")}</b><small>{t("Els últims que s’han copiat de l’app a la carpeta o de la carpeta a l’app")}</small></span> <span className="xifra">{rec.canvis.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><ul>{rec.canvis.map((c,i)=><li key={i}><b>{c.n}</b><small>{c.d==="app"?t("De la carpeta a l’app"):c.d==="act"?t("Canviat a la carpeta"):t("De l’app a la carpeta")} · {c.o} · {horaDespatx878625(c.at)}</small></li>)}</ul></details>:null}
   </div>;
 }
 // V87.646 · Vigilància: «Estat del núvol» (Ajustos › Usuaris i accés, només l'Héctor). Abans, si alguna cosa fallava, se n'assabentava
@@ -4196,6 +4196,7 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
   const notes=[...(data.notes||[])].sort((a,b)=>(+b.numero||0)-(+a.numero||0));
   const[llistat616,setLlistat616]=useState(false);
   const[draft,setDraft]=useState(null);
+  const[enviar664,setEnviar664]=useState("");
   // V87.302 · el botó ＋ de l'obra obre una nota nova (i, si ve d'una foto, ja la hi posa)
   // V87.309 · des de «Visites» també obre una nota que ja hi és (`start.obrir`); `nomesFitxa`: només la fitxa, i en tancar-la
   // es torna a la llista de Visites (`onTancar`)
@@ -4224,7 +4225,15 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
   function esborrar(){if(!confirm(t("Eliminar la nota {n}? Les fotos i els documents de la nota també es treuen.",{n:draft.numero})))return;setData(d=>({...d,notes:(d.notes||[]).filter(x=>x.id!==draft.id),updatedAt:new Date().toISOString()}));tanca()}
   const resum=n=>{const txt=String(n.text||"").trim().split(/\n/)[0];return txt.length>140?txt.slice(0,140)+"…":txt};
   const envia616=()=>{const d=docNota878616(draft,obra);if(openEmail)openEmail(d.title,{doc:d});else window.__acoEnviar878407?.({title:d.title,obra,doc:d})};
-  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<div className="nota-acc-v878616">{!draft.isNew&&openDoc&&<button type="button" className="secondary" onClick={()=>openDoc(docNota878616(draft,obra))}><Printer size={15} aria-hidden="true"/> {t("PDF")}</button>}{!draft.isNew&&(openEmail||window.__acoEnviar878407)&&<button type="button" className="secondary" onClick={envia616}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button></div>}>
+  // V87.664 · «Enviar»: la nota sola o perquè la torni signada la direcció facultativa (l'Héctor, 26/11/2026: «com a comprovant de que ho ha vist i
+  // està d'acord»); PDF, Enviar i Tancar, a baix (es llegeix la nota i l'acció es busca a sota)
+  const potEnviar664=!draft?.isNew&&(openEmail||window.__acoEnviar878407);
+  const accions664=draft&&!draft.isNew?<>{openDoc&&<button type="button" className="secondary" onClick={()=>openDoc(docNota878616(draft,obra))}><Printer size={15} aria-hidden="true"/> {t("PDF")}</button>}{potEnviar664&&<button type="button" className="secondary" onClick={()=>setEnviar664("tria")}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button>}</>:null;
+  const modalEnviar664=draft&&enviar664==="tria"?<Modal title={t("Enviar la nota {n}",{n:draft.numero})} close={()=>setEnviar664("")}><div className="imprimir-modal-v878426">
+    <button type="button" className="opcio" onClick={()=>{setEnviar664("");envia616()}}><Mail size={20} aria-hidden="true"/> {t("Enviar la nota")}</button>
+    {obra?.id&&<button type="button" className="opcio" onClick={()=>setEnviar664("signa")}><Signature size={20} aria-hidden="true"/> {t("Enviar-la perquè la tornin signada")}<small>{t("La direcció de l’obra la signa com a vista i conforme")}</small></button>}
+  </div></Modal>:draft&&enviar664==="signa"?<SignaturaCert878408 autoEnvia obra={obra} tipus="nota" refId={draft.id} titol={`${t("Nota {n}",{n:draft.numero})} · ${obra?.nom||""}`} rols={rolsNota878664(obra)} fesHtml={()=>htmlDoc878405({...docNota878616(draft,obra),perSignar878408:true},obra,null)} clau={()=>JSON.stringify([draft.numero,draft.data,draft.text,(draft.fotos||[]).length])} close={()=>setEnviar664("")}/>:null;
+  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={null}>
     {/* V87.620 · cada apartat en una targeta blanca amb vora sobre la safata (l'Héctor, 16/11/2026: «remarca els bordes de cada apartat com en
         d'altres pantalles… els espais entre on has d'escriure la nota, el si es dicta o no, documents… no es separen») */}
     <fieldset disabled={readOnly} className="notes-form-v878278 seccions-v878620">
@@ -4242,7 +4251,9 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
         {(draft.docs||[]).length>0?<ul className="notes-docs-v878278">{draft.docs.map(x=><li key={x.id}><Paperclip size={14}/><a href="#" role="button" className="obre-v8784291" onClick={e=>{e.preventDefault();obreDataUrl8784291(x.nom,x.url)}}>{x.nom}</a>{!readOnly&&<button type="button" aria-label={t("Treure el document")} onClick={()=>set("docs",draft.docs.filter(y=>y.id!==x.id))}><X size={14}/></button>}</li>)}</ul>:<small>{t("Encara no hi ha documents.")}</small>}
       </div>
     </fieldset>
-    {!readOnly&&<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>}
+    {!readOnly?<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<span className="acc-v878664">{accions664}</span><button type="button" className="secondary" onClick={tanca}>{t(draft.isNew?"Cancel·lar":"Tancar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>
+      :<div className="modal-actions notes-actions-v878278"><span className="acc-v878664">{accions664}</span><button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button></div>}
+    {modalEnviar664}
   </Card>;
   if(nomesFitxa)return null;
   return <Card className="notes-v878278" title={t("Notes")} action={<div className="visites-nou-v878309"><button type="button" className="secondary llistat-btn-v878501 llistat-v878616" onClick={()=>setLlistat616(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>{!readOnly&&<button type="button" className="primary" onClick={nova}><Plus size={16}/> {t("Nova nota")}</button>}</div>}>
@@ -4283,14 +4294,23 @@ function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDo
   if(obert?.tipus==="nota")return <Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} openDoc={openDoc} openEmail={openEmail} nomesFitxa onTancar={tanca} start={{tab:"Notes",token:obert.token,obrir:obert.obrir,files:obert.files}}/>;
   if(obert?.tipus==="acta")return <Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} nomesFitxa onTancar={tanca} start={{tab:"Actes",token:obert.token,obrir:obert.obrir}}/>;
   const items=[
-    ...(nomes==="nota"?[]:data.actes||[]).map(a=>({tipus:"acta",id:a.id,num:a.numero,data:a.data,text:a.titol||"",fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length,agents:(a.agentIds||a.agents||[]).length})),
+    ...(nomes==="nota"?[]:data.actes||[]).map(a=>({tipus:"acta",id:a.id,num:a.numero,data:a.data,text:a.titol||"",fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length,agents:(a.agentIds||a.agents||[]).length,rebuda:a.rebuda878664?(a.docs||[])[0]||null:null})),
     ...(nomes==="acta"?[]:data.notes||[]).map(n=>({tipus:"nota",id:n.id,num:n.numero,data:n.data,text:String(n.text||"").trim().split(/\n/)[0],fotos:(n.fotos||[]).length,docs:(n.docs||[]).length}))
   ].sort((a,b)=>String(b.data||"").localeCompare(String(a.data||""))||(+b.num||0)-(+a.num||0));
   const nou=tipus=>setObert({tipus,token:Date.now()});
-  const buit=nomes==="acta"?(diuObra878326()?"Encara no hi ha cap acta en aquesta obra.":"Encara no hi ha cap acta en aquest expedient."):nomes==="nota"?(diuObra878326()?"Encara no hi ha notes en aquesta obra.":"Encara no hi ha notes en aquest expedient."):(diuObra878326()?"Encara no hi ha cap visita en aquesta obra.":"Encara no hi ha cap visita en aquest expedient.");
-  return <Card className={"visites-v878309"+(nomes?" nomes-"+nomes+"-v878571":"")} title={nomes==="acta"?t("Actes"):nomes==="nota"?t("Notes"):t("Visites")} action={<div className="visites-nou-v878309"><button type="button" className="secondary llistat-btn-v878501 llistat-v878616" onClick={()=>setLlistat616(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>{!readOnly&&nomes!=="acta"&&<button type="button" className={nomes?"primary":"secondary"} onClick={()=>nou("nota")}><Plus size={16}/> {nomes?t("Nova nota"):t("Nota")}</button>}{!readOnly&&nomes!=="nota"&&<button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {nomes?t("Nova acta"):t("Acta")}</button>}</div>}>
+  // V87.664 · la constructora no fa actes (les fan els tècnics), però en pot guardar una que li enviïn (l'Héctor, 26/11/2026: «si no n'hi ha,
+  // posar-ho, i si n'hi ha, llistar i prou»): «Afegir una acta rebuda» (el PDF o la foto) i, a la llista, s'obre el document
+  const rebudes664=esConstructora878344();
+  const afegeixRebuda664=files=>{const f=[...(files||[])].filter(confirmBigDocument878263)[0];if(!f)return;const r=new FileReader();r.onload=()=>{const now=new Date().toISOString();
+    setData(d=>{const ll=d.actes||[];const num=ll.reduce((m,a)=>Math.max(m,+a.numero||0),0)+1;
+      return {...d,actes:[...ll,{id:"acta-rebuda-"+Date.now(),numero:num,data:todayISO8743(),titol:String(f.name||t("Acta rebuda")).replace(/\.[a-z0-9]{2,5}$/i,""),estat:"Rebuda",rebuda878664:true,docs:[{id:"doc-acta-"+Date.now(),nom:f.name||t("Acta"),type:f.type||"",url:r.result,createdAt:now}],createdAt:now,updatedAt:now}],updatedAt:now}})};r.readAsDataURL(f)};
+  const treuRebuda664=x=>{if(!confirm(t("Treure l’acta {n}? El document també es treu.",{n:x.num})))return;setData(d=>({...d,actes:(d.actes||[]).filter(a=>a.id!==x.id),updatedAt:new Date().toISOString()}))};
+  const buit=nomes==="acta"?(rebudes664?"Encara no hi ha cap acta. Si la direcció de l’obra te n’envia una, la pots afegir aquí.":diuObra878326()?"Encara no hi ha cap acta en aquesta obra.":"Encara no hi ha cap acta en aquest expedient."):nomes==="nota"?(diuObra878326()?"Encara no hi ha notes en aquesta obra.":"Encara no hi ha notes en aquest expedient."):(diuObra878326()?"Encara no hi ha cap visita en aquesta obra.":"Encara no hi ha cap visita en aquest expedient.");
+  return <Card className={"visites-v878309"+(nomes?" nomes-"+nomes+"-v878571":"")} title={nomes==="acta"?t("Actes"):nomes==="nota"?t("Notes"):t("Visites")} action={<div className="visites-nou-v878309"><button type="button" className="secondary llistat-btn-v878501 llistat-v878616" onClick={()=>setLlistat616(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>{!readOnly&&nomes!=="acta"&&<button type="button" className={nomes?"primary":"secondary"} onClick={()=>nou("nota")}><Plus size={16}/> {nomes?t("Nova nota"):t("Nota")}</button>}{!readOnly&&nomes!=="nota"&&(rebudes664?<label className="primary file-btn-v8761 rebuda-btn-v878664"><Upload size={16} aria-hidden="true"/> {nomes?t("Afegir una acta rebuda"):t("Acta rebuda")}<input type="file" hidden accept="application/pdf,image/*" onChange={e=>{afegeixRebuda664(e.target.files);e.target.value=""}}/></label>:<button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {nomes?t("Nova acta"):t("Acta")}</button>)}</div>}>
     {llistat616&&<LlistatVisites878616 obra={obra} data={data} nomes={nomes} close={()=>setLlistat616(false)}/>}
-    {items.length===0?<Empty text={buit}/>:<div className="visites-llista-v878309">{items.map(x=><button type="button" key={x.tipus+x.id} className={`visita-v878309 ${x.tipus}`} onClick={()=>setObert({tipus:x.tipus,token:Date.now(),obrir:x.id})}>
+    {items.length===0?<Empty text={buit}/>:<div className="visites-llista-v878309">{items.map(x=>x.rebuda?<div key={x.tipus+x.id} className="visita-v878309 acta rebuda-v878664"><button type="button" className="obre" onClick={()=>obreDataUrl8784291(x.rebuda.nom||t("Acta"),x.rebuda.url)}>
+      <b className="tipus">{t("Acta {n}",{n:x.num||"—"})}</b><span className="dia">{fmtDate8761(x.data)}</span><span className="txt">{x.text||x.rebuda.nom}</span><span className="meta"><span className="et-v878664">{t("Rebuda")}</span><Paperclip size={14} aria-hidden="true"/></span></button>
+      {!readOnly&&<button type="button" className="link treu" onClick={()=>treuRebuda664(x)} aria-label={t("Treure l’acta {n}",{n:x.num})}><Trash2 size={15} aria-hidden="true"/></button>}</div>:<button type="button" key={x.tipus+x.id} className={`visita-v878309 ${x.tipus}`} onClick={()=>setObert({tipus:x.tipus,token:Date.now(),obrir:x.id})}>
       <b className="tipus">{x.tipus==="acta"?t("Acta {n}",{n:x.num||"—"}):t("Nota {n}",{n:x.num||"—"})}</b>
       <span className="dia">{fmtDate8761(x.data)}</span>
       <span className="txt">{x.text?(x.text.length>140?x.text.slice(0,140)+"…":x.text):<em>{t("Sense text")}</em>}</span>
@@ -4743,9 +4763,12 @@ function notaPrintHtml878616(doc,obra,client){
     ${sec(D("Nota"),`<p class="tx">${esc(String(nota.text||"").trim()||"—")}</p>`)}
     ${fotos.length?sec(D("Fotos"),fotosHtml878636(fotos.map(x=>({src:x.src})),esc)):""}
     ${docs.length?sec(D("Documents adjunts"),`<ul>${docs.map(d=>`<li>${esc(d.nom||"")}</li>`).join("")}</ul>`):""}
+    ${doc.perSignar878408?caixesSig878408(D,rolsNota878664(obra),{perSignar:true}):""}
     ${peuDoc878396()}
   </div></body></html>`;
 }
+// V87.664 · qui signa una nota enviada per signar: la direcció facultativa de l'obra (l'execució o, si no n'hi ha, la direcció d'obra)
+function rolsNota878664(obra){const nm=v=>{const x=String(v||"").trim();return /^pendent$/i.test(x)?"":x};return [{k:"df",label:"Vist i conforme · Direcció facultativa",nom:nm(obra?.deo)||nm(obra?.do)}]}
 function docNota878616(n,obra){return {type:"nota878616",autoPrint:false,title:[i18nT("Nota {n}",{n:n?.numero||""}),obra?.nom].filter(Boolean).join(" · "),nota:{numero:n?.numero,data:n?.data,text:n?.text||"",fotos:(n?.fotos||[]).map(x=>({src:x.src})),docs:(n?.docs||[]).map(x=>({nom:x.nom}))}}}
 // V87.405 · l'HTML exacte de qualsevol document que en té (vista, impressió i PDF per adjuntar)
 function htmlDoc878405(doc,obra,client){
@@ -7122,8 +7145,9 @@ if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <Empr
 PERFIL878304=perfilEfectiu878653(empresa878259?.perfil);
 // V87.652 · a l'administrador de finques, el grup «Promotors» de Contactes són les comunitats
 GRUPS_CONTACTE878315[0][1]=PERFIL878304==="finques"?"Comunitats":"Promotors";
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><G3CDalt878662/><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)} aria-label={collapsed?t("Desplegar el menú"):t("Plegar el menú")} title={collapsed?t("Desplegar el menú"):t("Plegar el menú")}><Menu size={20} aria-hidden="true"/></button><button className="close-menu" onClick={()=>setMenuOpen(false)} aria-label={t("Tancar el menú")}><X aria-hidden="true"/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{/* V87.663 · ordre del menú (l'Héctor, 25/11/2026): Inici · Contactes · Obres · Pressupostos · Agenda · Control horari · Comptabilitat · Empresa · Ajustos; Control horari i Empresa, desplegables com Comptabilitat */}{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&tePaquet878653("honoraris")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!esTreballador878326()&&menuPresObra878606()&&<MB a={screen==="Pressupostos obra"} i={<ClipboardList/>} l={t(etPresObra878562())} on={()=>nav("Pressupostos obra")}/>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{paqHores878653()&&<MenuGrup878663 k="Traça" ic={<Clock/>} l={etHores878515()} items={chItems878663()} screen={screen} nav={nav}/>}{!esTreballador878326()&&<ComptaGrup878658 screen={screen} nav={nav}/>}{menuEmpresa878607()&&<MenuGrup878663 k="Empresa" ic={<Briefcase/>} l="Empresa" items={empItems878663()} screen={screen} nav={nav}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria de preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><PeuMenu878660/></nav></aside><main className="main">{/* V87.657 · a l'ordinador, «‹ Inici» no surt (l'Héctor, 24/11/2026, revisió de disseny, tanda D: el menú de l'esquerra ja hi porta); sí el
-  «‹ Ajustos» de la Llibreria */}{iniciRajoles878508()&&!["Inici","Obra","Fitxa client"].includes(screen)&&tornaA878562(screen)[0]!=="Inici"&&<button type="button" className="torna-inici-v878495 pc-v878495" onClick={()=>nav(tornaA878562(screen)[0])}><ChevronLeft size={20} aria-hidden="true"/> {t(tornaA878562(screen)[1])}</button>}<AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):comptaItems878658().length>1&&esCompta878658(screen)?t("Comptabilitat"):t((screen==="Treballs / Expedients"?etObres878304():screen==="Traça"?etHores878515():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav(tornaA878562(screen)[0])}} onMenu={()=>setMenuOpen(true)} icona={screen==="Obra"||screen==="Inici"?null:iconaPantalla878507(screen)}/><ComptaTabs878658 screen={screen} nav={nav}/>
+const titolPant878664=screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):comptaItems878658().length>1&&esCompta878658(screen)?t("Comptabilitat"):t((screen==="Treballs / Expedients"?etObres878304():screen==="Traça"?etHores878515():screen==="Pressupostos obra"?etPresObra878562():SCREEN_TITLE878268[screen])||screen);
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><G3CDalt878662/><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)} aria-label={collapsed?t("Desplegar el menú"):t("Plegar el menú")} title={collapsed?t("Desplegar el menú"):t("Plegar el menú")}><Menu size={20} aria-hidden="true"/></button><button className="close-menu" onClick={()=>setMenuOpen(false)} aria-label={t("Tancar el menú")}><X aria-hidden="true"/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{/* V87.663 · ordre del menú (l'Héctor, 25/11/2026): Inici · Contactes · Obres · Pressupostos · Agenda · Control horari · Comptabilitat · Empresa · Ajustos; Control horari i Empresa, desplegables com Comptabilitat */}{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&tePaquet878653("honoraris")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!esTreballador878326()&&menuPresObra878606()&&<MB a={screen==="Pressupostos obra"} i={<ClipboardList/>} l={t(etPresObra878562())} on={()=>nav("Pressupostos obra")}/>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{paqHores878653()&&<MenuGrup878663 k="Traça" ic={<Clock/>} l={etHores878515()} items={chItems878663()} screen={screen} nav={nav}/>}{!esTreballador878326()&&<ComptaGrup878658 screen={screen} nav={nav}/>}{menuEmpresa878607()&&<MenuGrup878663 k="Empresa" ic={<Briefcase/>} l="Empresa" items={empItems878663()} screen={screen} nav={nav}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria de preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><PeuMenu878660/></nav></aside><main className="main">{!["Inici","Obra"].includes(screen)&&<CapPc878664 title={titolPant878664}/>}{/* V87.657 · a l'ordinador, «‹ Inici» no surt (l'Héctor, 24/11/2026, revisió de disseny, tanda D: el menú de l'esquerra ja hi porta); sí el
+  «‹ Ajustos» de la Llibreria */}{iniciRajoles878508()&&!["Inici","Obra","Fitxa client"].includes(screen)&&tornaA878562(screen)[0]!=="Inici"&&<button type="button" className="torna-inici-v878495 pc-v878495" onClick={()=>nav(tornaA878562(screen)[0])}><ChevronLeft size={20} aria-hidden="true"/> {t(tornaA878562(screen)[1])}</button>}<AppHead878268 title={titolPant878664} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav(tornaA878562(screen)[0])}} onMenu={()=>setMenuOpen(true)} icona={screen==="Obra"||screen==="Inici"?null:iconaPantalla878507(screen)}/><ComptaTabs878658 screen={screen} nav={nav}/>
 
 {screen==="Inici"&&<Inici obreMenu={()=>setMenuOpen(true)} obrirPaquet={(pk,st="")=>{setOs(st?t(st):"");setOc("");setOy("");setOt("");setOst("");setOpk(pk);nav("Treballs / Expedients")}} clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[])]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {(screen==="Clients"||screen==="Agents")&&<SafeRenderBoundary878108><Contactes878315 clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} openClient={openClient}/></SafeRenderBoundary878108>}
@@ -7518,6 +7542,14 @@ function AppHead878268({title,onBack,onMenu,icona=null}){
     <b className="title-v878268">{title}</b>
   </div>;
 }
+// V87.664 · A l'ordinador, una barra blau nit a dalt de cada pantalla, enganxada al menú, amb el títol gran i els botons principals (l'Héctor,
+// 26/11/2026, proposta 24 acceptada: «fes el mateix de la barra blava a totes les pantalles»). Els botons hi arriben amb <AccionsCap878664>
+// (un portal); al mòbil i l'iPad es queden on eren (la barra de dalt del mòbil ja diu el títol). No surt a l'Inici ni dins de l'obra (ja
+// tenen la seva capçalera).
+const Q_PC878664="(min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine)";
+function CapPc878664({title}){return <div className="cap-pc-v878664"><h1>{title}</h1><div className="acc" id="cap-accions-v878664"/></div>}
+function AccionsCap878664({children}){const pc=useMq878657(Q_PC878664);const[el,setEl]=useState(null);
+  useLayoutEffect(()=>{setEl(pc?document.getElementById("cap-accions-v878664"):null)},[pc]);return pc&&el?createPortal(children,el):children}
 // V87.366 · l'Héctor (23/10/2026): «es poden configurar quines vols que siguin les accions ràpides… i les fixes que hi ha a baix, perquè el
 // client decideixi». Cada usuari tria a Ajustos › Accessos ràpids fins a 4 opcions de la barra de baix (més «Més») i les del ＋ de l'obra;
 // sense triar-ne, les de sempre. Es desa al compte (aco_barra_v878366, aco_mes_v878366).
@@ -10874,13 +10906,13 @@ function Contactes878315({clients=[],setClients,obres=[],setObres,odata={},setOd
   // V87.438 · com les pantalles de dins de l'obra (l'Héctor, 30/10/2026: «els contactes no són iguals que les de dins d'una obra»): a dalt el
   // títol i «Nou contacte», el cercador i cada grup una targeta principal plegada (icona, nom i quants n'hi ha); un d'obert alhora
   return <div className="contactes-v878315 contactes-v878438">
-    <div className="fe-head pant-cap-v878438"><h1>{t("Contactes")}</h1>{/* V87.657 · al mòbil (l'Héctor, 24/11/2026, revisió de disseny, tanda C): «Nou contacte» i un ⋯ amb Importar, «Des de les despeses» i
+    <div className="fe-head pant-cap-v878438"><h1 className="dup-pc-v878664">{t("Contactes")}</h1>{/* V87.657 · al mòbil (l'Héctor, 24/11/2026, revisió de disseny, tanda C): «Nou contacte» i un ⋯ amb Importar, «Des de les despeses» i
         Seleccionar (abans, quatre botons en dues files abans de la llista) */}
       {(()=>{const sec=[<button type="button" key="imp" className="secondary importa-ct-v878553" onClick={()=>setImp553(true)}><Upload size={16} aria-hidden="true"/> {t("Importar")}</button>,
         !!PERFIL878304&&!esTreballador878326()&&<button type="button" key="desp" className="secondary des-desp-v878566" onClick={()=>setDesp566(true)}><Receipt size={16} aria-hidden="true"/> {t("Des de les despeses")}</button>,
         files.length>0&&<button type="button" key="sel" className={"secondary sel-btn-v878618"+(selMode618?" on":"")} onClick={()=>{setSelMode618(v=>!v);setSel618(new Set())}}><CheckCheck size={16} aria-hidden="true"/> {selMode618?t("Cancel·lar"):t("Seleccionar")}</button>].filter(Boolean);
         const nouC=<button key="nou" className="primary" onClick={nou}><Plus size={16} aria-hidden="true"/> {t("Nou contacte")}</button>;
-        return <span className={"botons-v878553"+(mob657?" mob-v878657":"")}>{mob657?<>{nouC}<ActionMenu87213 className="ct-mes-v878657" label={<Ellipsis size={20} aria-hidden="true"/>} fletxa={false} titol={t("Més opcions")}>{sec}</ActionMenu87213></>:<>{sec}{nouC}</>}</span>})()}</div>
+        return <AccionsCap878664><span className={"botons-v878553"+(mob657?" mob-v878657":"")}>{mob657?<>{nouC}<ActionMenu87213 className="ct-mes-v878657" label={<Ellipsis size={20} aria-hidden="true"/>} fletxa={false} titol={t("Més opcions")}>{sec}</ActionMenu87213></>:<>{sec}{nouC}</>}</span></AccionsCap878664>})()}</div>
     <div className="contactes-cos-v878438">
       <div className="search-field cerca-v878315"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar per nom, persona de contacte, NIF o telèfon")} aria-label={t("Buscar")}/>{q&&<button type="button" className="link" onClick={()=>setQ("")}>{t("Netejar")}</button>}</div>
       {/* V87.499 · fora l’avís dels agents posats a les obres (l’Héctor, 4/11/2026: «en contactes no cal») */false&&neteja.obres>0&&neteja.vells&&<div className="agents-buidar-v878303"><span><b>{t("Agents posats a les obres")}</b>{t("{n} obres tenen agents posats ({m} en total).",{n:neteja.obres,m:neteja.agents})}</span><button type="button" className="secondary" onClick={buidar}>{t("Treure els agents de totes les obres")}</button></div>}
@@ -11327,6 +11359,8 @@ function ExpFilters878275({all=[],clients=[],f}){
   </details>
 }
 // Foto petita de l'obra; si no en té, un quadrat de color amb les inicials del client (el color surt del nom)
+// V87.664 · un grup de la llista d'obres del mòbil («Les meves obres», cada client que comparteix): plegable, obert si l'any és obert
+function GrupPleg878664({cap,obert,className,titol,children}){if(!cap)return <>{children}</>;return <details className="grup-pleg-v878664" open={obert}><summary className={className}>{titol}<ChevronDown className="fl-v878664" size={18} aria-hidden="true"/></summary>{children}</details>}
 function ObraThumb878275({o,nom=""}){
   const foto=obraFoto878259(o);
   const base=String(nom&&nom!=="—"?nom:o?.nom||"").trim();
@@ -11340,6 +11374,8 @@ let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||
 let clientNom=o=>nomClientObra878347(o,clients)||"—";
 // V87.289 · Promotor: el client del client (on factura el client). Si és el mateix client o no se sap, «—».
 const promotorNom878289=o=>{const p=String(o.propietat||"").trim();return p&&!/^pendent$/i.test(p)&&normalizeSearch878191(p)!==normalizeSearch878191(clientNom(o))?p:""};
+// V87.664 · si el client i el promotor són la mateixa persona, només una vegada, a Promotor (l'Héctor, 26/11/2026)
+const mateixProm878664=o=>{const p=String(o.propietat||"").trim();return !!p&&!/^pendent$/i.test(p)&&normalizeSearch878191(p)===normalizeSearch878191(clientNom(o))};
 const textSort878192=v=>String(v??"").trim();
 const compareText878192=(a,b)=>textSort878192(a).localeCompare(textSort878192(b),"ca",{numeric:true,sensitivity:"base"});
 const compareExpedients878192=(a,b)=>{
@@ -11362,7 +11398,7 @@ const paqN878314=Object.fromEntries(PAQUETS878314.map(p=>[p.k,flat.filter(o=>paq
 const flatTot878497=flat;
 const paqDet878497=k=>{const m={};flatTot878497.filter(o=>paquetOk878314(k,o.estat)).forEach(o=>{const st=normalizeExpedientStatus878136(o.estat);m[st]=(m[st]||0)+1});return EXPEDIENT_STATUS878136.filter(st=>m[st]).map(st=>`${m[st]} ${t(st).toLowerCase()}`).join(" · ")};
 // la columna de l'altre número: a la constructora, només si hi ha obres compartides (el número de qui la comparteix)
-const refCol878497=!diuObra878326()||flatTot878497.some(o=>o.compartida);
+const refCol878497=!diuObra878326();
 if(!cercant878314&&f.setOpk)flat=flat.filter(o=>paquetOk878314(paq878314,o.estat));
 let total=flat.length, actius=flat.filter(o=>isExpedientOpen878136(o.estat)).length;
 let tipusCount=flat.reduce((m,o)=>{let t=moduleLabel8737(o);m[t]=(m[t]||0)+1;return m},{});
@@ -11382,7 +11418,7 @@ const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)ret
 // de l'any, aquells que són d'altres clients meus que són compartits»). Compartida: rebuda d'un altre compte o pròpia compartida. Un any
 // sense cap obra compartida es veu com abans.
 const esComp615=o=>{if(o?.compartida)return true;try{return !!window.__acoCloud?.sharedOwned?.()?.has?.(o?.id)}catch{return false}};
-const grupsAny615=any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));if(!items.some(esComp615))return [{k:"tot",items,cap:false}];
+const grupsAny615=(any,pc=false)=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));if(!items.some(esComp615)||pc&&diuObra878326())return [{k:"tot",items,cap:false}];
   // V87.616 · un sol grup per empresa: dues fitxes de client amb el mateix NIF (l'Héctor, 16/11/2026: «SOCOTERM, el nom fiscal és Vertical
   // Trek, i em surten en dos llistats per separat») van juntes, amb el nom que surt més vegades (el comercial)
   const meus=items.filter(o=>!esComp615(o)),per=new Map();
@@ -11393,7 +11429,7 @@ const grupsAny615=any=>{const items=flat.filter(o=>String(yearLabel878192(o))===
     ...[...per.entries()].map(([k,ls])=>({k:"c:"+k,l:etiq616(ls),items:ls,cap:true,comp:true})).sort((a,b)=>a.l.localeCompare(b.l,"ca"))]};
 const capSub615=g=><><span className="s">{g.l}</span>{g.comp&&<em className="etq">{t("Compartides")}</em>}<small>{etNExp878327(g.items.length)}</small></>;
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
-  <Card title={t(etObres878304())} action={esTreballador878326()?null:<div className="actions-inline">{/* V87.663 · fora «Importar» (l'Héctor, 25/11/2026: «no ho veig clar ni pràctic»; les obres d'abans, a mà) */}<button className="primary" onClick={newObra}><Plus/> {t(etNovaObra878304())}</button></div>}>
+  <Card title={t(etObres878304())} action={esTreballador878326()?null:<AccionsCap878664><div className="actions-inline">{/* V87.663 · fora «Importar» (l'Héctor, 25/11/2026: «no ho veig clar ni pràctic»; les obres d'abans, a mà) */}<button className="primary" onClick={newObra}><Plus/> {t(etNovaObra878304())}</button></div></AccionsCap878664>}>
     <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={diuObra878326()?t("Obra, client, estat, any o població…"):t("Expedient, client, any o població…")} aria-label={t("Buscar")}/></div>
     <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
       <div className="search-field"><Search size={16}/><input aria-label={t("Buscar")} value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar per any, número, estat, client, treball, adreça o població…")}/></div>
@@ -11402,22 +11438,24 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     {/* V87.663 · fora el bloc «Filtres»: el cercador ja troba per any, estat, client, tipus… */}
     <div className="exp-list-header-v8741"><span>{etNExp878327(total)}</span><div className="actions-inline exp-sort-controls-v878192"><label><span>{t("Ordenar per")}</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{t(o.label)}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button><button className="secondary" onClick={clearAll}>{t("Netejar filtres")}</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>{t("Tornar a tots els tipus")}</button>}</div></div>
     <div className="exp-mobile-tree-v87119 exp-cards-v878270">
-      {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270 any-v878561">
-        <h3><span>{any}</span>{anys.length>1&&<small>{etNExp878327(items.length)}</small>}</h3>
-        {grupsAny615(any).map(g=><React.Fragment key={g.k}>{g.cap&&<h4 className={`exp-sub-v878615 ${g.comp?"comp":"meus"}`}>{capSub615(g)}</h4>}{g.items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=(o.poblacio&&o.poblacio!=="Pendent"?pobCP878663(o):"")||[o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270 exp-card-foto-v878275" onClick={()=>openObra(o.id)}>
+      {/* V87.664 · plegable per nivells (l'Héctor, 26/11/2026, proposta 25 acceptada): l'any, els grups i les obres; l'any d'ara i els seus grups,
+        oberts de sèrie; buscant, tot obert */}
+      {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));const obert=cercant878314||anys.length===1||String(any)===String(new Date().getFullYear());return <details key={any+(cercant878314?"-c":"")} open={obert} className="exp-year-v878270 any-v878561 any-pleg-v878664">
+        <summary><h3><span>{any}</span><small>{etNExp878327(items.length)}</small></h3><ChevronDown className="fl-v878664" size={20} aria-hidden="true"/></summary>
+        {grupsAny615(any).map(g=><GrupPleg878664 key={g.k} cap={g.cap} obert={obert} className={`exp-sub-v878615 ${g.comp?"comp":"meus"}`} titol={capSub615(g)}>{g.items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=(o.poblacio&&o.poblacio!=="Pendent"?pobCP878663(o):"")||[o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270 exp-card-foto-v878275" onClick={()=>openObra(o.id)}>
           <ObraThumb878275 o={o} nom={clientNom(o)}/><span className="exp-card-body-v878275"><span className="l1"><b>{codiCurt878270(o)}</b>{o.compartida?<small className="exp-prop-v878347">{diuObra878326()?(o.compartida.ownerNom||o.compartida.ownerUsuari||""):expPropietari878347(o)}</small>:null}<span>{clientNom(o)}</span></span>
           <strong>{o.nom}</strong>
           <span className="l3">{[t(moduleLabel8737(o)),lloc].filter(Boolean).join(" · ")}</span>
           <span className="l4"><em className={`st ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</em><SharedBadge878259 o={o}/>{(()=>{const d=creationStamp878233(o);const x=d?fmtCreationDate878233(d):"";return x&&/\d/.test(x)?<small className="data-v878533" title={t("Data de creació")}>{x}</small>:null})()}</span></span>
-        </button>})}</React.Fragment>)}
-      </section>})}
+        </button>})}</GrupPleg878664>)}
+      </details>})}
     </div>
     <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
-      <table className={"exp-table-v8741 exp-table-v8742 exp-table-v878289"+(refCol878497?"":" sense-ref-v878497")}>
-        <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{diuObra878326()?t("Compartida per"):t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("promotor","Promotor")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
-        <tbody>{flat.length===0&&<tr><td colSpan={refCol878497?8:7}><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
-          <tr className="year-row-v8742 any-v878561"><td colSpan={refCol878497?8:7}><span className="a">{any}</span>{anys.length>1&&<>{" "}<small>{etNExp878327(flat.filter(o=>String(yearLabel878192(o))===String(any)).length)}</small></>}</td></tr>
-          {grupsAny615(any).map(g=><React.Fragment key={g.k}>{g.cap&&<tr className={`sub-row-v878615 ${g.comp?"comp":"meus"}`}><td colSpan={refCol878497?8:7}>{capSub615(g)}</td></tr>}{g.items.map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td>{o.compartida?(diuObra878326()?<small className="ref-prop-nom-v878663">{o.compartida.ownerNom||o.compartida.ownerUsuari||""}</small>:<><b className="ref-prop-v878360">{codiCurtBase878347(o)}</b><small>{o.compartida.ownerNom||o.compartida.ownerUsuari||""}</small></>):o.refClient?<b className="ref-client-v878314">{o.refClient}</b>:diuObra878326()?<span className="cap-ref-v878497">—</span>:<b>{clientProjectLabel878233(o)}</b>}</td><td>{clientNom(o)}</td><td className="exp-prom-v878289">{promotorNom878289(o)||"—"}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{pobCP878663(o)}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select className={`est-v878299 est-${estatTone878299(o.estat)}`} aria-label={i18nT("Estat")} value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}</React.Fragment>)}
+      <table className={"exp-table-v8741 exp-table-v8742 exp-table-v878289 exp-table-v878664"+(refCol878497?" amb-ref-v878664":" sense-ref-v878664")}>
+        <thead><tr><th>{sortHead878192("numero","Número")}</th>{refCol878497&&<th>{t("Núm. client")}</th>}<th>{sortHead878192("client",etClient878652())}</th><th>{sortHead878192("promotor","Promotor")}</th><th>{sortHead878192("nom",diuObra878326()?"Obra":"Nom treball")}</th><th>{sortHead878192("adreca","Adreça")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
+        <tbody>{flat.length===0&&<tr><td colSpan={refCol878497?7:6}><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
+          <tr className="year-row-v8742 any-v878561"><td colSpan={refCol878497?7:6}><span className="a">{any}</span>{anys.length>1&&<>{" "}<small>{etNExp878327(flat.filter(o=>String(yearLabel878192(o))===String(any)).length)}</small></>}</td></tr>
+          {grupsAny615(any,true).map(g=><React.Fragment key={g.k}>{g.cap&&<tr className={`sub-row-v878615 ${g.comp?"comp":"meus"}`}><td colSpan={refCol878497?7:6}>{capSub615(g)}</td></tr>}{g.items.map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td>{refCol878497&&<td>{o.compartida?<><b className="ref-prop-v878360">{codiCurtBase878347(o)}</b><small>{o.compartida.ownerNom||o.compartida.ownerUsuari||""}</small></>:o.refClient?<b className="ref-client-v878314">{o.refClient}</b>:<b>{clientProjectLabel878233(o)}</b>}</td>}<td>{mateixProm878664(o)?<span className="cap-ref-v878497">—</span>:clientNom(o)}</td><td className="exp-prom-v878289">{mateixProm878664(o)?clientNom(o):promotorNom878289(o)||"—"}</td><td>{(()=>{const tip=t(moduleLabel8737(o));const sub=String(o.subtitol||"").trim();const det=[sub,normalizeSearch878191(sub)===normalizeSearch878191(tip)?"":tip].filter(Boolean).join(" · ");return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong>{det?<small>{det}</small>:null}{o.compartida&&diuObra878326()?<small className="comp-per-v878664">{t("Compartida per {nom}",{nom:o.compartida.ownerNom||o.compartida.ownerUsuari||""})}</small>:<SharedBadge878259 o={o}/>}</div></div>})()}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{pobCP878663(o)}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select className={`est-v878299 est-${estatTone878299(o.estat)}`} aria-label={i18nT("Estat")} value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}</React.Fragment>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -11615,8 +11653,10 @@ function FinestraContactes878436({titol,grups=null,valor="",q="",setQ,nouText=""
   const finRef=useRef(null);
   // tocar fora de la finestra la tanca (el fons, amb el clic: així el toc no arriba al que hi ha a sota)
   useEffect(()=>{const f=e=>{const el=finRef.current;if(!el||el.contains(e.target)||e.target?.classList?.contains("tc-fons-v878436"))return;close()};document.addEventListener("pointerdown",f,true);return()=>document.removeEventListener("pointerdown",f,true)},[close]);
-  const [g,setG]=useState(()=>grups?.[0]||"");
   const files=useMemo(()=>{try{return window.__acoContactes878406?.()||[]}catch(e){console.warn(e);return []}},[]);
+  // V87.664 · si el grup del camp és buit (p. ex. «Tècnics» d'una constructora), s'obre amb tots els contactes (l'Héctor, 26/11/2026: «no surt el
+  // desplegable dels que ja tinc a Contactes»)
+  const [g,setG]=useState(()=>{const g0=grups?.[0]||"";return g0&&files.some(x=>x.g===g0)?g0:""});
   const fi=useMemo(()=>{try{return matchMedia("(hover:hover) and (pointer:fine)").matches}catch{return false}},[]);
   useEffect(()=>{const f=e=>{if(e.key==="Escape"){e.stopPropagation();e.preventDefault();close()}};window.addEventListener("keydown",f,true);return()=>window.removeEventListener("keydown",f,true)},[close]);
   const cercant=!!q.trim();
@@ -12068,7 +12108,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     const val=match||(netV878304(r.nom)||r.nou?"__aquesta__":"");
     return <div className="span-all rol-tab-v878304">
       <div className="rol-tria-v878304"><TriaContacte878413 grups={f==="constructor"?["constructora"]:f==="representant"?["immobiliaria"]:["tecnic"]} etiqueta={t("Triar de Contactes")} valor={netV878304(r.nom)} onCap={()=>setRol878304(f,{},true)} onTria={(d,x)=>setRol878304(f,{...d,id:x?.ag?.id||d.id},true)} onNou={n=>setRol878304(f,{nou:true,nom:n||""},true)} nouText={t("+ Nou (escriure’l)")}/></div>
-      {(netV878304(r.nom)||r.nou)?<FitxaPersona878304 v={r} onChange={patch=>setRol878304(f,patch)} tipus={tipus}/>:<p className="hint">{t("Tria’l de la llista o fes-ne un de nou.")}</p>}
+      {(netV878304(r.nom)||r.nou)?<FitxaPersona878304 v={r} onChange={patch=>setRol878304(f,patch)} tipus={tipus}/>:<p className="hint">{tipus==="tecnic"?t("Tria’l de Contactes o fes-ne un de nou: en guardar les dades, anirà a Contactes › Tècnics."):t("Tria’l de la llista o fes-ne un de nou.")}</p>}
     </div>;
   }
   function industrialsTab878304(){
@@ -12098,13 +12138,14 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
 
       <CampsAdreca878304 v={obraAdr878304} onChange={setObraAdr878304} etiqueta={i18nT("Adreça de l’obra (carrer i número)")}/>
       {(()=>{const camps878363=<>
-      <label><span>{propia878363?i18nT("Referència del client (el seu número d’obra o de comanda)"):i18nT("Núm. del client (expedient, obra o pressupost)")}</span><input value={form.refClient||""} onChange={e=>upd("refClient",e.target.value)}/></label>
+      {/* V87.664 · a les obres pròpies (constructora), fora «Referència del client» (l'Héctor, 26/11/2026: «no li veig cap sentit»); si ja en té, es veu */}
+      {(!propia878363||String(form.refClient||"").trim())&&<label><span>{propia878363?i18nT("Referència del client (el seu número d’obra o de comanda)"):i18nT("Núm. del client (expedient, obra o pressupost)")}</span><input value={form.refClient||""} onChange={e=>upd("refClient",e.target.value)}/></label>}
       <label><span>{i18nT("Referència cadastral")}</span><input value={form.rc||""} onChange={e=>upd("rc",e.target.value)}/></label>
       <label className="doc-lang-v878283"><span>{i18nT("Idioma dels documents")}</span><select value={LANGS.some(l=>l.code===form.idiomaDocs)?form.idiomaDocs:""} onChange={e=>upd("idiomaDocs",e.target.value)}><option value="">{i18nT("El de cada usuari")}</option>{LANGS.map(l=><option key={l.code} value={l.code}>{l.nom}</option>)}</select></label>
       <label className="span-all"><span>{i18nT("Definició tipus de feina")}</span><textarea value={form.definicioFeina||""} onChange={e=>upd("definicioFeina",e.target.value)} placeholder={i18nT("Definició base de l'encàrrec, editable per cada expedient...")}/></label>
       {String(obra?.observacions||"").trim()&&<label className="span-all"><span>{i18nT("Observacions internes")}</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder={i18nT("Condicionants, criteris, notes de l’encàrrec...")}/></label>}
       {!propia878363&&<div className="span-all"><CodiCarpeta878270 obra={obra}/></div>}
-      </>;return propia878363?<details className="span-all mes-dades-v878363"><summary>{t("Més dades")}</summary><div className="form-grid no-pad">{camps878363}</div></details>:camps878363})()}
+      </>;return camps878363})()}{/* V87.664 · sense el plegable «Més dades»: amb tan pocs camps, amb les altres dades de l'obra */}
       </>}
       {sub878304==="client"&&<>
       {obra.compartida?<label><span>{i18nT("Client / carpeta")}</span><select value={clientChoice||""} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>{i18nT("Selecciona client...")}</option>
@@ -13960,13 +14001,21 @@ const BLOC_ICON878299={"Fitxa":<FolderOpen/>,"Seguiment":<ClipboardList/>,"Econ�
 // quatre rajoles i, en tocar-ne una, la llista dels seus apartats a sota, un sota l'altre. Les claus dels apartats no canvien.
 const OBRA_BLOCS878485=[
   {k:"Fitxa",tabs:OBRA_BLOCS878299[0].tabs},
-  {k:"Dia a dia",tabs:["Partes obra","Notes","Actes","Agenda / Avisos","Tasques","Gantt"]},
-  {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Industrials","Certificacions","Certificacions obra"]},
+  // V87.664 · el Planning, amb el pressupost, el comparatiu i les certificacions (l'Héctor, 26/11/2026: «el planning em referia a on està ara
+  // pressupost i certificacions… i el comparatiu, allà a dins d'aquell desplegable»); a «Dia a dia» «no té sentit»
+  {k:"Dia a dia",tabs:["Partes obra","Notes","Actes","Agenda / Avisos","Tasques"]},
+  {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Industrials","Gantt","Certificacions","Certificacions obra"]},
   {k:"Comptabilitat",tabs:["Facturació","Facturació obra","Factures","Albarans","Seguiment econòmic","Rendiment","Rendiments","Gestió temps","Honoraris","Pressupostos"]}
 ];
 const BLOC_ICON878485={"Fitxa":<FolderOpen/>,"Dia a dia":<ClipboardCheck/>,"Pressupost i certificacions":<Calculator/>,"Comptabilitat":<ReceiptText/>,"El meu encàrrec":<Briefcase/>};
 // V87.504 · al mòbil i l'iPad, les quatre rajoles en una fila: el nom curt
 const BLOC_CURT878504={"Pressupost i certificacions":"Pressupost","El meu encàrrec":"Encàrrec"};
+// V87.664 · a la constructora, el bloc «Pressupost i certificacions» es diu «Control d'obra» (l'Héctor, 26/11/2026: «quan posa pressupost no hauria
+// de posar també certificacions? o com que hi ha comparatiu d'ofertes i amidaments, potser hauria de posar control d'obra?»). La clau no canvia.
+const blocCO878664=k=>k==="Pressupost i certificacions"&&diuObra878326();
+function nomBloc878664(k){return blocCO878664(k)?"Control d’obra":k}
+function curtBloc878664(k){return blocCO878664(k)?"Control d’obra":(BLOC_CURT878504[k]||k)}
+function subBloc878664(k){return blocCO878664(k)?"pressupost, certificacions, planning":BLOC_SUB878485[k]}
 // V87.507 · l'Héctor (5/11/2026): «Cuentas o Contabilidad (ha canviat)»: torna a dir «Comptabilitat», amb un guionet on es pot partir
 const guio878507=s=>String(s).replace(/^Comptabilitat$/,"Compta\u00ADbilitat").replace(/^Contabilidad$/,"Conta\u00ADbilidad");
 const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, notes, actes, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment","El meu encàrrec":"hores, despeses, factures"};
@@ -13975,7 +14024,7 @@ const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes,
 // Als encàrrecs tècnics les despeses són les meves (van a «El meu encàrrec»); a les obres, les de l'obra (van amb el pressupost).
 const OBRA_BLOCS_TEC878492=[
   {k:"Fitxa",tabs:OBRA_BLOCS878299[0].tabs},
-  {k:"Dia a dia",tabs:OBRA_BLOCS878485[1].tabs},
+  {k:"Dia a dia",tabs:[...OBRA_BLOCS878485[1].tabs,"Gantt"]},
   {k:"El meu encàrrec",tabs:["Honoraris","Gestió temps","Rendiment","Pressupostos","Factures"]},
   {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Industrials","Certificacions","Certificacions obra","Facturació","Facturació obra","Albarans","Seguiment econòmic","Rendiments"]}
 ];
@@ -14268,6 +14317,16 @@ function PartesDies878572({data={},onCrea,close}){
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!dies.length||!triats.length} onClick={crea}>{dies.length===1?t("Fer 1 parte"):t("Fer {n} partes",{n:dies.length})}</button></div>
   </div></Modal>;
 }
+// V87.664 · Partes d'obra: la feina feta (sobre el pressupost) i, en obrir-la, una gràfica de barres amb la feina dels partes de cada mes
+function FeinaFeta878664({totalFet=0,totalPres=0,mesos=[]}){
+  const ms=mesos.filter(m=>m.k!=="—").slice(-12);const max=Math.max(0,...ms.map(m=>m.imp));
+  const cap=<><span className="tt"><small>{t("Feina feta")}</small><b>{money(totalFet)}</b><span>{t("de {total} · {p}",{total:money(totalPres),p:pct(totalFet/totalPres*100)})}</span></span><span className="barra"><i style={{width:Math.min(100,totalFet/totalPres*100)+"%"}}/></span></>;
+  if(!ms.length||!(max>0))return <div className="partes-total-v878349 ff-v878664">{cap}</div>;
+  return <details className="partes-total-v878349 ff-v878664"><summary>{cap}<ChevronDown size={18} className="fl-v878664" aria-hidden="true"/></summary>
+    <div className="ff-graf-v878664" role="img" aria-label={t("Feina dels partes per mesos")}>{ms.map(m=><div key={m.k} className="col" title={`${m.nom}: ${money(m.imp)}`}><b>{money(m.imp)}</b><span className="bar"><i style={{height:Math.max(2,m.imp/max*100)+"%"}}/></span><small>{m.nom}</small></div>)}</div>
+    <p className="ff-nota-v878664">{t("La feina de cada mes surt dels partes; la feina feta, de les certificacions i els partes.")}</p>
+  </details>;
+}
 function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const treb=esTreballador878326();
   const[esb,setEsb]=useState(null);
@@ -14346,14 +14405,17 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const mesos=[];partes.forEach(p=>{const k=String(p.data||"").slice(0,7)||"—";let m=mesos.find(x=>x.k===k);if(!m){m={k,partes:[]};mesos.push(m)}m.partes.push(p)});
   const nomMes=k=>k==="—"?"—":new Date(k+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
   return <div className="partes-v878349">
-    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{!treb&&partes.length>0&&<button type="button" className="secondary llistat-btn-v878501 llistat-v878622" onClick={()=>setLlistat622(true)}><Printer size={16} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos dies")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
+    {/* V87.664 · a l'ordinador, primer el parte del dia, després diversos de cop i al final els llistats (l'Héctor, 26/11/2026); «Diversos dies» passa a
+        «Diversos partes de cop» (fer-ne més d'un alhora), amb un altre color que el del dia */}
+    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{!treb&&partes.length>0&&<button type="button" className="secondary llistat-btn-v878501 llistat-v878622" onClick={()=>setLlistat622(true)}><Printer size={16} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos partes de cop")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
     {!readOnly&&!treb&&partes.filter(p=>p.estat!=="certificat").length>1&&<div className={"valida-v878572"+(sel572?" on":"")}>{!sel572?<button type="button" className="secondary small" onClick={()=>setSel572(new Set())}><ListChecks size={15} aria-hidden="true"/> {t("Validar de cop")}</button>
       :(()=>{const pend=partes.filter(p=>p.estat!=="certificat");return <><label className="tots"><input type="checkbox" checked={pend.length>0&&pend.every(p=>sel572.has(p.id))} onChange={e=>setSel572(e.target.checked?new Set(pend.map(p=>p.id)):new Set())}/> {t("Tots els per validar ({n})",{n:pend.length})}</label>
         <span className="n">{sel572.size===1?t("1 triat"):t("{n} triats",{n:sel572.size})}</span>
         <button type="button" className="primary small" disabled={!sel572.size} onClick={validaTriats}><CheckCheck size={15} aria-hidden="true"/> {[...sel572].some(id=>ambPartides878660(partes.find(p=>p.id===id)))?t("Passar a la certificació"):t("Validar")}</button>
         <button type="button" className="secondary small" onClick={()=>setSel572(null)}>{t("Fet")}</button></>})()}</div>}
     {avis&&<div className="partes-avis-v878349" role="status"><span>{avis}</span><button type="button" className="link" onClick={()=>setAvis("")}>{t("D’acord")}</button></div>}
-    {!treb&&totalPres>0.005&&<div className="partes-total-v878349"><div><small>{t("Feina feta")}</small><b>{money(totalFet)}</b><span>{t("de {total} · {p}",{total:money(totalPres),p:pct(totalFet/totalPres*100)})}</span></div><div className="barra"><i style={{width:Math.min(100,totalFet/totalPres*100)+"%"}}/></div></div>}
+    {/* V87.664 · la feina feta, en un plegable amb la gràfica de cada mes (l'Héctor, 26/11/2026: «amb un desplegable amb una gràfica ni que sigui de barres») */}
+    {!treb&&totalPres>0.005&&<FeinaFeta878664 totalFet={totalFet} totalPres={totalPres} mesos={[...mesos].reverse().map(m=>({k:m.k,nom:nomMes(m.k),imp:m.partes.reduce((s,p)=>s+importParte878349(data,p),0),n:m.partes.length}))}/>}
     {!partes.length&&<div className="partes-buit-v878349"><b>{t("Encara no hi ha cap parte.")}</b></div>}
     {mesos.map((m,i)=>{const ob=sel572?m.partes.some(p=>p.estat!=="certificat"):(i===0?!mesosOberts.has(m.k):mesosOberts.has(m.k));const pend=m.partes.filter(p=>p.estat!=="certificat").length;
       return <section key={m.k} className={`partes-mes-v878349 ${ob?"obert":""}`}>
@@ -14411,8 +14473,13 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
     <div className="pe-cap"><button type="button" className="link tornar" onClick={onTanca}><ChevronLeft size={18} aria-hidden="true"/> {t("Partes d’obra")}</button>
       <em className={`estat ${part.estat==="certificat"?"ok":"pend"}`}>{part.estat==="certificat"?(nomCerts(part.cert)?t("Certificació {n}",{n:nomCerts(part.cert)}):t("Revisat")):t("Per validar")}</em></div>
     {avis&&<div className="partes-avis-v878349" role="status"><span>{avis}</span><button type="button" className="link" onClick={treuAvis}>{t("D’acord")}</button></div>}
-    <div className="pr-dia"><b>{part.data?new Date(part.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}):"—"}</b>{part.qui?<span>{part.qui}</span>:null}{part.nota?<p>{part.nota}</p>:null}</div>
-    {(part.fotos||[]).some(f=>f.src)&&<div className="pr-fotos-v878483">{(part.fotos||[]).filter(f=>f.src).map(f=><img key={f.id} src={f.src} alt={f.nom||t("Foto")} onClick={()=>obreDataUrl8784291(f.nom||t("Foto"),f.src)}/>)}</div>}
+    {/* V87.664 · a dalt, «Observacions» amb el títol en gris (el dia, qui l'ha fet, la nota i les fotos) i, al costat, els treballadors (l'Héctor,
+        26/11/2026: «un requadre de les observacions a l'esquerra i a la dreta el llistat dels treballadors») */}
+    <div className={"pr-dos-v878664"+(hores.length?" amb-h":"")}>
+    <section className="pr-cap pr-obs-v878664"><h4>{t("Observacions")}</h4><div className="pr-dia"><b>{part.data?new Date(part.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}):"—"}</b>{part.qui?<span>{part.qui}</span>:null}{part.nota?<p>{part.nota}</p>:<p className="buit">{t("Sense observacions.")}</p>}</div>
+    {(part.fotos||[]).some(f=>f.src)&&<div className="pr-fotos-v878483">{(part.fotos||[]).filter(f=>f.src).map(f=><img key={f.id} src={f.src} alt={f.nom||t("Foto")} onClick={()=>obreDataUrl8784291(f.nom||t("Foto"),f.src)}/>)}</div>}</section>
+    {hores.length>0&&<section className="pr-cap pr-hores"><h4>{t("Treballadors")} · {fhMa878348(hores.reduce((s,h)=>s+(parseNum8770(h.hores)||0),0))}</h4>{hores.map(h=><div key={h.id} className="pr-p"><span className="txt"><b>{h.nom||t("Sense nom")}</b><small>{catDe878352(h,treballadors)||"—"}</small></span><span className="avui"><b>{fhMa878348(parseNum8770(h.hores))}</b>{!treb?<small>{money(costH(h))}</small>:null}</span></div>)}</section>}
+    </div>
     {!res&&<div className="partes-buit-v878349"><b>{t("Aquest parte no té res marcat.")}</b></div>}
     {perCap.map(c=><section key={c.k} className="pr-cap"><h4>{c.k}</h4>{c.rows.map(({l,x})=>{const q0=parseNum8770(x.r.q)||0,pv=prev[l.pid]||0,fe=+l.feta||0,av=fe-pv,ut=x.r.ut||x.r.u||"";
       return <div key={l.pid} className={`pr-p ${fe>=q0-0.0001&&q0>0?"feta":""}`}><span className="txt"><b>{x.r.codi?<span className="codi">{x.r.codi}</span>:null}{x.r.concepte}</b><small>{fe>=q0-0.0001&&q0>0?t("Acabada"):t("Fet: {p}",{p:pct(q0>0?fe/q0*100:0)})}</small></span><span className="avui"><b>{(av>=0?"+":"")+fq878349(av)} {ut}</b>{!treb?<small>{money(av*(parseNum8770(x.r.pu)||0))}</small>:null}</span></div>})}</section>)}
@@ -14421,7 +14488,6 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
     {(part.noves||[]).length>0&&(sigC||onSigna)&&<section className="pr-cap pr-sig-v878403"><h4>{t("Conforme del client")}</h4>{sigC?<SignaturaVista878403 sig={sigC} onTorna={onSigna?()=>setSigna(true):null}/>:<button type="button" className="secondary signa-parte-v878403" onClick={()=>setSigna(true)}><Signature size={16} aria-hidden="true"/> {t("Signatura del client")}</button>}</section>}
     {signa&&onSigna&&<SignaturaPad878403 titol={t("Conforme del client")} sub={[t("Feina fora de pressupost"),part.data?new Date(part.data+"T12:00:00").toLocaleDateString(loc878272()):""].filter(Boolean).join(" · ")} nom={String(data?.obra?.propietat||"").replace(/^pendent$/i,"")} onDesa={onSigna} close={()=>setSigna(false)}/>}
     {!treb&&(fets.length>0||(part.noves||[]).length>0)&&<div className="pr-total"><span>{t("Feina feta del dia")}</span><b>{money(imp)}</b></div>}
-    {hores.length>0&&<section className="pr-cap pr-hores"><h4>{t("Hores")} · {fhMa878348(hores.reduce((s,h)=>s+(parseNum8770(h.hores)||0),0))}</h4>{hores.map(h=><div key={h.id} className="pr-p"><span className="txt"><b>{h.nom||t("Sense nom")}</b><small>{catDe878352(h,treballadors)||"—"}</small></span><span className="avui"><b>{fhMa878348(parseNum8770(h.hores))}</b>{!treb?<small>{money(costH(h))}</small>:null}</span></div>)}</section>}
     {material.length>0&&<section className="pr-cap pr-mat"><h4>{t("Material")}</h4>{material.map(m=><div key={m.id} className="pr-p"><span className="txt"><b>{m.altra878555?[i18nT(m.cat878555||"Altres"),m.concepte].filter(Boolean).join(": "):(m.concepte||t("Material"))}</b><small>{[parseNum8770(m.q)?`${fq878349(parseNum8770(m.q))} ${m.ut||""}`.trim():"",m.proveidor].filter(Boolean).join(" · ")}</small></span><span className="avui">{!treb?<b>{parseNum8770(m.import)>0?money(parseNum8770(m.import)):t("Sense import")}</b>:null}</span></div>)}</section>}
     {!treb&&cost>0.004&&<div className="pr-total cost"><span>{t("Cost del dia (a Despeses)")}</span><b>{money(cost)}</b></div>}
     {bloquejat&&<p className="pr-bloq">{t("La certificació ja té factura: aquest parte ja no es pot canviar.")}</p>}
@@ -14909,7 +14975,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
     {rj492?<div className={"obra-tabs-bar-v878269 obra-rajoles-v878485"+(barra878485?"":" pc-v878490")+(tec492?" tec-v878492":"")}>
       <div className="obra-blocs-v878299 rajoles-v878485" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{(()=>{const obJ=blocs.findIndex(x=>x.k===ob878485);const out=[];
         blocs.forEach((b,j)=>{const on=b.k===blocActiu.k,open=ob878485===b.k;
-          out.push(<button type="button" role="tab" key={b.k} ref={el=>{if(el)btn527.current[b.k]=el}} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onMouseEnter={drop527?()=>{if(b.tabs.length>1||subs534(b))obreHover527(b.k);else tancaHover527()}:undefined} onMouseLeave={drop527?tancaHover527:undefined} onClick={()=>{clearTimeout(tm527.current);if(b.tabs.length===1&&!(drop527&&subs534(b))){setOb878485("");pick(b.tabs[0]);return}if(drop527&&ob878485===b.k&&Date.now()-hoverAt527.current<700)return;setOb878485(o=>o===b.k?"":b.k)}}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><i className="curt-v878504">{guio878507(t(BLOC_CURT878504[b.k]||b.k))}</i><small className={on&&tabLabel878269(active,all,pur)===t(BLOC_CURT878504[b.k]||b.k)?"igual-v878504":undefined}>{on?tabLabel878269(active,all,pur):tec492?sub492(b):t(BLOC_SUB878485[b.k])}</small></span>{b.tabs.length===1&&!(drop527&&subs534(b))?<ChevronRight className="chev" aria-hidden="true"/>:<ChevronDown className="chev" aria-hidden="true"/>}</button>);
+          out.push(<button type="button" role="tab" key={b.k} ref={el=>{if(el)btn527.current[b.k]=el}} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onMouseEnter={drop527?()=>{if(b.tabs.length>1||subs534(b))obreHover527(b.k);else tancaHover527()}:undefined} onMouseLeave={drop527?tancaHover527:undefined} onClick={()=>{clearTimeout(tm527.current);if(b.tabs.length===1&&!(drop527&&subs534(b))){setOb878485("");pick(b.tabs[0]);return}if(drop527&&ob878485===b.k&&Date.now()-hoverAt527.current<700)return;setOb878485(o=>o===b.k?"":b.k)}}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(nomBloc878664(b.k))}</b><i className="curt-v878504">{guio878507(t(curtBloc878664(b.k)))}</i><small className={on&&tabLabel878269(active,all,pur)===t(curtBloc878664(b.k))?"igual-v878504":undefined}>{on?tabLabel878269(active,all,pur):tec492?sub492(b):t(subBloc878664(b.k))}</small></span>{b.tabs.length===1&&!(drop527&&subs534(b))?<ChevronRight className="chev" aria-hidden="true"/>:<ChevronDown className="chev" aria-hidden="true"/>}</button>);
           // la llista va a sota de la fila on és la rajola oberta (dues per fila)
           if(!drop527&&obJ>=0&&(j%fila490===fila490-1||j===blocs.length-1)&&Math.floor(obJ/fila490)===Math.floor(j/fila490))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
         if(drop527&&obJ>=0){const bt=btn527.current[blocs[obJ].k];const pos=bt?{left:bt.offsetLeft,top:bt.offsetTop+bt.offsetHeight+6,minWidth:bt.offsetWidth}:{};
@@ -14917,10 +14983,10 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
         return out})()}</div>
     </div>:<div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
       <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="txt-v878451"><span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all,pur)}</small>}</span>{narrow&&on&&b.tabs.length>1&&<ChevronDown className="gira-v878451" aria-hidden="true"/>}</button>})}</div>
-      {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
+      {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(nomBloc878664(blocActiu.k))}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
       {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
     </div>}
-    {rj492&&<BarraFixa878530 nivell="obra" nom={t("Apartats de l’obra")} actiu={blocActiu.k} onTria={k=>{const bt=btn527.current[k];if(bt)requestAnimationFrame(()=>bt.click())}} items={blocs.map(b=>[b.k,BLOC_ICON878485[b.k],t(BLOC_CURT878504[b.k]||b.k),b.k===blocActiu.k&&tabLabel878269(active,all,pur)!==t(BLOC_CURT878504[b.k]||b.k)?tabLabel878269(active,all,pur):""])}/>}
+    {rj492&&<BarraFixa878530 nivell="obra" nom={t("Apartats de l’obra")} actiu={blocActiu.k} onTria={k=>{const bt=btn527.current[k];if(bt)requestAnimationFrame(()=>bt.click())}} items={blocs.map(b=>[b.k,BLOC_ICON878485[b.k],t(curtBloc878664(b.k)),b.k===blocActiu.k&&tabLabel878269(active,all,pur)!==t(curtBloc878664(b.k))?tabLabel878269(active,all,pur):""])}/>}
   </>;
 }
 function ObraAgentsResum({data,openAgent}){
@@ -21791,7 +21857,7 @@ function PressupostosObra878562({obres=[],odata={},setOdata,clients=[],openObraT
   const obre=f=>{window.__acoObrePres878562=f.bid;setOdata?.(p=>p?.[f.obra.id]?{...p,[f.obra.id]:{...p[f.obra.id],activeBudgetIdObra:f.bid}}:p);openObraTab?.(f.obra.id,"Pressupost")};
   return <div className="facturacio-v878337 pres-obra-v878562">
     {/* V87.592 · «Nou pressupost» (abans calia saber que primer es fa l'obra a «Obres»): obre l'obra nova i, en crear-la, ja s'hi fa el pressupost */}
-    <div className="fe-head"><h1>{t(etPresObra878562())}</h1>{onNou&&<button type="button" className="primary nou-pres-v878592" onClick={onNou}><Plus size={16} aria-hidden="true"/> {t("Nou pressupost")}</button>}</div>
+    <div className="fe-head"><h1 className="dup-pc-v878664">{t(etPresObra878562())}</h1>{onNou&&<AccionsCap878664><button type="button" className="primary nou-pres-v878592" onClick={onNou}><Plus size={16} aria-hidden="true"/> {t("Nou pressupost")}</button></AccionsCap878664>}</div>
     {!files.length?<div className="fe-buit"><b>{t("Encara no hi ha cap pressupost.")}</b></div>:<>
     <div className="fe-filtres">
       {anys.length>0&&<div className="anys" role="group" aria-label={t("Any")}>{anys.map(a=><button type="button" key={a} aria-pressed={anyOk===a} onClick={()=>setAnyF(a)}>{a}</button>)}{anys.length>1&&<button type="button" aria-pressed={anyOk==="tots"} onClick={()=>setAnyF("tots")}>{t("Tots")}</button>}</div>}
@@ -22230,6 +22296,8 @@ function LlistaAbs878515({treb,any,c,wid="",onEdita}){
       {ls.length>0&&<ul>{ls.map(a=><li key={a.id}><button type="button" onClick={()=>onEdita(a)}><i className={"pt m-"+a.tipus} aria-hidden="true"/><span className="tp">{etAbs878515(a.tipus)}</span><span className="dt">{periodeAbs878515(a)}</span>{!(a.tipus==="baixa"&&!a.fins)&&<span className="n">{t("{n} d",{n:diesLab878515(a.des,finsAbs878515(a),fm)})}</span>}{a.nota?<small>{a.nota}</small>:null}</button></li>)}</ul>}
     </div>})}</div>;
 }
+// V87.664 · les inicials d'una obra (com a la miniatura de la llista d'obres), per als dies del calendari del mòbil
+function iniObra878664(nom){return (String(nom||"").match(/[A-Za-zÀ-ÿ0-9]+/g)||[]).filter(w=>!/^(de|del|la|el|les|els|i|y|c|SL|SA)$/i.test(w)).slice(0,2).map(w=>w[0]).join("").toUpperCase()||"·"}
 function CalendariEmpresa878393({obres=[]}){
   const tick=useTickCal878515();const tickP=useTickPersonal878340();
   const pc=usePC878428();
@@ -22272,8 +22340,14 @@ function CalendariEmpresa878393({obres=[]}){
     let k=f?"f-"+f.tipus:cs?"cs":"lab";if(wid&&ab.length&&!f&&!cs)k="a-"+ab[0].tipus;
     const tps=[...new Set(ab.map(x=>x.tipus))];
     const lab=[new Date(y,m,d,12).toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}),f?etFest878515(f.tipus)+(f.motiu?" · "+f.motiu:""):cs?t("Cap de setmana"):"",...tps.map(tp=>`${etAbs878515(tp)}: ${ab.filter(x=>x.tipus===tp).map(x=>x.nom||nomW(x.wid)).join(", ")}`)].filter(Boolean).join(" · ");
-    return <button key={iso} data-d={iso} type="button" className={`dia-v878515 ${k}${iso===avui?" avui":""}${iso===sel?" sel":""}`} aria-label={lab} title={mini?lab:undefined} aria-pressed={iso===sel} onClick={()=>tria(iso)}>
-      <span className="n">{d}</span>{!wid&&!cs&&!f&&tps.length>0&&<span className="mk" aria-hidden="true">{tps.map(tp=><i key={tp} className={"m-"+tp}>{mini?null:ab.filter(x=>x.tipus===tp).length}</i>)}</span>}</button>};
+    // V87.664 · a cada dia, les hores fetes i a quina obra (l'Héctor, 26/11/2026: «posar tot el mes i a dins de cada dia veure les hores
+    // treballades i a quina obra»); a la vista de l'any (mini), no
+    const hD=mini?[]:(horesDia[iso]||[]).filter(r=>!wid||r.treballadorId===wid);const hT=hD.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0);
+    const obD=[...new Set(hD.filter(r=>(parseNum8770(r.hores)||0)>0).map(r=>r.obraId))].map(id=>(obres||[]).find(o=>o.id===id)).filter(Boolean);
+    const lab2=hT>0?[lab,fh878340(hT)+" · "+obD.map(o=>o.nom).join(", ")].join(" · "):lab;
+    return <button key={iso} data-d={iso} type="button" className={`dia-v878515 ${k}${iso===avui?" avui":""}${iso===sel?" sel":""}${hT>0?" amb-h-v878664":""}`} aria-label={lab2} title={lab2} aria-pressed={iso===sel} onClick={()=>tria(iso)}>
+      <span className="n">{d}</span>{!wid&&!cs&&!f&&tps.length>0&&<span className="mk" aria-hidden="true">{tps.map(tp=><i key={tp} className={"m-"+tp}>{mini?null:ab.filter(x=>x.tipus===tp).length}</i>)}</span>}
+      {hT>0&&<span className="hh-v878664" aria-hidden="true"><b>{String(Math.round(hT*10)/10).replace(".",",")} h</b>{obD.slice(0,2).map(o=><small key={o.id}><span className="ini">{iniObra878664(o.nom)}</span><span className="nm">{o.nom}</span></small>)}{obD.length>2&&<small>+{obD.length-2}</small>}</span>}</button>};
   const graella=(y,m,mini)=>{const off=(new Date(y,m,1,12).getDay()+6)%7;const nd=new Date(y,m+1,0).getDate();
     return <div className={"mes-g-v878515"+(mini?" mini":"")}>{DIES.map((x,i)=><span key={"h"+i} className={"cap"+(i>=5?" cs":"")} aria-hidden="true">{x}</span>)}{Array.from({length:off},(_,i)=><span key={"b"+i} className="buit" aria-hidden="true"/>)}{Array.from({length:nd},(_,i)=>cel(y,m,i+1,mini))}</div>};
   const mouMes=n=>{let m=mes+n,y=+any;if(m<0){m=11;y--}if(m>11){m=0;y++}setMes(m);if(String(y)!==any)setAny0(String(y))};
@@ -22364,7 +22438,7 @@ function Empresa878339({odata={},clients=[],setOdata,obres=[]}){
     <XipResum878339 r={r}/>
   </div>;
   return <div className="empresa-v878339">
-    <div className="fe-head"><h1>{t("Empresa")}</h1></div>
+    <div className="fe-head dup-pc-v878664"><h1>{t("Empresa")}</h1></div>
     {(alertes.caducats>0||alertes.aviat>0)&&<div className={`emp-alerta-v878339 ${alertes.caducats?"bad":"warn"}`}><b>{alertes.caducats?(alertes.caducats===1?t("1 document caducat"):t("{n} documents caducats",{n:alertes.caducats})):""}{alertes.caducats&&alertes.aviat?" · ":""}{alertes.aviat?(alertes.aviat===1?t("1 caduca aviat"):t("{n} caduquen aviat",{n:alertes.aviat})):""}</b></div>}
     <div className="fe-vistes" role="group" aria-label={t("Empresa")}>{VISTES.map(([k,l])=><button type="button" key={k} aria-pressed={vista===k} onClick={()=>setVista(k)}>{t(l)}{n[k]!=null&&<em>{n[k]}</em>}{avis[k]>0&&<em className="warn">!</em>}</button>)}</div>
     {vista==="dades"&&<DadesEmpresa878337/>}
@@ -22471,6 +22545,8 @@ function PartHores878340({obres=[],odata={},obraFixa=null,nomesW=null,diaInicial
   const fixa=obraFixa?.id||"";
   const[form473,setForm473]=useState(!!nomesW);
   const[fitxa516,setFitxa516]=useState(null);
+  // V87.664 · Control horari › Personal per setmana o per mes (l'Héctor, 26/11/2026, proposta 31 acceptada)
+  const[mes664,setMes664]=useState(false);
   const fest473=useMemo(()=>festiusCalendari878473(),[tick]);
   const[dia,setDia]=useState(()=>diaInicial||isoDay878255(new Date()));
   const treb=useMemo(()=>llegeixTreballadors878339().filter(w=>nomesW?w.id===nomesW:w.actiu!==false),[tick,nomesW]);
@@ -22547,30 +22623,46 @@ function PartHores878340({obres=[],odata={},obraFixa=null,nomesW=null,diaInicial
   const trebBuit473=<div className="fe-buit"><b>{t("Primer posa els treballadors a Empresa › Treballadors.")}</b>{ambEmpresa878338()&&<button type="button" className="primary" onClick={anarTreballadors878353}><Plus size={16} aria-hidden="true"/> {t("Afegir treballadors")}</button>}</div>;
   if(!form473){
     const files473=fixa?setmana.filter(x=>x.h>0):setmana;
+    const buitS664=fixa&&files473.length===0;
     const totS=setmana.reduce((s,x)=>s+x.h,0),totCS=setmana.reduce((s,x)=>s+x.c,0);
     // V87.516 · a les caselles, les vacances, baixes i permisos (V, B, P) i els dies validats; el nom obre la fitxa del treballador
     const abs516=fixa?[]:absencies878515();const val516=fixa?{}:validats878516();
     const absC=(wid,k)=>abs516.find(a=>a.wid===wid&&a.des<=k&&finsAbs878515(a)>=k);
     const LL516={vacances:"V",baixa:"B",permis:"P"};
-    const cap473=<div className="setm-nav-v878473">
-        {!fixa&&<h1>{t("Hores del personal")}</h1>}
-        <div className="pas"><button type="button" className="secondary" onClick={()=>mouS473(-7)} aria-label={t("Setmana anterior")}>‹</button><div className="tit"><b>{t("Setmana {n}",{n:setmanaIso878473(d0)})}</b><small>{fmtAppDate8748(dl).slice(0,5)} – {fmtAppDate8748(dg).slice(0,5)}</small></div><button type="button" className="secondary" onClick={()=>mouS473(7)} aria-label={t("Setmana següent")}>›</button>{!(avui473>=dl&&avui473<=dg)&&<button type="button" className="link" onClick={()=>setDia(avui473)}>{t("Aquesta setmana")}</button>}</div>
+    const nomBt664=w=>{const ea=estatAbs878515(w.id,avui473);return <button type="button" className="nom-bt-v878516" onClick={()=>setFitxa516({w,dia})}><b>{w.nom}</b>{ea?<small className={"est-n-v878664 a-"+ea.a.tipus}>{ea.txt}</small>:<small>{i18nT(w.ofici||"")}</small>}</button>};
+    // V87.664 · el mes: les setmanes (de dilluns a diumenge, retallades al mes) i, de cada treballador, les hores de cada setmana i el total
+    const veMes=!fixa&&mes664;
+    const mesD664=(()=>{if(!veMes)return null;const x=new Date(dia+"T12:00:00");const p=new Date(x.getFullYear(),x.getMonth(),1,12),u=new Date(x.getFullYear(),x.getMonth()+1,0,12);const kp=isoDay878255(p),ku=isoDay878255(u);
+      const setm=[];const c=new Date(p);c.setDate(c.getDate()-((c.getDay()+6)%7));while(isoDay878255(c)<=ku){const a=new Date(c),b=new Date(c);b.setDate(b.getDate()+6);const ia=isoDay878255(a),ib=isoDay878255(b);setm.push({n:setmanaIso878473(a),dl:ia,ka:ia<kp?kp:ia,kb:ib>ku?ku:ib});c.setDate(c.getDate()+7)}
+      const rsM=totes.filter(r=>r.data>=kp&&r.data<=ku);const hR=r=>parseNum8770(r.hores)||0;
+      const files=treb.map(w=>{const rs=rsM.filter(r=>r.treballadorId===w.id);const hs=setm.map(sm=>rs.filter(r=>r.data>=sm.ka&&r.data<=sm.kb).reduce((a,r)=>a+hR(r),0));return {w,hs,h:hs.reduce((a,b)=>a+b,0),c:rs.reduce((a,r)=>a+hR(r)*costHoraA878340(r.obraId,w,r),0)}});
+      const nom=p.toLocaleDateString(loc878272(),{month:"long",year:"numeric"});return {kp,ku,setm,files,nom:nom.charAt(0).toUpperCase()+nom.slice(1)}})();
+    const mouM664=n=>{const x=new Date(dia+"T12:00:00");x.setDate(1);x.setMonth(x.getMonth()+n);const k=isoDay878255(x);const a=avui473.slice(0,7)===k.slice(0,7)?avui473:k;setDia(a)};
+    const aquestMes664=avui473.slice(0,7)===dia.slice(0,7);
+    const cap473=<div className={"setm-nav-v878473"+(fixa?"":" ch-linia-v878664")}>
+        {!fixa&&<h1 className="dup-pc-v878664">{t("Hores del personal")}</h1>}
+        {veMes?<div className="pas"><button type="button" className="secondary" onClick={()=>mouM664(-1)} aria-label={t("Mes anterior")}>‹</button><div className="tit"><b>{mesD664.nom}</b><small>{fmtAppDate8748(mesD664.kp).slice(0,5)} – {fmtAppDate8748(mesD664.ku).slice(0,5)}</small></div><button type="button" className="secondary" onClick={()=>mouM664(1)} aria-label={t("Mes següent")}>›</button>{!aquestMes664&&<button type="button" className="link" onClick={()=>setDia(avui473)}>{t("Aquest mes")}</button>}</div>
+        :<div className="pas"><button type="button" className="secondary" onClick={()=>mouS473(-7)} aria-label={t("Setmana anterior")}>‹</button><div className="tit"><b>{t("Setmana {n}",{n:setmanaIso878473(d0)})}</b><small>{fmtAppDate8748(dl).slice(0,5)} – {fmtAppDate8748(dg).slice(0,5)}</small></div><button type="button" className="secondary" onClick={()=>mouS473(7)} aria-label={t("Setmana següent")}>›</button>{!(avui473>=dl&&avui473<=dg)&&<button type="button" className="link" onClick={()=>setDia(avui473)}>{t("Aquesta setmana")}</button>}</div>}
+        {!fixa&&<div className="seg-v878664" role="group" aria-label={t("Veure per")}><button type="button" aria-pressed={!mes664} onClick={()=>setMes664(false)}>{t("Setmana")}</button><button type="button" aria-pressed={mes664} onClick={()=>setMes664(true)}>{t("Mes")}</button></div>}
         {treb.length>0&&<button type="button" className="primary emplena-v878473" onClick={()=>obre473(proposat473)}><Plus size={16} aria-hidden="true"/> {t("Emplenar hores")}</button>}
       </div>;
     const dies473v=<div className="dies-v878473">{dies473.map(x=><button key={x.k} type="button" className={"dia-t-v878473"+(x.k===avui473?" avui":"")+(x.h>0?" ple":"")+(x.festiu?" festiu":"")} title={x.motiu||undefined} onClick={()=>obre473(x.k)}><small>{etDia473(x)}</small><b>{x.x.getDate()}</b><span>{x.h>0?fh878340(x.h):x.festiu?t("Festiu"):t("Emplenar")}</span></button>)}</div>;
-    const matriu=files473.length===0?<p className="buit-v878340">{t("Encara no hi ha hores aquesta setmana.")}</p>:<div className="matriu-v878473" role="table" aria-label={t("Setmana")}>
-          <div className="f cap" role="row"><span className="nom">{t("Treballador")}</span>{dies473.map(x=><span key={x.k} className="c" role="columnheader">{etDia473(x)} {x.x.getDate()}</span>)}<span className="t">{t("Total")}</span></div>
-          {files473.map(({w,h,c})=><div key={w.id} className="f" role="row"><span className="nom">{fixa?<><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></>:<button type="button" className="nom-bt-v878516" onClick={()=>setFitxa516({w,dia})}><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></button>}</span>{dies473.map(x=>{const rs=x.rs.filter(r=>r.treballadorId===w.id),hd=rs.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0);const ab=!(hd>0)&&!x.festiu?absC(w.id,x.k):null;const vl=!!(val516[w.id]||{})[x.k];return <button key={x.k} type="button" className={"c"+(hd>0?" ple":"")+(x.festiu?" festiu":"")+(ab?" a-"+ab.tipus:"")+(vl?" val":"")} title={ab?etAbs878515(ab.tipus):(rs.map(r=>nomObra(r.obraId)).filter(Boolean).join(" · ")||undefined)} aria-label={`${w.nom} · ${etDia473(x)} ${x.x.getDate()}: ${hd>0?fh878340(hd):ab?etAbs878515(ab.tipus):"—"}${vl?" · "+t("Validat"):""}`} onClick={()=>obre473(x.k)}>{hd>0?nH473(hd):ab?LL516[ab.tipus]:"·"}</button>})}<span className="t"><b>{fh878340(h)}</b>{c>0&&<small>{money(c)}</small>}</span></div>)}
+    const matriu=buitS664||files473.length===0?<p className="buit-v878340">{t("Encara no hi ha hores aquesta setmana.")}</p>:<div className="matriu-v878473" role="table" aria-label={t("Setmana")}>
+          <div className="f cap" role="row"><span className="nom">{t("Treballador")}</span>{dies473.map(x=>fixa?<span key={x.k} className="c" role="columnheader">{etDia473(x)} {x.x.getDate()}</span>:<button key={x.k} type="button" role="columnheader" className={"c dia-cap-v878664"+(x.k===avui473?" avui":"")+(x.h>0?" ple":"")+(x.festiu?" festiu":"")} title={x.motiu||t("Emplenar")} onClick={()=>obre473(x.k)}><b>{etDia473(x)} {x.x.getDate()}</b><small>{x.festiu?t("Festiu"):x.h>0?fh878340(x.h):t("Emplenar")}</small></button>)}<span className="t">{t("Total")}</span></div>
+          {files473.map(({w,h,c})=><div key={w.id} className="f" role="row"><span className="nom">{fixa?<><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></>:nomBt664(w)}</span>{dies473.map(x=>{const rs=x.rs.filter(r=>r.treballadorId===w.id),hd=rs.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0);const ab=!(hd>0)&&!x.festiu?absC(w.id,x.k):null;const vl=!!(val516[w.id]||{})[x.k];return <button key={x.k} type="button" className={"c"+(hd>0?" ple":"")+(x.festiu?" festiu":"")+(ab?" a-"+ab.tipus:"")+(vl?" val":"")} title={ab?etAbs878515(ab.tipus):(rs.map(r=>nomObra(r.obraId)).filter(Boolean).join(" · ")||undefined)} aria-label={`${w.nom} · ${etDia473(x)} ${x.x.getDate()}: ${hd>0?fh878340(hd):ab?etAbs878515(ab.tipus):"—"}${vl?" · "+t("Validat"):""}`} onClick={()=>obre473(x.k)}>{hd>0?nH473(hd):ab?LL516[ab.tipus]:"·"}</button>})}<span className="t"><b>{fh878340(h)}</b>{c>0&&<small>{money(c)}</small>}</span></div>)}
           <div className="f peu" role="row"><span className="nom"><b>{t("Total")}</b></span>{dies473.map(x=><span key={x.k} className="c">{x.h>0?nH473(x.h):"·"}</span>)}<span className="t"><b>{fh878340(totS)}</b>{totCS>0&&<small>{money(totCS)}</small>}</span></div>
         </div>;
     if(fixa)return <div className="part-v878340 setm-vista-v878473" style={{"--n":dies473.length}}>{cap473}{!treb.length?trebBuit473:<>{dies473v}{matriu}</>}</div>;
     return <div className="part-v878340 setm-vista-v878473 pers-v878516" style={{"--n":dies473.length}}>
       {cap473}
       {!treb.length?trebBuit473:<>
-        {dies473v}
-        <CartaLlista878518 className="treb-card-v878518" icona={Users} title={t("Treballadors")} xifra={String(setmana.length)}><section className="treb-raj-v878516" aria-label={t("Treballadors")}>{setmana.map(({w,h,c})=>{const ea=estatAbs878515(w.id,avui473);const hd=dies473.filter(x=>x.rs.some(r=>r.treballadorId===w.id)).length;const vd=dies473.filter(x=>x.rs.some(r=>r.treballadorId===w.id)&&(val516[w.id]||{})[x.k]).length;
-          return <button key={w.id} type="button" className="raj-w-v878516" onClick={()=>setFitxa516({w,dia})}><span className="av" aria-hidden="true">{inicials878516(w.nom)}</span><span className="tt"><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></span><span className="h"><b>{fh878340(h)}</b>{hd>0?<small className={vd===hd?"vd tot":vd?"vd":""}>{vd===hd?<><CircleCheck size={13} aria-hidden="true"/> {t("Validada")}</>:t("{n} de {m} validats",{n:vd,m:hd})}</small>:c>0?<small>{money(c)}</small>:null}</span>{ea&&<em className={"est-w-v878516 a-"+ea.a.tipus}>{ea.txt}</em>}<ChevronRight size={18} className="chev" aria-hidden="true"/></button>})}</section></CartaLlista878518>
-        <CardOPlega878369 className="setm-card-v878516" icona={CalendarRange} title={t("Setmana de tothom")} xifra={fh878340(totS)} obertPC>{matriu}</CardOPlega878369>
+        {/* V87.664 · una sola taula (l'Héctor, 26/11/2026: proposta 31 acceptada; abans, les cinc targetes dels dies, «Treballadors» i «Setmana de
+            tothom» repetien el mateix). El nom obre la fitxa del treballador; cada dia de dalt, emplenar-lo; per mes, cada setmana porta a la seva */}
+        {veMes?<div className="matriu-v878473 mes-v878664" role="table" aria-label={mesD664.nom} style={{"--n":mesD664.setm.length}}>
+          <div className="f cap" role="row"><span className="nom">{t("Treballador")}</span>{mesD664.setm.map(sm=><button key={sm.dl} type="button" role="columnheader" className="c dia-cap-v878664" onClick={()=>{setDia(sm.ka);setMes664(false)}} title={t("Veure la setmana")}><b>{t("S{n}",{n:sm.n})}</b><small>{fmtAppDate8748(sm.ka).slice(0,5)}–{fmtAppDate8748(sm.kb).slice(0,5)}</small></button>)}<span className="t">{t("Total")}</span></div>
+          {mesD664.files.map(({w,hs,h,c})=><div key={w.id} className="f" role="row"><span className="nom">{nomBt664(w)}</span>{hs.map((x,i)=><button key={i} type="button" className={"c"+(x>0?" ple":"")} onClick={()=>{setDia(mesD664.setm[i].ka);setMes664(false)}} aria-label={`${w.nom} · ${t("S{n}",{n:mesD664.setm[i].n})}: ${x>0?fh878340(x):"—"}`}>{x>0?nH473(x):"·"}</button>)}<span className="t"><b>{fh878340(h)}</b>{c>0&&<small>{money(c)}</small>}</span></div>)}
+          <div className="f peu" role="row"><span className="nom"><b>{t("Total")}</b></span>{mesD664.setm.map((sm,i)=>{const x=mesD664.files.reduce((a,f)=>a+f.hs[i],0);return <span key={sm.dl} className="c">{x>0?nH473(x):"·"}</span>})}<span className="t"><b>{fh878340(mesD664.files.reduce((a,f)=>a+f.h,0))}</b>{mesD664.files.some(f=>f.c>0)&&<small>{money(mesD664.files.reduce((a,f)=>a+f.c,0))}</small>}</span></div>
+        </div>:<div className="setm-una-v878664">{matriu}</div>}
         <CardOPlega878369 className="hpo-card-v878517" icona={BarChart3} title={t("Hores per obra")}><HoresPerObra878517 files={totes} obres={obres} treb={treb} dataRef={dia}/></CardOPlega878369>
       </>}
       {fitxa516&&<FitxaTreballador878516 w={fitxa516.w} obres={obres} odata={odata} diaInicial={fitxa516.dia} onTanca={()=>setFitxa516(null)}/>}
@@ -23072,7 +23164,7 @@ function HoresEmpresa878340({obres,clients,odata,openObra,updateStatus,senseMeve
   return <div className="hores-emp-v878340 ch-v878515">
     <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t(etHores878515())}>{TILES.map(([k,Ic,l,sub])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b></button>)}</div>
     <BarraFixa878530 nom={t(etHores878515())} actiu={v} onTria={setV} items={TILES.map(([k,Ic,l])=>[k,<Ic size={17} aria-hidden="true"/>,t(l)])}/>
-    <div className="ch-eines-v878517"><LlistatsCH878517 obres={obres}/></div>
+    <AccionsCap878664><div className="ch-eines-v878517"><LlistatsCH878517 obres={obres}/></div></AccionsCap878664>
     {v==="personal"?<PartHores878340 obres={obres} odata={odata}/>:v==="fitxatge"?<Fitxatge878357 obres={obres} odata={odata}/>:v==="calendari"?<CalendariEmpresa878393 obres={obres}/>:<GestioTemps878255 updateStatus={updateStatus} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}
   </div>;
 }
@@ -23887,7 +23979,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.663",
+    app_version:"87.664",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -24196,7 +24288,7 @@ const grups637=[
 ].map(x=>({...x,items:x.items.filter(Boolean)})).filter(x=>x.items.length);
 const sols637=grups637.reduce((s,x)=>s+x.items.length,0)<=5;
 return <div className="stack ajustos-v878366 ajustos-v878637" ref={ajRef878366}>
-<h1 className="titol-pc-v878657">{t("Ajustos")}</h1>
+<h1 className="titol-pc-v878657 dup-pc-v878664">{t("Ajustos")}</h1>
 {grups637.map(({g,tit,Ic,items})=>sols637||items.length===1?items.map(([k,ti,c,cls])=>bloc878366(k,ti,c,false,cls)):<details key={"g-"+g} className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 aj-g-v878637" data-g={g}><summary><Ic size={18} aria-hidden="true"/><span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{items.map(([k,ti,c,cls])=>bloc878366(k,ti,c,true,cls))}</div><Recollir878432/></details>)}
 </div>
 }
@@ -26269,13 +26361,40 @@ function EquipSetmana878381({dies=[],obres=[],odata={},openObraTab,todayIso=""})
   return <div className="equip-v878381"><table><thead><tr><th>{t("Equip")}</th>{dies.map((d,i)=><th key={i} className={isos[i]===todayIso?"avui":""}>{d.toLocaleDateString(loc878272(),{weekday:"short",day:"numeric"})}</th>)}</tr></thead>
     <tbody>{files.map(f=><tr key={f.k} data-k={f.k}><th><b>{f.nom}</b>{f.sub?<small>{f.sub}</small>:null}</th>{isos.map(iso=>{const l=f.dies[iso]||[];return <td key={iso} className={[doble(l)?"doble":"",iso===todayIso?"avui":""].filter(Boolean).join(" ")} title={doble(l)?t("A dues obres el mateix dia"):undefined}>{l.map(xip)}</td>})}</tr>)}</tbody></table></div>;
 }
+// V87.664 · Agenda a l'ordinador, sota el mes: les cites d'aquesta setmana (o del dia triat al calendari) i les feines pendents, en targetes l'una al
+// costat de l'altra
+function TargetesAgenda878664({dia="",treuDia,byDay={},now=new Date(),cls=()=>"",openEvent,obres=[],odata={},obraF="",openObraTab}){
+  const fmtD=(iso,o)=>new Date(iso+"T12:00:00").toLocaleDateString(loc878272(),o);
+  let isos=[],tit="";
+  if(dia){isos=[dia];const x=fmtD(dia,{weekday:"long",day:"numeric",month:"long"});tit=x.charAt(0).toUpperCase()+x.slice(1)}
+  else{const d=new Date(now);d.setHours(12,0,0,0);const fi=new Date(d);fi.setDate(fi.getDate()+((7-fi.getDay())%7));for(const x=new Date(d);x<=fi;x.setDate(x.getDate()+1))isos.push(isoDay878255(x));tit=i18nT("Aquesta setmana")}
+  const evs=isos.flatMap(iso=>(byDay[iso]||[]).filter(e=>e.kind!=="task").map(e=>({e,iso})));
+  let pend=[];try{pend=collectPendingTasks878137(obres,odata).filter(x=>!obraF||x.obra?.id===obraF).sort((a,b)=>(a.time||9e15)-(b.time||9e15))}catch(e){console.warn(e)}
+  const avui=isoDay878255(new Date());
+  return <div className="ag-targetes-v878664">
+    <section className="ag-tg-sec-v878664"><header><h3>{tit}</h3><span className="n">{evs.length}</span>{dia&&<button type="button" className="link" onClick={treuDia}>{i18nT("Tota la setmana")}</button>}</header>
+      {evs.length?<div className="graella">{evs.map(({e,iso})=><button type="button" key={e.id+iso} className={`ag-targ-v878664 ${cls(e)}`} onClick={()=>openEvent(e)}><i aria-hidden="true"/><small>{[dia?"":fmtD(iso,{weekday:"short",day:"numeric"}),e.allDay?i18nT("Tot el dia"):[e.hora,e.horaFi].filter(Boolean).join("–")].filter(Boolean).join(" · ")}</small><b>{e.title}</b>{e.obra||e.adreca?<span>{[e.obra,e.adreca].filter(Boolean).join(" · ")}</span>:null}</button>)}</div>
+        :<p className="buit">{dia?i18nT("Aquest dia no hi ha res."):i18nT("Aquesta setmana no hi ha res més.")}</p>}
+    </section>
+    <section className="ag-tg-sec-v878664"><header><h3>{i18nT("Feines pendents")}</h3><span className="n">{pend.length}</span></header>
+      {pend.length?<div className="graella">{pend.slice(0,12).map(x=>{const iso=x.time?isoDay878255(new Date(x.time)):"";const tard=iso&&iso<avui;return <button type="button" key={x.obra.id+"-"+x.task.id} className={"ag-targ-v878664 feina"+(tard?" tard":"")} onClick={()=>openObraTab?.(x.obra.id,"Tasques")}><i aria-hidden="true"/><small>{iso?(tard?i18nT("Vençuda · {d}",{d:fmtD(iso,{day:"numeric",month:"short"})}):fmtD(iso,{weekday:"short",day:"numeric",month:"short"})):i18nT("Sense data")}</small><b>{x.task.text||i18nT("Feina")}</b><span>{x.obra.nom}</span></button>})}</div>
+        :<p className="buit">{i18nT("Cap feina pendent.")}</p>}
+      {pend.length>12&&<p className="mes">{i18nT("I {n} més a cada obra.",{n:pend.length-12})}</p>}
+    </section>
+  </div>;
+}
 function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraTab,setOdata,readOnly=false}){
   const equip878381=equipOk878381();
   const tauleta878465=useTauleta878387();
   const safeObres=Array.isArray(obres)?obres:[];
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-agenda-changed",h);return()=>window.removeEventListener("aco-agenda-changed",h)},[]);
-  const[view,setViewState]=useState(()=>{const v=lsGet8779("aco_agenda_view_v878256","");return ["dia","setmana","mes","llista"].includes(v)||(v==="equip"&&equip878381)?v:(typeof window!=="undefined"&&window.innerWidth<720?"llista":"setmana")});
+  // V87.664 · a l'ordinador, el mes és la vista principal (l'Héctor, 26/11/2026: «com a estructura principal jo tindria el calendari mensual… i després
+  // les targetes de les visites o notes… aquella setmana o en el moment que apreto un dia… i feines pendents igual»)
+  const pcAg664=useMq878657(Q_PC878664);
+  const[dia664,setDia664]=useState("");
+  useEffect(()=>{if(pcAg664)lsSet8779("aco_agenda_mes_v878664","1")},[pcAg664]);
+  const[view,setViewState]=useState(()=>{const v=lsGet8779("aco_agenda_view_v878256","");try{if(matchMedia(Q_PC878664).matches&&!lsGet8779("aco_agenda_mes_v878664",""))return "mes"}catch{}return ["dia","setmana","mes","llista"].includes(v)||(v==="equip"&&equip878381)?v:(typeof window!=="undefined"&&window.innerWidth<720?"llista":"setmana")});
   function setView(v){setViewState(v);try{lsSet8779("aco_agenda_view_v878256",v)}catch{}}
   const[cursor,setCursor]=useState(()=>{const d=new Date();d.setHours(0,0,0,0);return d});
   const[form,setForm]=useState(null);
@@ -26456,8 +26575,8 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
     return <div className="ag-month">
       {["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div key={x} className="ag-wd">{x}</div>)}
       {cells.map(d=>{const iso=isoDay878255(d);const list=byDay[iso]||[];return <div key={iso} className={`ag-cell${d.getMonth()!==cursor.getMonth()?" out":""}${iso===todayIso?" today":""}${d.getDay()===0||d.getDay()===6?" we":""}`} onClick={()=>openNew(iso)} onDragOver={ev=>ev.preventDefault()} onDrop={ev=>{ev.preventDefault();moveTo(dragRef.current,iso,null)}}>
-        <button type="button" className="ag-dnum" onClick={ev=>{ev.stopPropagation();goDay(d)}} aria-label={fmt(d,{weekday:"long",day:"numeric",month:"long"})}>{d.getDate()}</button>
-        <div className="ag-chips">{list.slice(0,3).map(chip)}{list.length>3&&<button type="button" className="ag-more" onClick={ev=>{ev.stopPropagation();goDay(d)}}>+{list.length-3} {i18nT("més")}</button>}</div>
+        <button type="button" className={"ag-dnum"+(pcAg664&&dia664===iso?" sel-v878664":"")} onClick={ev=>{ev.stopPropagation();if(pcAg664){setDia664(x=>x===iso?"":iso);return}goDay(d)}} aria-label={fmt(d,{weekday:"long",day:"numeric",month:"long"})} aria-pressed={pcAg664?dia664===iso:undefined}>{d.getDate()}</button>
+        <div className="ag-chips">{list.slice(0,3).map(chip)}{list.length>3&&<button type="button" className="ag-more" onClick={ev=>{ev.stopPropagation();if(pcAg664){setDia664(iso);return}goDay(d)}}>+{list.length-3} {i18nT("més")}</button>}</div>
       </div>})}
     </div>;
   };
@@ -26505,7 +26624,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
       </div>
       <div className="ag-tools">
         <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"],...(equip878381?[["equip","Equip"]]:[])].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{i18nT(l)}</button>)}</div>
-        {!readOnly&&<button type="button" className="secondary ag-veu-v878294" onClick={()=>setVeu(true)} title={i18nT("Nota de veu a l’agenda")}><Mic size={16} aria-hidden="true"/> {i18nT("Nota de veu")}</button>}
+        {!readOnly&&<button type="button" className="secondary ag-veu-v878294 ag-veu-nit-v878664" onClick={()=>setVeu(true)} title={i18nT("Nota de veu a l’agenda")}><Mic size={16} aria-hidden="true"/> {i18nT("Nota de veu")}</button>}
         {!readOnly&&<button type="button" className="primary" onClick={()=>openNew(view==="dia"?isoDay878255(cursor):todayIso)}>{i18nT("+ Nova cita")}</button>}
       </div>
     </div>
@@ -26522,6 +26641,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}
     </div>}
     {view==="equip"?<EquipSetmana878381 dies={weekDays.slice(0,5)} obres={safeObres} odata={odata} openObraTab={openObraTab} todayIso={todayIso}/>:view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
+    {view==="mes"&&pcAg664&&<TargetesAgenda878664 dia={dia664} treuDia={()=>setDia664("")} byDay={byDay} now={now} cls={cls} openEvent={openEvent} obres={safeObres} odata={odata} obraF={obraF} openObraTab={openObraTab}/>}
     {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} clients={clients} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}
   </div>;
 }
@@ -27067,8 +27187,8 @@ function EmpresaSetup878259({onDone}){
     onDone?.();
   }
   return <div className="empresa-setup-v878259"><div className="box">
-    <div className="logo">{t("CO")}</div>
-    <h1>{t("Benvinguts a Control d’Obres")}</h1>
+    <div className="logo logo-g3c-ben-v878664"><LogoG3C878660 mida={44}/></div>{/* V87.664 · el nom i el logo de l'app (abans «CO» i «Control d’Obres») */}
+    <h1>{t("Benvinguts a G3C")}</h1>
     <p>{t("Abans de començar, digueu-nos qui sou. Ho podreu canviar després a Ajustos.")}</p>
     <label><span>{t("Nom de l’empresa o del despatx")}</span><input value={f.nom} onChange={e=>setF(x=>({...x,nom:e.target.value}))} autoFocus/></label>
     <label><span>{t("Nom fiscal")} <em>{t("opcional")}</em></span><input value={f.fiscal} onChange={e=>setF(x=>({...x,fiscal:e.target.value}))} placeholder={t("Ex. Vertical Trek España SL")}/></label>

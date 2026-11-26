@@ -1,0 +1,228 @@
+/* V87.664 · Repàs de la constructora, segona tanda (l'Héctor, 26/11/2026). Respostes a les propostes del 25/11 i pantalles noves. */
+
+/* ── Barra blau nit a dalt de cada pantalla, a l'ordinador (proposta 24): el títol gran i els botons principals, enganxada al menú ── */
+html body .cap-pc-v878664{display:none}
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .cap-pc-v878664{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;position:sticky;top:0;z-index:60;
+    margin:-24px -24px -2px;padding:16px 24px 12px;min-height:66px;background:var(--co-nit,#16263D);box-shadow:inset 0 6px 0 var(--co-accent,#2563EB)}
+  html:root:root body .cap-pc-v878664>h1{margin:0;font-family:var(--co-display)!important;font-weight:700!important;font-size:30px!important;line-height:1.1!important;
+    letter-spacing:.01em!important;color:#FFFFFF!important;text-transform:none!important}
+  html:root:root body .cap-pc-v878664>.acc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+  html:root:root body .cap-pc-v878664>.acc>*{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0!important}
+  html:root:root body .cap-pc-v878664>.acc button{min-height:38px}
+  /* els secundaris, blancs amb la lletra fosca (mai lletra fosca sobre el blau); el principal, blau amb la lletra blanca */
+  html:root:root body .cap-pc-v878664>.acc button.secondary,html:root:root body .cap-pc-v878664>.acc .action-menu-v87213>button{background:#FFFFFF!important;color:var(--co-ink,#16263D)!important;border:1px solid #FFFFFF!important}
+  html:root:root body .cap-pc-v878664>.acc button.secondary svg{color:var(--co-ink,#16263D)!important}
+  html:root:root body .cap-pc-v878664>.acc button.primary{background:var(--co-accent,#2563EB)!important;color:#FFFFFF!important;border:1px solid color-mix(in srgb,var(--co-accent,#2563EB) 70%,#fff)!important}
+  html:root:root body .cap-pc-v878664>.acc button.primary svg{color:#FFFFFF!important}
+  /* el títol de dins de la pantalla, que la barra ja diu */
+  html:root:root body .dup-pc-v878664{display:none!important}
+  html:root:root body .fe-head:not(:has(>:not(.dup-pc-v878664))){display:none!important}
+  /* Obres: sense la franja grisa entre el menú i la llista ni a la dreta; la llista, a tota l'amplada sota la barra */
+  html:root:root body .main:has(>.expedients-page-v8741) .cap-pc-v878664{margin-bottom:-20px}
+  html:root:root body .expedients-page-v8741>.card{display:block!important;width:calc(100% + 48px)!important;max-width:none!important;margin:0 -24px!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:16px 24px 24px!important;min-height:calc(100vh - 66px)}
+  html:root:root body .expedients-page-v8741>.card>.exp-paquets-v878314{margin:12px 0 14px!important}
+  html:root:root body .expedients-page-v8741>.card>.card-head{display:none!important}
+}
+@media (min-width:900px) and (max-width:1280px) and (hover:hover) and (pointer:fine){
+  html:root:root body .cap-pc-v878664{margin-top:-20px}
+}
+
+/* ── Obres a l'ordinador (propostes 14, 16, 26 i punt 33): Número · (Núm. client, el tècnic) · Client · Promotor · Obra · Adreça · Estat ── */
+html:root:root body .expedients-page-v8741 table.exp-table-v878664{table-layout:fixed!important;width:100%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664 th{width:auto!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.sense-ref-v878664 th:nth-child(1){width:120px!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.sense-ref-v878664 th:nth-child(2){width:15%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.sense-ref-v878664 th:nth-child(3){width:15%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.sense-ref-v878664 th:nth-child(4){width:auto!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.sense-ref-v878664 th:nth-child(5){width:19%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.sense-ref-v878664 th:nth-child(6){width:190px!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(1){width:120px!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(2){width:96px!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(3){width:13%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(4){width:13%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(5){width:auto!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(6){width:17%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(7){width:190px!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664 .exp-name-v878259 small.comp-per-v878664{display:block;margin-top:2px;color:#5B21B6;font-weight:600}
+/* la capçalera de la taula, de color blau nit com la barra (fileres fines entre files) */
+html:root:root body .expedients-page-v8741 table.exp-table-v878664 thead th{background:var(--co-surface-2,#F4F6F8)!important;border-bottom:2px solid var(--co-nit,#16263D)!important}
+
+/* ── Obres al mòbil i l'iPad (proposta 25): plegable per nivells, la mateixa forma de targeta a cada nivell ── */
+html:root:root body .any-pleg-v878664{margin:0 0 10px}
+html:root:root body .any-pleg-v878664>summary{list-style:none;display:flex;align-items:center;gap:8px;cursor:pointer;margin:0 0 8px;padding:12px 14px 12px 18px;
+  background:#FFFFFF;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:8px;box-shadow:inset 6px 0 0 var(--co-nit,#16263D)}
+html:root:root body .any-pleg-v878664>summary::-webkit-details-marker{display:none}
+html:root:root body .any-pleg-v878664>summary>h3{flex:1;display:flex;align-items:baseline;gap:10px;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+html:root:root body .any-pleg-v878664>summary>h3::before{display:none!important}
+html:root:root body .any-pleg-v878664>summary>h3>span{font-family:var(--co-display)!important;font-size:24px!important;font-weight:700!important;color:var(--co-nit,#16263D)!important;line-height:1}
+html:root:root body .any-pleg-v878664>summary>h3>small{font-size:13px!important;font-weight:600;color:var(--co-ink-3,#58667A)!important}
+html:root:root body .any-pleg-v878664 .fl-v878664{flex:none;color:var(--co-ink-3,#58667A);transition:transform .15s}
+html:root:root body .any-pleg-v878664[open]>summary>.fl-v878664,html:root:root body .grup-pleg-v878664[open]>summary>.fl-v878664{transform:rotate(180deg)}
+html:root:root body .grup-pleg-v878664{margin:0 0 8px 8px}
+html:root:root body .grup-pleg-v878664>summary{list-style:none;cursor:pointer;margin:0 0 8px!important;border-radius:8px!important}
+html:root:root body .grup-pleg-v878664>summary::-webkit-details-marker{display:none}
+html:root:root body .grup-pleg-v878664>summary>.fl-v878664{margin-left:auto}
+
+/* ── Control horari (proposta 31 i punt 36): els apartats com a pestanyes petites a l'ordinador; una sola taula, per setmana o per mes, amb
+   línies fines entre les files i les columnes ── */
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .ch-rajoles-v878515{display:flex!important;flex-wrap:wrap;gap:8px!important;grid-template-columns:none!important;margin:0!important}
+  html:root:root body .ch-rajoles-v878515>button{flex:0 0 auto!important;display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;
+    min-height:40px!important;height:auto!important;min-width:0!important;padding:6px 16px 6px 12px!important;border-radius:999px!important;box-shadow:none!important}
+  html:root:root body .ch-rajoles-v878515>button::after,html:root:root body .ch-rajoles-v878515>button::before{display:none!important}
+  html:root:root body .ch-rajoles-v878515>button .ico{width:auto!important;height:auto!important;background:none!important;border:0!important;padding:0!important}
+  html:root:root body .ch-rajoles-v878515>button .ico svg{width:18px!important;height:18px!important}
+  html:root:root body .ch-rajoles-v878515>button b{font-size:14.5px!important}
+  html:root:root body .hores-emp-v878340>.ch-eines-v878517:empty{display:none}
+}
+html:root:root body .ch-linia-v878664{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+html:root:root body .ch-linia-v878664>.pas{display:flex;align-items:center;gap:8px}
+html:root:root body .ch-linia-v878664>.emplena-v878473{margin-left:auto}
+html:root:root body .seg-v878664{display:inline-flex;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:8px;overflow:hidden;background:#fff}
+html:root:root body .seg-v878664>button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:0 14px;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:var(--co-ink-2,#3F4E63)}
+html:root:root body .seg-v878664>button+button{border-left:1px solid var(--co-line-strong,#AEB8C4)}
+html:root:root body .seg-v878664>button[aria-pressed="true"]{background:var(--co-nit,#16263D);color:#FFFFFF}
+html:root:root body .seg-v878664>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+/* línies fines entre files i columnes */
+html:root:root body .matriu-v878473{border:1px solid var(--co-line-strong,#AEB8C4)!important;border-radius:8px!important}
+html:root:root body .matriu-v878473 .f{border-bottom:1px solid var(--co-line,#D2D8DF)!important}
+html:root:root body .matriu-v878473 .f:last-child{border-bottom:0!important}
+html:root:root body .matriu-v878473 .f>*+*{border-left:1px solid var(--co-line,#D2D8DF)!important;align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+html:root:root body .matriu-v878473 .f>span.c{align-items:center}
+html:root:root body .matriu-v878473 .f.cap{border-bottom:2px solid var(--co-nit,#16263D)!important}
+html:root:root body .matriu-v878473 .f.peu{border-top:2px solid var(--co-line-strong,#AEB8C4)}
+html:root:root body .matriu-v878473 button.c.dia-cap-v878664{display:flex;flex-direction:column;gap:1px;min-height:48px;color:var(--co-ink-2)}
+html:root:root body .matriu-v878473 button.c.dia-cap-v878664 b{font-size:12.5px;font-weight:700;text-transform:capitalize;color:var(--co-ink)}
+html:root:root body .matriu-v878473 button.c.dia-cap-v878664 small{font-size:11.5px;font-weight:600;color:var(--co-accent,#2563EB)}
+html:root:root body .matriu-v878473 button.c.dia-cap-v878664.avui{background:#EFF6FF}
+html:root:root body .matriu-v878473 button.c.dia-cap-v878664.festiu small{color:#B91C1C}
+
+/* ── Control horari › Calendari (punt 37): a cada dia, les hores i l'obra; al mòbil, el text de les rajoles sencer ── */
+html:root:root body .dia-v878515 .hh-v878664{display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;min-width:0;line-height:1.15}
+html:root:root body .dia-v878515 .hh-v878664 b{font-size:12px;font-weight:800;color:inherit;white-space:nowrap}
+html:root:root body .dia-v878515 .hh-v878664 small{display:block;max-width:100%;font-size:10.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
+html:root:root body .dia-v878515 .hh-v878664 small .nm{display:none}
+html:root:root body .dia-v878515.amb-h-v878664.lab{background:#EFF6FF;border-color:#93C5FD}
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .dia-v878515 .hh-v878664{align-items:stretch;padding:0 4px}
+  html:root:root body .dia-v878515 .hh-v878664 small .ini{display:none}
+  html:root:root body .dia-v878515 .hh-v878664 small .nm{display:inline}
+}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;line-height:1.15}
+  html:root:root body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button::after{-webkit-line-clamp:3!important;overflow-wrap:anywhere}
+  html:root:root body .dia-v878515{min-height:64px}
+}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html:root:root body .matriu-v878473 button.c.dia-cap-v878664 small{display:none}
+  html:root:root body .ch-linia-v878664>.emplena-v878473{margin-left:0;flex:1 1 100%}
+}
+
+/* ── Documents › carpeta de l'ordinador (punt 41): «Arxius copiats» amb una línia que diu què són ── */
+html:root:root body .canvis-v878625>summary .tt-v878664{display:flex;flex-direction:column;gap:1px;min-width:0}
+html:root:root body .canvis-v878625>summary .tt-v878664 small{font-size:12.5px;font-weight:500;color:var(--co-ink-3,#58667A)}
+
+/* ── Targetes (punts 42 i 46): el títol de les targetes amb contingut a sota, amb fons gris; una targeta plegable oberta, amb la vora més fosca
+   per distingir-la del que hi ha a dins ── */
+html:root:root body .card>.card-head{background:#EDF0F4;border-radius:8px 8px 0 0}
+html:root:root body .card>.card-head:last-child{border-radius:8px}
+html:root:root body details[open].card.bloc-v878426,
+html:root:root body .partes-mes-v878349.obert,html:root:root body details[open].grup-pleg-v878664,html:root:root body details[open].ff-v878664{border-color:var(--co-ink-3,#58667A)!important;box-shadow:0 0 0 1px var(--co-ink-3,#58667A)!important}
+html:root:root body .partes-mes-v878349.obert>.mes-cap{background:#EDF0F4;border-bottom:1px solid var(--co-line-strong,#AEB8C4)}
+
+/* ── Partes d'obra (punts 43 i 44): a l'ordinador, el parte del dia primer; la feina feta, un plegable amb la gràfica ── */
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .partes-cap-v878349 .bts .nou{order:-3}
+  html:root:root body .partes-cap-v878349 .bts .dies-v878572{order:-2}
+}
+html:root:root body .ff-v878664{display:block;padding:0!important;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:8px;background:var(--co-surface,#fff);overflow:hidden}
+html:root:root body .ff-v878664>summary,html:root:root body div.ff-v878664{list-style:none;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px 16px;padding:10px 14px;cursor:pointer}
+html:root:root body div.ff-v878664{cursor:default;grid-template-columns:auto minmax(0,1fr)}
+html:root:root body .ff-v878664>summary::-webkit-details-marker{display:none}
+html:root:root body .ff-v878664[open]>summary{background:#EDF0F4;border-bottom:1px solid var(--co-line-strong,#AEB8C4)}
+html:root:root body .ff-v878664 .tt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+html:root:root body .ff-v878664 .tt small{font-size:12.5px;color:var(--co-ink-3)}
+html:root:root body .ff-v878664 .tt b{font-family:var(--co-display);font-size:20px}
+html:root:root body .ff-v878664 .tt span{font-size:12.5px;color:var(--co-ink-3)}
+html:root:root body .ff-v878664 .barra{display:block;height:8px;border-radius:99px;background:#E2E8F0;overflow:hidden}
+html:root:root body .ff-v878664 .barra i{display:block;height:100%;background:#16A34A;border-radius:99px}
+html:root:root body .ff-v878664 .fl-v878664{color:var(--co-ink-3);transition:transform .15s}
+html:root:root body .ff-v878664[open] .fl-v878664{transform:rotate(180deg)}
+html:root:root body .ff-graf-v878664{display:flex;align-items:flex-end;gap:10px;height:190px;padding:14px 16px 6px;overflow-x:auto}
+html:root:root body .ff-graf-v878664 .col{flex:1 0 64px;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+html:root:root body .ff-graf-v878664 .col b{font-size:11.5px;font-weight:700;color:var(--co-ink-2);white-space:nowrap}
+html:root:root body .ff-graf-v878664 .bar{flex:1;width:70%;display:flex;align-items:flex-end;background:#F1F5F9;border-radius:6px 6px 0 0}
+html:root:root body .ff-graf-v878664 .bar i{display:block;width:100%;background:var(--co-nit,#16263D);border-radius:6px 6px 0 0}
+html:root:root body .ff-graf-v878664 .col small{font-size:11.5px;color:var(--co-ink-3);text-transform:capitalize;white-space:nowrap}
+html:root:root body .ff-nota-v878664{margin:0;padding:0 16px 12px;font-size:12px;color:var(--co-ink-3)}
+
+/* ── Fitxa del parte (punt 45): «Observacions» i «Treballadors» amb el títol en gris; a l'ordinador, l'un al costat de l'altre ── */
+html:root:root body .parte-resum-v878349 .pr-cap>h4{margin:0 0 8px;padding:8px 12px;background:#EDF0F4;border-radius:6px;font-size:14px;color:var(--co-ink)}
+html:root:root body .pr-obs-v878664 .pr-dia{margin:0;padding:0 4px}
+html:root:root body .pr-obs-v878664 .pr-dia p.buit{color:var(--co-ink-3);font-style:italic}
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .pr-dos-v878664.amb-h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr);gap:16px;align-items:start}
+  html:root:root body .pr-dos-v878664>.pr-cap{margin:0}
+}
+
+/* ── La nota (punts 47 i 49): cada apartat amb el títol en gris; PDF i Enviar, a baix ── */
+html:root:root body .seccions-v878620 .sec-cap-v878620,html:root:root body .seccions-v878620 .notes-files-head-v878278{margin:-12px -12px 10px;padding:8px 12px;background:#EDF0F4;border-bottom:1px solid var(--co-line,#D2D8DF);border-radius:8px 8px 0 0}
+html:root:root body .seccions-v878620 label.sec-fila-v878620>b{align-self:stretch;display:flex;align-items:center;margin:-12px 0 -12px -12px;padding:8px 12px;background:#EDF0F4;border-right:1px solid var(--co-line,#D2D8DF);border-radius:8px 0 0 8px}
+html:root:root body .notes-actions-v878278{flex-wrap:wrap}
+html:root:root body .notes-actions-v878278 .acc-v878664{display:inline-flex;gap:8px;margin-left:auto}
+html:root:root body .notes-actions-v878278 .acc-v878664:empty{display:none}
+html:root:root body .imprimir-modal-v878426 .opcio small{display:block;width:100%;font-size:12.5px;font-weight:500;color:var(--co-ink-3)}
+html:root:root body .imprimir-modal-v878426 .opcio:has(>small){flex-wrap:wrap;row-gap:2px}
+html:root:root body .imprimir-modal-v878426 .opcio>small{flex:1 0 100%;padding-left:30px;text-align:left}
+
+/* ── Actes de la constructora (punt 50): les rebudes s'obren (el document) i es poden treure ── */
+html:root:root body .visita-v878309.rebuda-v878664{display:flex;align-items:stretch;padding:0!important}
+html:root:root body .visita-v878309.rebuda-v878664>.obre{all:unset;box-sizing:border-box;flex:1;min-width:0;display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 14px;cursor:pointer}
+html:root:root body .visita-v878309.rebuda-v878664>.treu{display:inline-flex;align-items:center;padding:0 14px;color:#B91C1C}
+html:root:root body .visita-v878309.rebuda-v878664 .et-v878664{padding:1px 8px;border-radius:99px;background:#EEF2FF;color:#3730A3;font-size:12px;font-weight:700}
+html:root:root body .rebuda-btn-v878664{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+
+/* ── Agenda a l'ordinador (punt 51): el mes, i a sota les targetes de la setmana (o del dia triat) i les feines pendents; la nota de veu en blau nit ── */
+@media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
+  html:root:root body .agenda-v878256 .ag-veu-nit-v878664{background:var(--co-nit,#16263D)!important;color:#FFFFFF!important;border-color:var(--co-nit,#16263D)!important;min-height:40px;padding:0 18px!important;font-size:15px!important}
+  html:root:root body .agenda-v878256 .ag-veu-nit-v878664 svg{color:#FFFFFF!important}
+  html:root:root body .agenda-v878256 .ag-dnum.sel-v878664{background:var(--co-nit,#16263D)!important;color:#FFFFFF!important;border-radius:999px}
+}
+html:root:root body .ag-targetes-v878664{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:16px 0 0}
+html:root:root body .ag-tg-sec-v878664{background:#fff;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:8px;overflow:hidden}
+html:root:root body .ag-tg-sec-v878664>header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#EDF0F4;border-bottom:1px solid var(--co-line,#D2D8DF)}
+html:root:root body .ag-tg-sec-v878664>header h3{margin:0;font-size:15px;font-weight:700;color:var(--co-ink)}
+html:root:root body .ag-tg-sec-v878664>header .n{padding:1px 8px;border-radius:99px;background:#fff;border:1px solid var(--co-line);font-size:12px;font-weight:700;color:var(--co-ink-2)}
+html:root:root body .ag-tg-sec-v878664>header .link{margin-left:auto}
+html:root:root body .ag-tg-sec-v878664 .graella{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;padding:12px}
+html:root:root body .ag-tg-sec-v878664 .buit,html:root:root body .ag-tg-sec-v878664 .mes{margin:0;padding:12px 14px;color:var(--co-ink-3);font-size:13.5px}
+html:root:root body .ag-targ-v878664{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:10px 12px 10px 16px;border:1px solid var(--co-line,#D2D8DF);border-radius:8px;background:#fff;cursor:pointer}
+html:root:root body .ag-targ-v878664:hover{border-color:var(--co-ink-3)}
+html:root:root body .ag-targ-v878664:focus-visible{outline:2px solid var(--co-accent);outline-offset:1px}
+html:root:root body .ag-targ-v878664>i{position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:8px 0 0 8px;background:var(--c,#2563EB)}
+html:root:root body .ag-targ-v878664 small{font-size:12px;font-weight:600;color:var(--co-ink-3);text-transform:capitalize}
+html:root:root body .ag-targ-v878664 b{font-size:14px;line-height:1.25;color:var(--co-ink);overflow-wrap:anywhere}
+html:root:root body .ag-targ-v878664 span{font-size:12.5px;color:var(--co-ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root:root body .ag-targ-v878664.feina>i{background:#64748B}
+html:root:root body .ag-targ-v878664.feina.tard>i{background:#B91C1C}
+html:root:root body .ag-targ-v878664.feina.tard small{color:#B91C1C}
+@media (max-width:1100px){html:root:root body .ag-targetes-v878664{grid-template-columns:minmax(0,1fr)}}
+/* la benvinguda: el logo de G3C (abans un requadre amb «CO») */
+html:root:root body .empresa-setup-v878259 .logo.logo-g3c-ben-v878664{background:none!important;width:auto!important;height:auto!important;padding:0!important;box-shadow:none!important}
+
+/* ── V87.664 · arranjaments trobats per les proves ── */
+/* Calendari laboral: el número dels dies de cap de setmana, amb prou contrast (3,86 → 7,2) */
+html body .dia-v878515.cs:not(.a-vacances):not(.a-baixa):not(.a-permis):not(.f-oficial):not(.f-local):not(.f-conveni):not(.f-altre){color:#475569}
+/* Obres del tècnic (amb el núm. del client): l'estat, més estret, i el nom del treball té més lloc */
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(6){width:16%!important}
+html:root:root body .expedients-page-v8741 table.exp-table-v878664.amb-ref-v878664 th:nth-child(7){width:156px!important}
+/* Obres al mòbil: la franja de l'any, en gris com els títols de les targetes */
+html:root:root body .any-pleg-v878664>summary{background:#EDF0F4}
+/* Ajustos: el grup obert torna a tenir el fons blavós sota les subtargetes blanques (la V87.659 l'havia deixat en blanc) */
+html:root:root body details.ajustos-bloc-v878366.aj-g-v878637[open]{background:#E6EDF6!important}
+/* Personal: sota el nom, les vacances, la baixa o el permís d'avui */
+html:root:root body .nom-bt-v878516 small.est-n-v878664{font-weight:700}
+html:root:root body .nom-bt-v878516 small.est-n-v878664.a-vacances{color:#15803D!important}
+html:root:root body .nom-bt-v878516 small.est-n-v878664.a-baixa{color:#6D28D9!important}
+html:root:root body .nom-bt-v878516 small.est-n-v878664.a-permis{color:#B45309!important}

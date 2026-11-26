@@ -5104,3 +5104,47 @@
     l'apartat; «Calendari laboral»), `fitxestest` (obre la targeta plegada «Contacte i enllaços» abans de llegir-la: fallava des de la V87.464) i
     `v516test` #11 (les rajoles han d'omplir la targeta, no 340 px fixos: des de la V87.518 són subtargetes). **Retirades** a `tools/proves/retirades/`: `expfiltrestest` i `importobres358test` (Filtres i Importar ja
     no hi són). Taula d'Obres a menys de 1.600 px: amplades repartides (el nom del treball s'havia quedat a 98 px; `expcolstest`).
+- **V87.664 · Repàs de la constructora, segona tanda: respostes a les propostes i pantalles noves** (26/11/2026; punts 32–51 de
+  `docs/repas-constructora-2026-11-25.md`).
+  - **Barra blau nit a l'ordinador** (proposta 24 acceptada): a dalt de cada pantalla (no a l'Inici ni dins de l'obra), enganxada al menú, el títol
+    gran i els botons principals (`CapPc878664`; els botons hi van amb el portal `AccionsCap878664`: Obres, Contactes, Pressupostos, Control
+    horari › Llistats). El títol de dins de la pantalla que la repetia s'amaga a l'ordinador (`dup-pc-v878664`). Obres, a tota l'amplada sota la barra.
+  - **Obres a l'ordinador:** Número · Client · Promotor · Obra (amb el tipus i, a les compartides de la constructora, «Compartida per…») · Adreça ·
+    Estat; el tècnic conserva «Núm. client». **El Promotor es queda** i, si és la mateixa persona que el client, només surt a Promotor. La
+    constructora i l'administrador de finques, només l'any com a grup; el tècnic, també els grups dels clients que comparteixen.
+  - **Obres al mòbil** (proposta 25): plegable per nivells (l'any i els grups: «Les meves obres», cada client que comparteix); l'any d'ara i els
+    seus grups oberts; buscant, tot obert.
+  - **Dins de l'obra, «Control d'obra»** (constructora): el bloc «Pressupost i certificacions» es diu així (al mòbil la rajola deia només
+    «Pressupost») i porta el **Planning** (abans a «Dia a dia», on «no té sentit»), amb els amidaments, el pressupost, el comparatiu (Industrials)
+    i les certificacions. La clau del bloc no canvia (`nomBloc878664`, `curtBloc878664`, `subBloc878664`). El tècnic, com fins ara. El menú de
+    l'esquerra es queda igual («Pressupostos»; l'Héctor, 26/11/2026: el Planning «allà a dins d'aquell desplegable, no on l'has posat»).
+  - **Control horari** (proposta 31): els apartats com a pestanyes petites a l'ordinador i «Llistats» a la barra. Personal: una sola taula
+    (treballador × dia, total en hores i €, total del dia) amb línies fines entre files i columnes; cada dia de dalt s'omple tocant-lo (fora les
+    cinc targetes dels dies, «Treballadors» i «Setmana de tothom»); **«Setmana · Mes»**: per mes, cada treballador amb les hores de cada setmana
+    i el total. Calendari: a cada dia, les hores fetes i a quina obra (al mòbil, les inicials; a l'ordinador, el nom); el text de les rajoles del
+    mòbil, sencer.
+  - **Dades de l'obra:** fora el plegable «Més dades» (la cadastral, l'idioma i la definició, amb les altres dades) i, a les obres de la
+    constructora, fora «Referència del client» (si ja en té, es veu). **Tècnics des de Contactes:** si el grup del camp és buit (p. ex. «Tècnics»
+    d'una constructora), «Triar de Contactes» s'obre amb tots; el tècnic nou, en guardar les dades, ja surt a Contactes › Tècnics.
+  - **Documents › carpeta de l'ordinador:** «Deixar de fer-ho» → «Treure la carpeta»; «Últims canvis» → «Arxius copiats», amb una línia que diu què són.
+  - **Targetes:** el títol de les targetes (`.card>.card-head`) amb fons gris; una targeta plegable oberta (i el mes obert dels partes), amb la vora
+    més fosca.
+  - **Partes d'obra:** a l'ordinador, «Parte d'avui» primer, després **«Diversos partes de cop»** (abans «Diversos dies») i els llistats. La feina
+    feta, en un plegable amb una gràfica de barres de la feina dels partes de cada mes (`FeinaFeta878664`; sense import als partes, només la
+    barra). Fitxa del parte: «Observacions» (títol gris: el dia, qui, la nota i les fotos) i, a l'ordinador al costat, «Treballadors» amb les hores i el cost.
+  - **Nota:** PDF, Enviar i Tancar, a baix (dalt, res; «Cancel·lar» només a una nota nova); els apartats (Dia, Què has vist…, Fotos, Documents) amb el títol gris. **«Enviar»**: la nota sola o
+    **«Enviar-la perquè la tornin signada»** (l'enllaç per signar de la V87.409, amb el requadre «Vist i conforme · Direcció facultativa»: la
+    direcció d'execució o, si no n'hi ha, la d'obra; `rolsNota878664`).
+  - **Actes de la constructora:** no en fa; **«Afegir una acta rebuda»** (el PDF o la foto; `rebuda878664`), a la llista amb «Rebuda», s'obre el
+    document i es pot treure.
+  - **Agenda a l'ordinador:** s'obre al **mes** (un sol cop; després, la vista que triï cadascú); a sota, les targetes d'**aquesta setmana** (o del
+    dia que es toca al calendari) i les **feines pendents**, l'una al costat de l'altra (`TargetesAgenda878664`); «Nota de veu» en blau nit.
+  - La benvinguda d'un compte nou: «Benvinguts a G3C» amb el logo (abans «Control d'Obres» i «CO»).
+  - **Arranjaments trobats per les proves:** a Personal, sota el nom del treballador, les vacances, la baixa o el permís d'avui (ho deia la
+    rajola que s'ha tret); els dies de dalt marcats quan tenen hores. Ajustos: el grup obert torna a tenir el fons blavós sota les subtargetes
+    blanques (la V87.659 l'havia deixat en blanc). Calendari laboral: el número dels caps de setmana amb prou contrast (3,86 → 7,2). Obres del
+    tècnic: l'estat, més estret, perquè el nom del treball tingui lloc. Mòbil: la franja de l'any, en gris com els títols de les targetes.
+  - **Proves:** `v664test` (nova). El `go()` de 215 proves toca també la primera opció quan el menú és un desplegable (com ja feien v515, v516,
+    v517 i fitxatge357 des de la V87.663). Posades al dia amb el que ha canviat: expedients, expcols, v615, v561, v485, v504, v571, obratest,
+    v516, v517, v518, v473, v506, v523, v572, v660, v634, v625, dades363, traduccio, v637, v620, v591, v600, v603, v451 i les que busquen el
+    bloc pel nom (v410, v431, v437, v445–v452, v461, v512, v610, v614, despeses329, v331, visual400).
