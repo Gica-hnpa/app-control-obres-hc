@@ -133,8 +133,6 @@ html:root:root body .partes-mes-v878349.obert>.mes-cap{background:#EDF0F4;border
 
 /* ── Partes d'obra (punts 43 i 44): a l'ordinador, el parte del dia primer; la feina feta, un plegable amb la gràfica ── */
 @media (min-width:1281px) and (hover:hover),(min-width:1281px) and (pointer:fine),(min-width:900px) and (hover:hover) and (pointer:fine){
-  html:root:root body .partes-cap-v878349 .bts .nou{order:-3}
-  html:root:root body .partes-cap-v878349 .bts .dies-v878572{order:-2}
 }
 html:root:root body .ff-v878664{display:block;padding:0!important;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:8px;background:var(--co-surface,#fff);overflow:hidden}
 html:root:root body .ff-v878664>summary,html:root:root body div.ff-v878664{list-style:none;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px 16px;padding:10px 14px;cursor:pointer}
@@ -226,3 +224,38 @@ html:root:root body .nom-bt-v878516 small.est-n-v878664{font-weight:700}
 html:root:root body .nom-bt-v878516 small.est-n-v878664.a-vacances{color:#15803D!important}
 html:root:root body .nom-bt-v878516 small.est-n-v878664.a-baixa{color:#6D28D9!important}
 html:root:root body .nom-bt-v878516 small.est-n-v878664.a-permis{color:#B45309!important}
+
+/* ── V87.664.1 · Partes al mòbil: «Parte d'avui» i «Diversos partes de cop» a la primera fila (els llistats, a la segona); el text de
+   «Diversos partes de cop» pot anar en dues línies i la icona no s'encongeix ── */
+@media (max-width:600px){
+  html:root:root body .partes-cap-v878349 .bts>button svg{flex:none}
+  html:root:root body .partes-cap-v878349 .bts>button.dies-v878572{white-space:normal;line-height:1.15}
+}
+/* V87.664.1 · la feina feta, al final de Partes, separada dels mesos */
+html:root:root body .ff-v878664{margin-top:12px}
+
+/* ── V87.664.1 · Certificació al mòbil i a la tauleta: la fila de la partida no se solapa (l'Héctor, 26/11/2026, captura en castellà:
+   «Presupuesto» trepitjava «1,00 ut» i «6.288,00 €» sortia en dues línies). Les columnes del preu i de l'import, a la mida del que hi ha;
+   l'etiqueta, una mica més ampla; la casella, amb el botó Σ més estret perquè la xifra hi càpiga ── */
+@media (max-width:1100px){
+  html:root:root body .cert-grid-wrap-v69 .cert-grid-v69.row{grid-template-columns:minmax(0,1fr) auto auto!important;column-gap:8px!important}
+  html:root:root body .cert-grid-v69.row>div:nth-child(n+4){white-space:nowrap}
+  html:root:root body .cert-grid-v69.row>div[data-m]::before{width:74px!important;font-size:12px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:root:root body .cert-grid-v69.row>div:nth-child(n+5):not([data-m]){justify-content:flex-end;text-align:right}
+  html:root:root body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-edit-input-v69{padding:0 30px 0 4px!important}
+  html:root:root body .cert-grid-wrap-v69 .cert-grid-v69.row .measure-btn-v8780{width:26px!important;right:2px!important}
+}
+
+/* V87.664.1 · Pressupost al mòbil: la taula del descompost aprofita l'amplada de la fitxa (amb el marge de 16 px de la pàgina del Blau nit
+   li quedaven 314 px a 390) */
+@media (max-width:767px){
+  html:root:root body .fitxa-partida-v878361.inline-v878426 .dt-v878449{margin-left:-6px!important;margin-right:-6px!important;width:calc(100% + 12px)!important;max-width:none!important}
+}
+
+/* ── V87.664.1 · Els títols dels capítols i de les partides, sencers (l'Héctor, 26/11/2026: «els títols de les partides i capítols es podrien
+   veure sencers?»): sense «…» ni retall a dues línies, a la certificació, al pressupost i a la partida a pantalla sencera ── */
+@media (max-width:1100px){
+  html:root:root body .cert-grid-wrap-v69 button.cap-m-v878429 .nom{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:break-word}
+}
+html:root:root body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>strong{display:block!important;-webkit-line-clamp:unset!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:break-word}
+html:root:root body .partida-pantalla-v878486 .pp-cap .nom{display:block!important;-webkit-line-clamp:unset!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:break-word}

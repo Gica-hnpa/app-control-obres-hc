@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.664";
+const APP_VERSION878264="87.664.1";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14318,15 +14318,22 @@ function PartesDies878572({data={},onCrea,close}){
   </div></Modal>;
 }
 // V87.664 · Partes d'obra: la feina feta (sobre el pressupost) i, en obrir-la, una gràfica de barres amb la feina dels partes de cada mes
+// V87.664.1 · al final de Partes (l'Héctor, 26/11/2026: «no hem quedat que feina feta sortia al final amb gràfic?»); cada mes, el que s'ha
+// certificat (les certificacions que no surten dels partes) i la feina dels partes d'aquell mes
 function FeinaFeta878664({totalFet=0,totalPres=0,mesos=[]}){
-  const ms=mesos.filter(m=>m.k!=="—").slice(-12);const max=Math.max(0,...ms.map(m=>m.imp));
+  const ms=mesos.filter(m=>m.k!=="—"&&m.imp>0.005).slice(-12);const max=Math.max(0,...ms.map(m=>m.imp));
+  const curt=k=>new Date(k+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"short",year:"2-digit"});
   const cap=<><span className="tt"><small>{t("Feina feta")}</small><b>{money(totalFet)}</b><span>{t("de {total} · {p}",{total:money(totalPres),p:pct(totalFet/totalPres*100)})}</span></span><span className="barra"><i style={{width:Math.min(100,totalFet/totalPres*100)+"%"}}/></span></>;
   if(!ms.length||!(max>0))return <div className="partes-total-v878349 ff-v878664">{cap}</div>;
   return <details className="partes-total-v878349 ff-v878664"><summary>{cap}<ChevronDown size={18} className="fl-v878664" aria-hidden="true"/></summary>
-    <div className="ff-graf-v878664" role="img" aria-label={t("Feina dels partes per mesos")}>{ms.map(m=><div key={m.k} className="col" title={`${m.nom}: ${money(m.imp)}`}><b>{money(m.imp)}</b><span className="bar"><i style={{height:Math.max(2,m.imp/max*100)+"%"}}/></span><small>{m.nom}</small></div>)}</div>
-    <p className="ff-nota-v878664">{t("La feina de cada mes surt dels partes; la feina feta, de les certificacions i els partes.")}</p>
+    <div className="ff-graf-v878664" role="img" aria-label={t("Feina feta per mesos")}>{ms.map(m=><div key={m.k} className="col" title={`${m.nom}: ${money(m.imp)}`}><b>{money(m.imp)}</b><span className="bar"><i style={{height:Math.max(2,m.imp/max*100)+"%"}}/></span><small>{curt(m.k)}</small></div>)}</div>
+    <p className="ff-nota-v878664">{t("Cada mes, el que s’ha certificat i la feina dels partes.")}</p>
   </details>;
 }
+function fetMesos878664(d={},partes=[]){const m={};const add=(k,v)=>{if(!/^\d{4}-\d{2}$/.test(k)||!(v>0.005))return;m[k]=(m[k]||0)+v};const ps=pidsObra878349(d);
+  (d.certificacions||[]).forEach(c=>{if(c.dePartes878349)return;const n=+c.numero||0;if(!(n>0))return;const bid=c.budgetId||"principal";add(String(c.data||"").slice(0,7),ps.filter(x=>x.bid===bid).reduce((s,x)=>s+(certQty8783(x.r,n)||0)*(parseNum8770(x.r.pu)||0),0))});
+  partes.forEach(p=>add(String(p.data||"").slice(0,7),importParte878349(d,p)));
+  return Object.keys(m).sort().map(k=>({k,imp:m[k]}))}
 function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const treb=esTreballador878326();
   const[esb,setEsb]=useState(null);
@@ -14407,7 +14414,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   return <div className="partes-v878349">
     {/* V87.664 · a l'ordinador, primer el parte del dia, després diversos de cop i al final els llistats (l'Héctor, 26/11/2026); «Diversos dies» passa a
         «Diversos partes de cop» (fer-ne més d'un alhora), amb un altre color que el del dia */}
-    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{!treb&&partes.length>0&&<button type="button" className="secondary llistat-btn-v878501 llistat-v878622" onClick={()=>setLlistat622(true)}><Printer size={16} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos partes de cop")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
+    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{/* V87.664.1 · primer el parte, després els llistats, a tots els aparells */}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos partes de cop")}</button>}{!treb&&partes.length>0&&<button type="button" className="secondary llistat-btn-v878501 llistat-v878622" onClick={()=>setLlistat622(true)}><Printer size={16} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}</div></div>
     {!readOnly&&!treb&&partes.filter(p=>p.estat!=="certificat").length>1&&<div className={"valida-v878572"+(sel572?" on":"")}>{!sel572?<button type="button" className="secondary small" onClick={()=>setSel572(new Set())}><ListChecks size={15} aria-hidden="true"/> {t("Validar de cop")}</button>
       :(()=>{const pend=partes.filter(p=>p.estat!=="certificat");return <><label className="tots"><input type="checkbox" checked={pend.length>0&&pend.every(p=>sel572.has(p.id))} onChange={e=>setSel572(e.target.checked?new Set(pend.map(p=>p.id)):new Set())}/> {t("Tots els per validar ({n})",{n:pend.length})}</label>
         <span className="n">{sel572.size===1?t("1 triat"):t("{n} triats",{n:sel572.size})}</span>
@@ -14415,7 +14422,6 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
         <button type="button" className="secondary small" onClick={()=>setSel572(null)}>{t("Fet")}</button></>})()}</div>}
     {avis&&<div className="partes-avis-v878349" role="status"><span>{avis}</span><button type="button" className="link" onClick={()=>setAvis("")}>{t("D’acord")}</button></div>}
     {/* V87.664 · la feina feta, en un plegable amb la gràfica de cada mes (l'Héctor, 26/11/2026: «amb un desplegable amb una gràfica ni que sigui de barres») */}
-    {!treb&&totalPres>0.005&&<FeinaFeta878664 totalFet={totalFet} totalPres={totalPres} mesos={[...mesos].reverse().map(m=>({k:m.k,nom:nomMes(m.k),imp:m.partes.reduce((s,p)=>s+importParte878349(data,p),0),n:m.partes.length}))}/>}
     {!partes.length&&<div className="partes-buit-v878349"><b>{t("Encara no hi ha cap parte.")}</b></div>}
     {mesos.map((m,i)=>{const ob=sel572?m.partes.some(p=>p.estat!=="certificat"):(i===0?!mesosOberts.has(m.k):mesosOberts.has(m.k));const pend=m.partes.filter(p=>p.estat!=="certificat").length;
       return <section key={m.k} className={`partes-mes-v878349 ${ob?"obert":""}`}>
@@ -14432,6 +14438,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
             <em className={`estat ${p.estat==="certificat"?"ok":"pend"}`}>{p.estat==="certificat"?(nomCerts(p.cert)?t("Certificació {n}",{n:nomCerts(p.cert)}):t("Revisat")):t("Per validar")}</em>
           </button>})}</div>}
       </section>})}
+    {!treb&&totalPres>0.005&&<FeinaFeta878664 totalFet={totalFet} totalPres={totalPres} mesos={fetMesos878664(data,partes).map(m=>({...m,nom:nomMes(m.k)}))}/>}
     {modalPreus}
     {dies572&&<PartesDies878572 data={data} onCrea={creaDies} close={()=>setDies572(false)}/>}
     {llistat622&&<LlistatPartes878622 obra={obra} data={data} close={()=>setLlistat622(false)}/>}
@@ -23979,7 +23986,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.664",
+    app_version:"87.664.1",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

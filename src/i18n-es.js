@@ -6452,4 +6452,6 @@ export default {
   "Encara no hi ha cap acta. Si la direcció de l’obra te n’envia una, la pots afegir aquí.": "Todavía no hay ninguna acta. Si la dirección de la obra te envía una, la puedes añadir aquí.",
   "Vist i conforme · Direcció facultativa": "Visto y conforme · Dirección facultativa",
   "pressupost, certificacions, planning": "presupuesto, certificaciones, planning",
+  "Feina feta per mesos": "Trabajo hecho por meses",
+  "Cada mes, el que s’ha certificat i la feina dels partes.": "Cada mes, lo certificado y el trabajo de los partes."
 };

@@ -5148,3 +5148,18 @@
     v517 i fitxatge357 des de la V87.663). Posades al dia amb el que ha canviat: expedients, expcols, v615, v561, v485, v504, v571, obratest,
     v516, v517, v518, v473, v506, v523, v572, v660, v634, v625, dades363, traduccio, v637, v620, v591, v600, v603, v451 i les que busquen el
     bloc pel nom (v410, v431, v437, v445–v452, v461, v512, v610, v614, despeses329, v331, visual400).
+- **V87.664.1 · Partes (el parte primer i la feina feta al final, amb la gràfica) i la certificació al mòbil** (26/11/2026; l'Héctor: «a partes surt davant el que no ha de sortir»). Al mòbil, «Llistat» i
+  «Preus per hora» sortien a la primera fila, davant de «Parte d'avui» i «Diversos partes de cop» (l'ordre nou només s'havia posat a l'ordinador).
+  Ara l'ordre és el mateix a tots els aparells: «Parte d'avui» i «Diversos partes de cop» a la primera fila i els llistats a la segona; el text de
+  «Diversos partes de cop» pot anar en dues línies i la icona ja no s'encongeix. `v664test` 27 ho mira al mòbil.
+  Proves velles posades al dia (fallaven des d'abans): v331 (el botó de connectar el Google és a la llegenda des de la V87.597), v437 (les fases es
+  creen i es marquen com a alternativa al Pressupost; al Rendiment només es trien), v445 i v446 (el menú amb desplegables), v446 (el cercador
+  d'Obres de la V87.663), visual400 («Control horari» i els xips d'Obres de la V87.657), v451 (blau nit; el pressupost a pantalla sencera baixa ell).
+  **Feina feta** (l'Héctor: «no hem quedat que feina feta sortia al final amb gràfic?»): al final de Partes, després dels mesos, sempre plegable;
+  oberta, una gràfica de barres de cada mes amb el que s'ha certificat (les certificacions que no surten dels partes) més la feina dels partes
+  (`fetMesos878664`); abans només hi havia gràfica si els partes portaven import. **Certificació al mòbil** (captura en castellà: «Presupuesto»
+  trepitjava «1,00 ut» i «6.288,00 €» sortia en dues línies): les columnes del preu i de l'import, a la mida del que hi ha; l'etiqueta, de 74 px;
+  el botó Σ de la casella, més estret (a 360 px, «0,00» hi cap). **Pressupost al mòbil:** la taula del descompost aprofita l'amplada de la fitxa
+  (326 px a 390). Proves: v664test 19b i 27; v449 i v452 posades al dia (la certificació es fa a «Fer la certificació»).
+  **Títols sencers** (l'Héctor: «els títols de les partides i capítols es podrien veure sencers?»): fora el «…» del nom del capítol a la
+  certificació (mòbil i tauleta) i el retall a dues línies del nom de la partida al pressupost i a la partida a pantalla sencera.
