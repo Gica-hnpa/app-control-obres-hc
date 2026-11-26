@@ -5163,3 +5163,7 @@
   (326 px a 390). Proves: v664test 19b i 27; v449 i v452 posades al dia (la certificació es fa a «Fer la certificació»).
   **Títols sencers** (l'Héctor: «els títols de les partides i capítols es podrien veure sencers?»): fora el «…» del nom del capítol a la
   certificació (mòbil i tauleta) i el retall a dues línies del nom de la partida al pressupost i a la partida a pantalla sencera.
+- **V87.664.2 · Barra de fases: noms sencers i, a Certificacions, només triar** (26/11/2026; l'Héctor, captura d'Obra Verbania al mòbil: «els
+  textos del pressupost no es veuen i les noves fases en certificació quin sentit té?»). A Certificacions la barra de fases només tria (com a
+  Facturació, Rendiment i Despeses): sense «Nova fase» ni «Opcions», que són al Pressupost (i als Amidaments). El nom de cada fase, sencer: al
+  mòbil les fases ocupen tota l'amplada (dues per fila) i el nom pot anar en dues línies; a l'ordinador, també en dues línies si cal.

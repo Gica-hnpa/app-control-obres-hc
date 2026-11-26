@@ -259,3 +259,14 @@ html:root:root body .ff-v878664{margin-top:12px}
 }
 html:root:root body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>strong{display:block!important;-webkit-line-clamp:unset!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:break-word}
 html:root:root body .partida-pantalla-v878486 .pp-cap .nom{display:block!important;-webkit-line-clamp:unset!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:break-word}
+
+/* ── V87.664.2 · Barra de fases al mòbil (Certificacions, Facturació, Rendiment, Despeses): els noms dels pressupostos, sencers (l'Héctor,
+   26/11/2026: «els textos del pressupost no es veuen»: «Pressup…», «pressupo…»). Les fases, a tota l'amplada i, si cal, en dues línies ── */
+@media (max-width:767px){
+  html:root:root body .fases-v878342:not(.rajoles-v878551){flex-wrap:wrap!important}
+  html:root:root body .fases-v878342:not(.rajoles-v878551)>.llista{flex:1 1 100%!important;flex-wrap:wrap!important;overflow:visible!important}
+  html:root:root body .fases-v878342:not(.rajoles-v878551)>.llista>button{flex:1 1 calc(50% - 6px)!important;min-width:0!important;max-width:none!important;min-height:44px!important;height:auto!important;padding:6px 10px!important}
+  html:root:root body .fases-v878342:not(.rajoles-v878551)>.llista>button b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2;overflow-wrap:break-word}
+}
+/* (a l'ordinador i la tauleta, el mateix: el nom de la fase pot anar en dues línies) */
+html:root:root body .fases-v878342:not(.rajoles-v878551)>.llista>button b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2;overflow-wrap:break-word}
