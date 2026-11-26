@@ -103,12 +103,12 @@ Estat de cada línia: ☐ per mirar · ✎ apuntat (per arreglar) · ✔ arregla
 
 | # | Pantalla | Aparell | Què diu l'Héctor | Estat |
 |---|---|---|---|---|
-| 52 | Pressupost › barra de dalt | ordinador | El número del pressupost (P2026_0002) es veu molt petit; l'avís taronja (⚠ 3) sobre el blau nit no es veu bé | per fer |
-| 53 | Pressupost › editant | ordinador | «Cancel·lar» surt mal escrit («Cancellar») i sense requadre, quan «Guardar canvis» i «Opcions» en tenen | per fer |
-| 54 | Pressupost › capítol | ordinador | El menú del capítol és un «⋯» que no diu res: «creus que així detecten que hi ha opcions?» | per fer |
-| 55 | Pressupost › part de dalt | ordinador | Desordenada: el «fora de pressupost» en taronja, els tres avisos i, al costat, Editar · Imprimir · Enviar · Signar · Tancar · ⋯. Ordenar-ho (amb disseny) | per fer |
-| 56 | Obra › rajola activa | tots | La rajola triada (p. ex. «Control d'obra»): la icona en blanc i grisos no es veu i queda lletja | per fer |
-| 57 | Industrials | ordinador | S'hauria de dir **«Comparatiu d'industrials»** | per fer |
-| 58 | Industrials › llegir un PDF | tots | No llegeix com les factures: ni l'industrial, ni la data, ni les altres dades; només les partides i la referència (que posa com a capítol) | per fer |
-| 59 | Industrials › targetes | tots | A la franja blau nit hi ha d'anar el nom del capítol; a dins, les ofertes (l'empresa i el nom del pressupost), el comparatiu i, un cop adjudicat, l'adjudicatari en verd | per fer |
-| 60 | Industrials › adjudicar | tots | Els preus de l'oferta adjudicada han d'anar al pressupost, al capítol que toca, deixant posar el % de marge sobre el preu d'origen (0 % si l'industrial ja l'hi ha afegit) | per fer |
+| 52 | Pressupost › barra de dalt | ordinador | El número del pressupost (P2026_0002) es veu molt petit; l'avís taronja (⚠ 3) sobre el blau nit no es veu bé | ✔ V87.666 |
+| 53 | Pressupost › editant | ordinador | «Cancel·lar» surt mal escrit («Cancellar») i sense requadre, quan «Guardar canvis» i «Opcions» en tenen | ✔ V87.666 |
+| 54 | Pressupost › capítol | ordinador | El menú del capítol és un «⋯» que no diu res: «creus que així detecten que hi ha opcions?» | ✔ V87.666 |
+| 55 | Pressupost › part de dalt | ordinador | Desordenada: el «fora de pressupost» en taronja, els tres avisos i, al costat, Editar · Imprimir · Enviar · Signar · Tancar · ⋯. Ordenar-ho (amb disseny) | ✔ V87.666 |
+| 56 | Obra › rajola activa | tots | La rajola triada (p. ex. «Control d'obra»): la icona en blanc i grisos no es veu i queda lletja | ✔ V87.666 |
+| 57 | Industrials | ordinador | S'hauria de dir **«Comparatiu d'industrials»** | ✔ V87.666 |
+| 58 | Industrials › llegir un PDF | tots | No llegeix com les factures: ni l'industrial, ni la data, ni les altres dades; només les partides i la referència (que posa com a capítol) | ✔ V87.666 |
+| 59 | Industrials › targetes | tots | A la franja blau nit hi ha d'anar el nom del capítol; a dins, les ofertes (l'empresa i el nom del pressupost), el comparatiu i, un cop adjudicat, l'adjudicatari en verd | ✔ V87.666 |
+| 60 | Industrials › adjudicar | tots | Els preus de l'oferta adjudicada han d'anar al pressupost, al capítol que toca, deixant posar el % de marge sobre el preu d'origen (0 % si l'industrial ja l'hi ha afegit) | ✔ V87.666 |

@@ -1,0 +1,58 @@
+/* V87.666 · Repàs del Pressupost de l'obra (punts 52–56) */
+
+/* «l·l»: el punt volat de la Barlow Condensed (lletra estreta dels botons i títols) queda enganxat a les eles i es llegia «Cancellar»
+   (l'Héctor, 26/11/2026: «cancel·la??? està malament»). Només aquest caràcter, amb el de la Inter, que deixa aire a banda i banda.
+   Mateixos gruixos que les cares de «CO Cond» (theme-v878659.css): així el navegador les combina per caràcter. */
+@font-face{font-family:"CO Cond";src:url("./fonts/inter-latin-500-normal.woff2") format("woff2");font-weight:100 549;font-style:normal;font-display:swap;unicode-range:U+00B7}
+@font-face{font-family:"CO Cond";src:url("./fonts/inter-latin-600-normal.woff2") format("woff2");font-weight:550 649;font-style:normal;font-display:swap;unicode-range:U+00B7}
+@font-face{font-family:"CO Cond";src:url("./fonts/inter-latin-700-normal.woff2") format("woff2");font-weight:650 1000;font-style:normal;font-display:swap;unicode-range:U+00B7}
+
+/* 52 · La barra blau nit del pressupost: el número, més gran i més clar; l'avís, groc amb el text fosc (el fons taronja clar duia el text blanc
+   d'una regla del Blau nit i no es llegia). El prefix llarg és perquè la regla del Blau nit que posa tot el text en blanc és molt específica. */
+html:root:root body details.card.bloc-v878426.budget-card-v878248.pres-bloc-v878427>summary .num-v878656.num-v878656.num-v878656{font:600 14.5px/1.25 "CO Sans",Inter,system-ui,sans-serif!important;color:#D6E2F0!important;letter-spacing:.02em;margin-top:2px}
+html:root:root body details.card.bloc-v878426.budget-card-v878248.pres-bloc-v878427>summary>.n-av-v878549.n-av-v878549.n-av-v878549.n-av-v878549{display:inline-flex;align-items:center;gap:5px;padding:3px 10px!important;border:0!important;border-radius:99px!important;background:#FBBF24!important;color:#16263D!important;font:700 13.5px "CO Sans",Inter,system-ui,sans-serif!important}
+html:root:root body details.card.bloc-v878426.budget-card-v878248.pres-bloc-v878427>summary>.n-av-v878549.n-av-v878549.n-av-v878549.n-av-v878549 *{color:#16263D!important;stroke:#16263D!important;background:transparent!important}
+
+/* 55 · La part de dalt, ordenada: a dalt els botons (Editar · Imprimir · Enviar · Signar · Tancar · ⋯) i, a la dreta, el «fora de pressupost»
+   en una etiqueta; a sota, els avisos en una graella de l'amplada de la targeta (abans: l'import, els avisos en columna i els botons, tot en
+   una fila). Al mòbil no es toca. */
+@media (min-width:768px){
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"bts tot" "av av";align-items:center;gap:12px 16px;width:100%}
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320>.pres-accions-v878366{grid-area:bts;justify-content:flex-start!important;margin:0!important;flex-wrap:wrap}
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320>.budget-grand-total{grid-area:tot;justify-self:end;margin:0!important}
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320>.avisos-dins-v878549{grid-area:av;width:100%;max-width:none!important;margin:0!important}
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320>.avisos-dins-v878549>section{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:8px;width:100%;max-width:none!important}
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320>.avisos-dins-v878549>section>*{margin:0!important;min-width:0}
+}
+html:root:root body details.pres-bloc-v878427 .budget-grand-total em.fora-tot-v878410{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #FDBA74;border-radius:8px;background:#FFF7ED;color:#C2410C!important;font:700 14px "CO Sans",Inter,system-ui,sans-serif;font-style:normal;white-space:nowrap}
+
+/* 53 · Editant: «Cancel·lar» amb el seu requadre, com «Opcions» (a algunes amplades es quedava sense vora) */
+html:root:root body .budget-card-v878248 .pres-accions-v878366>button.secondary{border:1px solid var(--co-line-strong,#AEB8C4)!important;background:#FFFFFF!important;color:var(--co-ink,#16263D)!important}
+
+/* 54 · El menú del capítol diu «Opcions» (abans «⋯»: no es veia que hi havia opcions) */
+html:root:root body .budget-card-v878248 select.budget-chapter-actions-v87230.cap-mes-v878320{width:auto!important;min-width:104px;max-width:140px;padding:0 28px 0 10px!important;font:600 13.5px "CO Sans",Inter,system-ui,sans-serif!important;color:var(--co-ink,#16263D)!important;background-color:#FFFFFF!important;border:1px solid var(--co-line-strong,#AEB8C4)!important;border-radius:6px!important;height:32px}
+
+/* 56 · La rajola triada de l'obra (blau nit): la icona, blanca i sense quadre (es veia un quadre clar amb la icona grisa) */
+html:root:root body :is(.rajoles-v878485,.obra-blocs-v878299)>button:is(.on,.open,[aria-pressed="true"])>svg:first-child{background:transparent!important;color:#FFFFFF!important;stroke:#FFFFFF!important;box-shadow:none!important}
+html:root:root body :is(.rajoles-v878485,.obra-blocs-v878299):has(>button.open)>button.on:not(.open)>svg:first-child{background:transparent!important;color:#FFFFFF!important;stroke:#FFFFFF!important}
+
+/* ── 57–60 · Comparatiu d'industrials ── */
+/* a cada oferta, l'empresa i, a sota, el seu pressupost (número i obra) */
+html:root:root body .ind-llista-v878608 .ind-of .nom .pres-v878666{display:block;margin-top:2px;font-size:13.5px;font-weight:600;color:var(--co-ink-2,#334155)}
+/* el comparatiu, a dalt del capítol, al costat de l'import del pressupost */
+html:root:root body .ind-llista-v878608 .ind-pres{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+html:root:root body .ind-llista-v878608 .ind-pres .ind-comparar-v878666{margin-left:auto;display:inline-flex;align-items:center;gap:6px}
+/* l'adjudicada, en verd; la més baixa (encara sense adjudicar), només l'etiqueta */
+html:root:root body .ind-llista-v878608 .ind-of.adjudicada{border-color:#16A34A!important;box-shadow:inset 4px 0 0 #16A34A!important;background:#F0FDF4!important}
+html:root:root body .ind-llista-v878608 .ind-of.adjudicada .estat{background:#15803D!important;color:#FFFFFF!important;font-weight:700}
+html:root:root body .ind-llista-v878608 .ind-of.millor:not(.adjudicada){border-color:#D6DDE5!important;box-shadow:none!important}
+/* adjudicar: el marge */
+html:root:root body .ind-adj-v878608 .marge-v878666{display:flex;flex-direction:column;gap:4px;margin:10px 0 6px}
+html:root:root body .ind-adj-v878608 .marge-v878666>span:first-child{font-weight:600;font-size:14px}
+html:root:root body .ind-adj-v878608 .marge-v878666 .in{display:inline-flex;align-items:center;gap:6px}
+html:root:root body .ind-adj-v878608 .marge-v878666 .in input{width:110px;text-align:right}
+html:root:root body .ind-adj-v878608 .marge-v878666 small{color:var(--co-ink-3,#58667A);font-size:12.5px}
+/* (sense avisos, una sola fila: la fila buida dels avisos afegia 12 px a la barra i el capítol obert quedava tapat en baixar) */
+@media (min-width:768px){
+  html:root:root body details.pres-bloc-v878427>.card-head>.budget-eines-v878320:not(:has(>.avisos-dins-v878549)){grid-template-areas:"bts tot";row-gap:0}
+}

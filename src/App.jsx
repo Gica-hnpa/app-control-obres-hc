@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.665";
+const APP_VERSION878264="87.666";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13971,6 +13971,7 @@ const OBRA_TABS_MAIN878269=["Resum","Pressupost","Pressupost ràpid","Pressupost
 function tabLabel878269(tab,all=[],pur=false){
   if(tab==="Certificacions obra")return t("Certificacions");
   if(tab==="Amidaments obra")return t("Amidaments");
+  if(tab==="Industrials")return t("Comparatiu d’industrials");
   if(tab==="Partes obra")return t("Partes d’obra");
   if(tab==="Agenda / Avisos")return t("Agenda");
   // V87.308 · apartats ajuntats: Dades amb els agents; el seguiment econòmic amb el rendiment
@@ -17425,16 +17426,21 @@ function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]})
   const pres=IND878608.importPartides(partides);
   const adjudicades=ofertes.filter(o=>o.estat==="adjudicada");
   // del PDF: la fitxa de l'oferta amb les partides llegides (el capítol, si totes són del mateix)
-  const delPdf=(rows,meta)=>{const cs=[...new Set(rows.map(r=>IND878608.normCap(r.cap)).filter(Boolean))];const cap=cs.length===1?(caps.find(c=>IND878608.normCap(c)===cs[0])||rows.find(r=>r.cap)?.cap||""):"";
+  // V87.666 · el capítol, el del pressupost que hi coincideixi (abans s'hi posava el títol del PDF, que és la referència de l'industrial, i cada
+  // oferta anava a un grup diferent: no es podien comparar); la capçalera (empresa, NIF, data, número i obra) es llegeix del PDF
+  const delPdf=(rows,meta)=>{const cs=[...new Set(rows.map(r=>IND878608.normCap(r.cap)).filter(Boolean))];const cap=cs.length===1?(caps.find(c=>IND878608.normCap(c)===cs[0])||""):"";
     const nom=String(meta?.fileName||"").replace(/\.pdf$/i,"").replace(/[_-]+/g," ").trim();
-    setFitxa({id:"",industrial:"",capitol:cap,import:"",data:todayISO8743(),notes:"",linies:rows.map(r=>({codi:r.codi||"",cap:r.cap||"",ut:r.ut||"",concepte:r.concepte||"",q:r.q,pu:r.pu})),fitxer:nom?{nom:meta.fileName}:null})};
+    const e=empresaInfo878259()||{};const cc=IND878608.capcaleraOferta(meta?.text||"",{propis:[e.nom,e.fiscal,e.nomComercial,obra?.nom].filter(Boolean),nifPropi:e.nif||"",contactes:industrials.map(x=>({nom:x.empresa||x.nom||"",nif:x.nif||x.cif||""})).filter(x=>x.nom)});
+    const refPdf=[...new Set(rows.map(r=>String(r.cap||"").trim()).filter(Boolean))];
+    const pres=[cc.numero?t("Pressupost {n}",{n:cc.numero}):"",cc.referencia||(refPdf.length===1&&!cap?refPdf[0]:"")].filter(Boolean).join(" · ");
+    setFitxa({id:"",industrial:cc.industrial||"",nif:cc.nif||"",pressupostNom:pres,capitol:cap,import:"",data:cc.data||todayISO8743(),notes:"",linies:rows.map(r=>({codi:r.codi||"",cap:cap||r.cap||"",ut:r.ut||"",concepte:r.concepte||"",q:r.q,pu:r.pu})),fitxer:nom?{nom:meta.fileName}:null})};
   const desaFitxa=f=>{const nou=!f.id;const o={...f,id:f.id||"of-"+Date.now(),import:f.linies?.length?"":String(f.import||""),estat:f.estat||"rebuda",updatedAt:ara(),...(nou?{createdAt:ara()}:{})};
     desaOfertes(l=>nou?[...l,o]:l.map(x=>x.id===o.id?o:x));setFitxa(null)};
   const elimina=o=>{if(!confirm(t("Eliminar l’oferta de {n}?",{n:o.industrial||t("l’industrial")})))return;desaOfertes(l=>l.filter(x=>x.id!==o.id))};
-  const adjudica=(o,descarta)=>{const at=ara();setData?.(d=>{const b=ensureBudgetGroups8786(d).active||"principal";const g=o.capitol?IND878608.normCap(o.capitol):"__tota";const mateix=x=>(x.capitol?IND878608.normCap(x.capitol):"__tota")===g;
-    const r=IND878608.aplicaOferta(d.partides||[],o,{budgetId:b,certificada:certificada878380,ara:at,altres:(Array.isArray(d.industrials878608)?d.industrials878608:[]).filter(mateix).map(x=>x.id)});
-    const ofs=(Array.isArray(d.industrials878608)?d.industrials878608:[]).map(x=>x.id===o.id?{...x,estat:"adjudicada",aplicada:{budgetId:b,at,partides:r.ids},updatedAt:at}:(descarta&&mateix(x)?{...x,estat:"descartada",updatedAt:at}:x));
-    return {...d,partides:r.partides,industrials878608:ofs,updatedAt:at}});setAdj(null);setComp(null)};
+  const adjudica=(o,descarta,marge=0)=>{const at=ara();setData?.(d=>{const b=ensureBudgetGroups8786(d).active||"principal";const g=o.capitol?IND878608.normCap(o.capitol):"__tota";const mateix=x=>(x.capitol?IND878608.normCap(x.capitol):"__tota")===g;
+    const r=IND878608.aplicaOferta(d.partides||[],o,{budgetId:b,certificada:certificada878380,ara:at,marge,altres:(Array.isArray(d.industrials878608)?d.industrials878608:[]).filter(mateix).map(x=>x.id)});
+    const ofs=(Array.isArray(d.industrials878608)?d.industrials878608:[]).map(x=>x.id===o.id?{...x,estat:"adjudicada",marge878666:marge,aplicada:{budgetId:b,at,partides:r.ids,marge},updatedAt:at}:(descarta&&mateix(x)?{...x,estat:"descartada",updatedAt:at}:x));
+    return {...d,partides:r.partides,industrials878608:ofs,margeInd878666:marge,updatedAt:at}});setAdj(null);setComp(null)};
   const estatEt=e=>e==="adjudicada"?t("Adjudicada"):e==="descartada"?t("Descartada"):t("Rebuda");
   const g0=comp?grups.find(g=>g.k===comp):null;
   return <div className="stack industrials-v878608">
@@ -17447,15 +17453,15 @@ function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]})
     {!ofertes.length&&<p className="buit-v878608">{t("Encara no hi ha cap oferta.")}</p>}
     {grups.map(g=>{const pc=IND878608.importPartides(IND878608.partidesCapitol(partides,g.capitol));return <CartaLlista878518 key={g.k} className="ind-grup-v878608" icona={HardHat} title={capNom608(g.capitol)} xifra={g.ofertes.length===1?t("1 oferta"):t("{n} ofertes",{n:g.ofertes.length})}>
       <div className="ind-llista-v878608">
-        {pc>0&&<div className="ind-pres"><span>{t("Al pressupost")}</span><b>{money(pc)}</b></div>}
+        {pc>0&&<div className="ind-pres"><span>{t("Al pressupost")}</span><b>{money(pc)}</b>{g.ofertes.length>1&&<button type="button" className="primary ind-comparar-v878666" onClick={()=>setComp(g.k)}><Scale size={16} aria-hidden="true"/> {t("Comparatiu ({n} ofertes)",{n:g.ofertes.length})}</button>}</div>}
+        {!(pc>0)&&g.ofertes.length>1&&<div className="ind-pres"><span/><button type="button" className="primary ind-comparar-v878666" onClick={()=>setComp(g.k)}><Scale size={16} aria-hidden="true"/> {t("Comparatiu ({n} ofertes)",{n:g.ofertes.length})}</button></div>}
         {g.ofertes.map(o=>{const im=IND878608.importOferta(o),dif=pc>0?(im-pc)/pc*100:null,s=o.estat==="adjudicada"?seg(o):null;return <div key={o.id} className={`ind-of ${o.estat||"rebuda"}${im===g.minim&&g.ofertes.length>1?" millor":""}`}>
-          <div className="nom"><b>{o.industrial||t("Sense nom")}</b><small>{[fd608(o.data),o.linies?.length?t("{n} partides",{n:o.linies.length}):t("preu tancat"),o.fitxer?.nom].filter(Boolean).join(" · ")}</small></div>
+          <div className="nom"><b>{o.industrial||t("Sense nom")}</b>{o.pressupostNom&&<span className="pres-v878666">{o.pressupostNom}</span>}<small>{[fd608(o.data),o.linies?.length?t("{n} partides",{n:o.linies.length}):t("preu tancat"),o.fitxer?.nom].filter(Boolean).join(" · ")}</small></div>
           <div className="imp"><b>{money(im)}</b>{dif!=null&&<small className={dif>0?"puja":"baixa"}>{dif>0?"+":""}{(Math.round(dif*10)/10).toLocaleString(loc878272())} %</small>}</div>
           <span className={`estat ${o.estat||"rebuda"}`}>{o.estat==="adjudicada"||o.estat==="descartada"?estatEt(o.estat):im===g.minim&&g.ofertes.length>1?t("La més baixa"):estatEt(o.estat)}</span>
           {s&&<div className="seg"><span>{t("Certificat {c} de {p} ({x} %)",{c:money(s.cert),p:money(s.pres),x:s.pct.toLocaleString(loc878272())})}</span><span>{t("Facturat {f}",{f:money(s.fact)})}</span></div>}
           {!readOnly&&<div className="bts">{o.estat!=="adjudicada"&&<button type="button" className="primary" onClick={()=>setAdj(o)}>{t("Adjudicar")}</button>}<button type="button" className="secondary" onClick={()=>setFitxa({...o})}>{t("Editar")}</button><button type="button" className="secondary icona" aria-label={t("Eliminar")} title={t("Eliminar")} onClick={()=>elimina(o)}><Trash2 size={16} aria-hidden="true"/></button></div>}
         </div>})}
-        {g.ofertes.length>1&&<button type="button" className="secondary ind-comparar" onClick={()=>setComp(g.k)}><Scale size={16} aria-hidden="true"/> {t("Comparar les ofertes")}</button>}
       </div>
     </CartaLlista878518>})}
     {adjudicades.length>0&&<CartaLlista878518 className="ind-seg-v878608" icona={BarChart3} title={t("Seguiment dels industrials")} xifra={money(adjudicades.reduce((s,o)=>s+seg(o).cert,0))}>
@@ -17467,7 +17473,7 @@ function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]})
     {g0&&<ComparaOfertes878608 grup={g0} partides={partides} obraNom={obra?.nom||""} close={()=>setComp(null)} onAdjudica={readOnly?null:o=>setAdj(o)} onEdita={readOnly?null:o=>setFitxa({...o})}/>}
     {/* V87.611 · la fitxa, al davant del comparatiu (s’hi pot editar una oferta i en desar-la el comparatiu es posa al dia) */}
     {fitxa&&<FitxaOferta878608 key={fitxa.id||"nova"} inicial={fitxa} caps={caps} partides={partides} industrials={industrials} readOnly={readOnly} close={()=>setFitxa(null)} desa={desaFitxa}/>}
-    {adj&&<AdjudicaOferta878608 oferta={adj} data={data} grup={grups.find(g=>g.ofertes.some(o=>o.id===adj.id))} close={()=>setAdj(null)} confirma={d=>adjudica(adj,d)}/>}
+    {adj&&<AdjudicaOferta878608 oferta={adj} data={data} grup={grups.find(g=>g.ofertes.some(o=>o.id===adj.id))} close={()=>setAdj(null)} confirma={(d,m)=>adjudica(adj,d,m)}/>}
   </div>;
 }
 // V87.611 · la fitxa de l'oferta: les partides llegides del PDF (o amb la IA) es poden corregir, afegir i treure (l'Héctor, 15/11/2026: «no podia
@@ -17489,7 +17495,8 @@ function FitxaOferta878608({inicial,caps=[],partides=[],industrials=[],readOnly=
   const net=ls=>(ls||[]).filter(l=>String(l.concepte||"").trim()||IND878608.num(l.pu)>0).map(({_k,...l})=>({...l,q:IND878608.num(l.q),pu:IND878608.num(l.pu)}));
   return <Modal title={inicial.id?t("Oferta de {n}",{n:inicial.industrial||""}):t("Oferta nova")} close={close}><div className="ind-fitxa-v878608 ind-fitxa-v878611">
     <label><span>{t("Industrial o constructora")}</span><input list="ind-noms-v878608" value={f.industrial||""} disabled={readOnly} onChange={e=>set("industrial",e.target.value)} placeholder={t("Nom de l’empresa")} autoFocus={!inicial.id}/><datalist id="ind-noms-v878608">{industrials.map((x,i)=><option key={i} value={x.empresa||x.nom}/>)}</datalist></label>
-    <label><span>{t("Capítol")}</span>{altre?<input value={f.capitol||""} disabled={readOnly} onChange={e=>set("capitol",e.target.value)} placeholder={t("Nom del capítol")}/>
+    <label><span>{t("Pressupost de l’industrial")}</span><input value={f.pressupostNom||""} disabled={readOnly} onChange={e=>set("pressupostNom",e.target.value)} placeholder={t("Número i obra del seu pressupost")}/></label>
+    <label><span>{t("Capítol del pressupost")}</span>{altre?<input value={f.capitol||""} disabled={readOnly} onChange={e=>set("capitol",e.target.value)} placeholder={t("Nom del capítol")}/>
       :<select value={f.capitol||""} disabled={readOnly} onChange={e=>{if(e.target.value==="__altre"){setAltre(true);set("capitol","")}else set("capitol",e.target.value)}}><option value="">{t("Tota l’obra")}</option>{caps.map(c=><option key={c} value={c}>{c}</option>)}<option value="__altre">{t("Un altre capítol…")}</option></select>}</label>
     <div className="dos"><label><span>{t("Data")}</span><input type="date" value={f.data||""} disabled={readOnly} onChange={e=>set("data",e.target.value)}/></label>
       <label><span>{t("Import (sense IVA)")}</span>{ambLinies?<input value={money(total)} readOnly className="calc-v878611"/>:<NumIn878584 inputMode="decimal" value={f.import} disabled={readOnly} onChange={e=>set("import",e.target.value)} placeholder="0,00"/>}</label></div>
@@ -17546,13 +17553,17 @@ function ComparaOfertes878608({grup,partides=[],obraNom="",close,onAdjudica,onEd
 }
 function AdjudicaOferta878608({oferta,data={},grup,close,confirma}){
   const[descarta,setDescarta]=useState(true);
+  // V87.666 · el marge sobre els preus de l'industrial (per defecte, el de l'última adjudicació de l'obra; 0 % si ja l'hi ha posat ell)
+  const[marge,setMarge]=useState(()=>String(data.margeInd878666??0).replace(".",","));
+  const mg=Math.max(0,IND878608.num(marge));
   const bid=ensureBudgetGroups8786(data).active||"principal";
   const r=useMemo(()=>{const g=oferta.capitol?IND878608.normCap(oferta.capitol):"__tota";const ids=(Array.isArray(data.industrials878608)?data.industrials878608:[]).filter(x=>(x.capitol?IND878608.normCap(x.capitol):"__tota")===g).map(x=>x.id);
-    return IND878608.aplicaOferta(data.partides||[],oferta,{budgetId:bid,certificada:certificada878380,altres:ids})},[oferta,data.partides,data.industrials878608,bid]);
+    return IND878608.aplicaOferta(data.partides||[],oferta,{budgetId:bid,certificada:certificada878380,altres:ids,marge:mg})},[oferta,data.partides,data.industrials878608,bid,mg]);
   const pctF=r.factor!=null?Math.round((r.factor-1)*1000)/10:null;
   const altres=(grup?.ofertes||[]).filter(o=>o.id!==oferta.id&&o.estat!=="descartada").length;
   return <Modal title={t("Adjudicar a {n}",{n:oferta.industrial||""})} close={close}><div className="ind-adj-v878608">
     <p className="imp"><b>{money(IND878608.importOferta(oferta))}</b><span>{capNom608(oferta.capitol)}</span></p>
+    <label className="marge-v878666"><span>{t("Marge sobre els preus de l’industrial")}</span><span className="in"><NumIn878584 inputMode="decimal" value={marge} onChange={e=>setMarge(e.target.value)} placeholder="0"/><b>%</b></span><small>{mg>0?t("Al pressupost: {x}",{x:money(IND878608.importOferta(oferta)*(1+mg/100))}):t("0 %: els preus passen tal com són (si l’industrial ja hi ha posat el marge).")}</small></label>
     <ul>
       {r.actualitzades>0&&<li>{pctF!=null?(r.actualitzades===1?t("La partida del pressupost s’ajusta un {p} % perquè sumi l’import de l’oferta.",{p:(pctF>0?"+":"")+pctF.toLocaleString(loc878272())}):t("Les {n} partides del pressupost s’ajusten un {p} % perquè sumin l’import de l’oferta.",{n:r.actualitzades,p:(pctF>0?"+":"")+pctF.toLocaleString(loc878272())})):r.actualitzades===1?t("1 partida del pressupost agafa el preu de l’oferta."):t("{n} partides del pressupost agafen el preu de l’oferta.",{n:r.actualitzades})}</li>}
       {r.sensePreu>0&&<li className="av">{r.sensePreu===1?t("1 partida de l’oferta no té preu: no es toca."):t("{n} partides de l’oferta no tenen preu: no es toquen.",{n:r.sensePreu})}</li>}
@@ -17561,7 +17572,7 @@ function AdjudicaOferta878608({oferta,data={},grup,close,confirma}){
       {r.fixes>0&&<li>{r.fixes===1?t("1 partida ja certificada es queda amb el seu preu."):t("{n} partides ja certificades es queden amb el seu preu.",{n:r.fixes})}</li>}
     </ul>
     {altres>0&&<label className="chk"><input type="checkbox" checked={descarta} onChange={e=>setDescarta(e.target.checked)}/><span>{altres===1?t("Marcar l’altra oferta com a descartada"):t("Marcar les altres {n} ofertes com a descartades",{n:altres})}</span></label>}
-  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={()=>confirma(descarta)}>{t("Adjudicar i passar-ho al pressupost")}</button></div></Modal>;
+  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={()=>confirma(descarta,mg)}>{t("Adjudicar i passar-ho al pressupost")}</button></div></Modal>;
 }
 
 function MargesObra878378({data={},setData,readOnly=false}){
@@ -18003,7 +18014,7 @@ function PdfPressupost878305({onImport,close,inicial=null,onLlegit=null,titol=""
   async function desa(){
     setEstat("desant");
     const rows=sel.map(p=>({codi:p.codi,cap:p.cap,ut:p.ut,concepte:p.concepte,desc:p.desc,q:nm(p.q),pu:nm(p.pu)}));
-    if(onLlegit){onLlegit(rows,{fileName:fitxer?.name||"",total,file:fitxer});return}
+    if(onLlegit){onLlegit(rows,{fileName:fitxer?.name||"",total,file:fitxer,text:textPdf});return}
     const r=await onImport?.(rows,{fileName:fitxer?.name||"",total,file:fitxer});
     if(r){alert(r.nou?t("Fet: s’ha creat el pressupost «{nom}» amb {n} partides. El que ja hi havia no s’ha tocat.",{nom:r.nom,n:r.partides}):t("Fet: s’han posat {n} partides al pressupost.",{n:r.partides}));close?.()}
     else{setErr(t("No s’ha pogut desar."));setEstat("revisa")}
@@ -19363,7 +19374,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               <button type="button" tabIndex={-1} aria-hidden="true">{open[cap]?"▾":"▸"}</button>
               <div className="budget-chapter-title-v87230">{editBudget8760b&&seleccio878320&&!quickMode&&<input type="checkbox" className="cap-sel-v878449" aria-label={i18nT("Marcar / desmarcar totes les partides")} checked={!!items.length&&items.every((_,x)=>budgetSelectedRows878229[budgetSelectKey878229(cap,x)])} ref={el=>{if(el)el.indeterminate=items.some((_,x)=>budgetSelectedRows878229[budgetSelectKey878229(cap,x)])&&!items.every((_,x)=>budgetSelectedRows878229[budgetSelectKey878229(cap,x)])}} onClick={e=>e.stopPropagation()} onChange={()=>toggleBudgetChapterSelection878229(cap)}/>}<b>{cap}</b>{mainAmagat878320&&<small>{mainChapter87226}</small>}</div>
               <span/>
-              <strong className="budget-chapter-total-v87230"><small>{i18nT("Total capítol")}</small>{money(capTotal)}</strong>{editBudget8760b&&<select className="budget-chapter-actions-v87230 cap-mes-v878320" aria-label={i18nT("Capítol")} defaultValue="" onChange={e=>{const value=e.target.value;e.currentTarget.value="";if(value==="edit")openChapterEditor878230(cap);if(value==="add"){addPartida(cap);setOpen(o=>({...o,[cap]:true}))}if(value==="banc"){setOpen(o=>({...o,[cap]:true}));obreLib535(cap)}if(value==="delete")deleteCapitol(cap)}}><option value="" disabled>⋯</option>{!clientMode&&<option value="banc">{i18nT("Afegir del banc o de Preus")}</option>}<option value="add">{i18nT("Afegir partida")}</option><option value="edit">{i18nT("Canviar el número i el nom")}</option><option value="delete">{i18nT("Eliminar capítol")}</option></select>}<ChevronRight size={18} className="chev cap-chev-v878426" aria-hidden="true"/>
+              <strong className="budget-chapter-total-v87230"><small>{i18nT("Total capítol")}</small>{money(capTotal)}</strong>{editBudget8760b&&<select className="budget-chapter-actions-v87230 cap-mes-v878320" aria-label={i18nT("Capítol")} defaultValue="" onChange={e=>{const value=e.target.value;e.currentTarget.value="";if(value==="edit")openChapterEditor878230(cap);if(value==="add"){addPartida(cap);setOpen(o=>({...o,[cap]:true}))}if(value==="banc"){setOpen(o=>({...o,[cap]:true}));obreLib535(cap)}if(value==="delete")deleteCapitol(cap)}}><option value="" disabled>{i18nT("Opcions")}</option>{!clientMode&&<option value="banc">{i18nT("Afegir del banc o de Preus")}</option>}<option value="add">{i18nT("Afegir partida")}</option><option value="edit">{i18nT("Canviar el número i el nom")}</option><option value="delete">{i18nT("Eliminar capítol")}</option></select>}<ChevronRight size={18} className="chev cap-chev-v878426" aria-hidden="true"/>
             </div>
 
             {open[cap]&&<div className={`budget-v25-lines${editBudget8760b&&quickMode?"":" cartes-v878426"}`}>
@@ -23986,7 +23997,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.665",
+    app_version:"87.666",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -107,13 +107,16 @@ export const liniesPressupost = (partides = [], capitol = TOTA_OBRA) =>
 // l'oferta (abans s'hi afegia una partida «pa» i el capítol sortia dues vegades); només si el capítol no té cap partida amb import, una «pa».
 // Adjudicar una altra oferta del mateix grup (`altres`: les seves ofertes) treu les partides que hi havien afegit les altres (si no estan
 // certificades): així no s'acumulen.
-export function aplicaOferta(partides = [], oferta, { budgetId = "principal", certificada = () => false, ara = new Date().toISOString(), nouId = () => "p-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7), altres = [] } = {}) {
+// V87.666 · `marge` (%): el que es carrega sobre els preus de l'industrial en passar-los al pressupost (l'Héctor, 26/11/2026: «l'únic que ha de
+// deixar posar el % de marge que se li vol carregar sobre el pressupost origen; 0 % si el que ens envien ja l'hi ha afegit»).
+export function aplicaOferta(partides = [], oferta, { budgetId = "principal", certificada = () => false, ara = new Date().toISOString(), nouId = () => "p-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7), altres = [], marge = 0 } = {}) {
+  const mg = 1 + (Number(marge) || 0) / 100, ambMarge = x => Math.round(num(x) * mg * 10000) / 10000;
   const dePres = p => (p.budgetId || "principal") === budgetId;
   const alt = new Set(altres.filter(id => id && id !== oferta.id));
   const treure = new Set(partides.filter(p => dePres(p) && p.afegidaInd878612 && (alt.has(p.afegidaInd878612) || p.afegidaInd878612 === oferta.id) && !certificada(p)));
   const vives = partides.filter(p => !treure.has(p));
   const base = partidesCapitol(vives.filter(dePres), oferta.capitol);
-  const origen = `Industrial: ${oferta.industrial || "—"}${oferta.data ? " · oferta del " + oferta.data.split("-").reverse().join("/") : ""}`;
+  const origen = `Industrial: ${oferta.industrial || "—"}${oferta.data ? " · oferta del " + oferta.data.split("-").reverse().join("/") : ""}${Number(marge) ? " · marge " + String(marge).replace(".", ",") + " %" : ""}`;
   const canvis = new Map(), noves = [], ids = [];
   let fixes = 0, actualitzades = 0, sensePreu = 0, factor = null;
   const marca = p => ({ ...p, industrial878608: oferta.id, industrialNom878608: oferta.industrial || "", origenPreu878368: origen, updatedAt: ara });
@@ -125,15 +128,15 @@ export function aplicaOferta(partides = [], oferta, { budgetId = "principal", ce
       if (!tePreu(l)) { sensePreu++; continue; }
       if (p) {
         if (certificada(p)) { fixes++; canvis.set(p, { ...p, industrial878608: oferta.id, industrialNom878608: oferta.industrial || "", updatedAt: ara }); ids.push(p.id); continue; }
-        canvis.set(p, { ...marca(p), pu: num(l.pu), ...(num(p.q) > 0 ? {} : { q: num(l.q) }) }); actualitzades++; ids.push(p.id);
+        canvis.set(p, { ...marca(p), pu: ambMarge(l.pu), ...(num(p.q) > 0 ? {} : { q: num(l.q) }) }); actualitzades++; ids.push(p.id);
       } else {
         const id = nouId();
-        noves.push(nova({ id, codi: l.codi || "", cap: l.cap || oferta.capitol || "", ut: l.ut || "", concepte: l.concepte || "", desc: "", q: num(l.q), pu: num(l.pu), budgetId, createdAt: ara }));
+        noves.push(nova({ id, codi: l.codi || "", cap: oferta.capitol || l.cap || "", ut: l.ut || "", concepte: l.concepte || "", desc: "", q: num(l.q), pu: ambMarge(l.pu), budgetId, createdAt: ara }));
         ids.push(id);
       }
     }
   } else {
-    const total = importOferta(oferta);
+    const total = r2(importOferta(oferta) * mg);
     const fixesP = base.filter(p => certificada(p)), varP = base.filter(p => !certificada(p) && num(p.q) * num(p.pu) > 0);
     const fix = importPartides(fixesP), vari = importPartides(varP), objectiu = r2(total - fix);
     if (vari > 0 && objectiu > 0) {
@@ -184,4 +187,44 @@ export function seguiment(oferta, partides = [], { certificat = () => 0, facture
   const fs = factures.filter(f => mateixProveidor(oferta.industrial, f.proveidor));
   const fact = r2(fs.reduce((s, f) => s + num(f.base), 0));
   return { adjudicat: importOferta(oferta), pres, cert, pct: pres > 0 ? Math.round(cert / pres * 1000) / 10 : 0, fact, factures: fs.length, pendent: r2(cert - fact), partides: ps.length };
+}
+
+// V87.666 · La capçalera d'una oferta en PDF (l'Héctor, 26/11/2026: «no em detecta ni l'industrial ni la data del pressupost ni les altres dades»):
+// l'empresa (la que porta S.A., S.L.… a les primeres línies, o la d'un contacte amb el mateix NIF), el NIF, la data, el número i l'obra o
+// referència. `propis`: els noms i el NIF de la nostra empresa, que no són l'industrial (surten com a destinatari). `contactes`: [{nom, nif}].
+const MESOS = { gener: 1, enero: 1, febrer: 2, febrero: 2, març: 3, marc: 3, marzo: 3, abril: 4, maig: 5, mayo: 5, juny: 6, junio: 6, juliol: 7, julio: 7, agost: 8, agosto: 8, setembre: 9, septiembre: 9, setiembre: 9, octubre: 10, novembre: 11, noviembre: 11, desembre: 12, diciembre: 12 };
+const nifNet = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+export function capcaleraOferta(text = "", { propis = [], nifPropi = "", contactes = [] } = {}) {
+  const linies = String(text).split(/\r?\n/).map(l => l.replace(/\s+/g, " ").trim()).filter(Boolean);
+  const dalt = linies.slice(0, 40);
+  const nostres = propis.map(norm).filter(x => x.length > 2);
+  const esNostre = l => { const n = norm(l); return nostres.some(x => n.includes(x)); };
+  const out = { industrial: "", nif: "", data: "", numero: "", referencia: "" };
+  // NIF / CIF (el primer que no és el nostre)
+  const propi = nifNet(nifPropi);
+  for (const l of dalt) {
+    const m = l.match(/\b(?:C\.?\s?I\.?\s?F\.?|N\.?\s?I\.?\s?F\.?)\s*[:.]?\s*([A-Z]-?\s?\d{7,8}-?[A-Z0-9]?|\d{8}-?[A-Z])\b/i);
+    if (m && nifNet(m[1]) !== propi) { out.nif = nifNet(m[1]); break; }
+  }
+  // l'empresa: un contacte amb el mateix NIF o amb el nom a les primeres línies; si no, la línia amb la forma jurídica
+  const ct = out.nif && contactes.find(c => nifNet(c.nif) === out.nif);
+  if (ct) out.industrial = ct.nom;
+  if (!out.industrial) { const top = norm(dalt.slice(0, 25).join(" ")); const c = contactes.find(c => { const n = norm(c.nom); return n.length > 3 && top.includes(n) && !nostres.some(x => n.includes(x) || x.includes(n)); }); if (c) out.industrial = c.nom; }
+  if (!out.industrial) {
+    const forma = /\b(S\.?\s?A\.?\s?U?\.?|S\.?\s?L\.?\s?(?:U\.?|P\.?)?|S\.?\s?C\.?\s?C\.?\s?L\.?|S\.?\s?C\.?\s?P\.?|C\.?\s?B\.?|S\.?\s?COOP\.?)\s*$/i;
+    const l = dalt.slice(0, 25).find(l => forma.test(l) && !esNostre(l) && l.length <= 70 && !/(obra|pressupost|presupuesto|client|cliente)\s*:/i.test(l));
+    if (l) out.industrial = l.replace(/^(?:empresa|raó social|razón social)\s*:\s*/i, "").trim();
+  }
+  // la data: dd/mm/aaaa o «18 de juliol de 2025»
+  for (const l of dalt) {
+    let m = l.match(/\b(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})\b/);
+    if (m) { let a = +m[3]; if (a < 100) a += 2000; const d = +m[1], me = +m[2]; if (d >= 1 && d <= 31 && me >= 1 && me <= 12 && a > 1990) { out.data = `${a}-${String(me).padStart(2, "0")}-${String(d).padStart(2, "0")}`; break; } }
+    m = l.toLowerCase().match(/\b(\d{1,2})\s*(?:de\s+|d')?\s*([a-zàèéíòóúç]+)\s*(?:de\s+|del\s+)?(\d{4})\b/);
+    if (m && MESOS[m[2]]) { out.data = `${m[3]}-${String(MESOS[m[2]]).padStart(2, "0")}-${String(+m[1]).padStart(2, "0")}`; break; }
+  }
+  // el número del pressupost
+  for (const l of dalt) { const m = l.match(/\b(?:pressupost|presupuesto|oferta|cotitzaci[óo]|cotizaci[óo]n)\s*(?:n[ºo°]\.?|n[úu]m\.?|n[úu]mero)?\s*[:.]?\s*([A-Z]{0,4}[-\/]?\d[\w\-\/.]{1,20})/i); if (m) { out.numero = m[1].replace(/[.]+$/, ""); break; } }
+  // l'obra o la referència
+  for (const l of dalt) { const m = l.match(/\b(?:obra|ref\.?|refer[eè]ncia|referencia|assumpte|asunto)\s*:\s*(.{3,})$/i); if (m) { out.referencia = m[1].trim().slice(0, 90); break; } }
+  return out;
 }

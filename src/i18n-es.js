@@ -6468,4 +6468,13 @@ export default {
   "En obrir l’app, entres amb {nom}.": "Al abrir la app, entras con {nom}.",
   "Entra en aquest aparell amb {nom}, sense escriure la contrasenya.": "Entra en este dispositivo con {nom}, sin escribir la contraseña.",
   "Treure-ho": "Quitarlo",
+  "Comparatiu d’industrials": "Comparativo de industriales",
+  "Pressupost {n}": "Presupuesto {n}",
+  "Pressupost de l’industrial": "Presupuesto del industrial",
+  "Número i obra del seu pressupost": "Número y obra de su presupuesto",
+  "Capítol del pressupost": "Capítulo del presupuesto",
+  "Comparatiu ({n} ofertes)": "Comparativo ({n} ofertas)",
+  "Marge sobre els preus de l’industrial": "Margen sobre los precios del industrial",
+  "Al pressupost: {x}": "En el presupuesto: {x}",
+  "0 %: els preus passen tal com són (si l’industrial ja hi ha posat el marge).": "0 %: los precios pasan tal cual (si el industrial ya ha puesto el margen).",
 };

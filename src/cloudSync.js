@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.665";
+const VERSION = "V87.666";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -256,7 +256,7 @@ async function comprovaEmpremta878661(uid, pass) {
     return (await empremta878661(pass, v.sal)) === v.h;
   } catch { return null; }
 }
-// V87.665 · Entrar amb Face ID / l'empremta (l'Héctor, 26/11/2026: «perquè al mòbil no recorda la contrasenya?»; al mòbil el navegador no la
+// V87.666 · Entrar amb Face ID / l'empremta (l'Héctor, 26/11/2026: «perquè al mòbil no recorda la contrasenya?»; al mòbil el navegador no la
 // posa sol en obrir l'app). Una clau de l'aparell (WebAuthn, l'autenticador del mateix mòbil, amb verificació de l'usuari): en obrir l'app,
 // «Entrar amb Face ID» fa servir la sessió que l'aparell ja té, sense escriure la contrasenya. És un pany de l'aparell, com l'empremta de la
 // contrasenya sense connexió: la sessió del núvol no canvia. Es fa servir l'identificador de la clau («nuvol-aco-bio__<usuari>»); mai cap dada
@@ -725,7 +725,7 @@ function askLogin({ allowSkip = true, message = "", anterior = null } = {}) {
       </form>`);
     const form = el.querySelector("form"), err = el.querySelector(".err"), btn = el.querySelector("button.primary");
     const email = form.elements.email; email.value = localStorage.getItem("nuvol-aco-correu") || (anterior ? (companyOf(anterior.email)?.username || anterior.email || "") : ""); (email.value ? form.elements.password : email).focus();
-    // V87.665 · amb la clau de l'aparell, «Entrar amb Face ID / l'empremta» (la sessió que ja hi ha); la contrasenya continua servint
+    // V87.666 · amb la clau de l'aparell, «Entrar amb Face ID / l'empremta» (la sessió que ja hi ha); la contrasenya continua servint
     if (anterior?.user_id && bioDesat878665(anterior.user_id)) bioDisponible878665().then(ok => {
       if (!ok || !el.isConnected) return;
       const caixa = el.querySelector(".bio-v878665"), bb = caixa.querySelector("button");

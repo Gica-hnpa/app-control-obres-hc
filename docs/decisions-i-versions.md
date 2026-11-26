@@ -5178,3 +5178,19 @@
   sol (Chrome ja posa la contrasenya), però s'hi pot activar (Windows Hello). Codi a `cloudSync.js`: `activaBio878665`, `entraBio878665`,
   `ofereixBio878665`, `treuBio878665`; `window.__acoCloud.bio878665`. Estils a `theme-v878665.css`. Prova nova `bio665test` (14/14, amb un
   autenticador virtual de l'Edge).
+- **V87.666 · Repàs del Pressupost i comparatiu d'industrials** (26/11/2026; punts 52–60 de `docs/repas-constructora-2026-11-25.md`).
+  - **Barra blau nit del pressupost:** el número (P2026_0002) a 14,5 px; l'avís, groc amb el text fosc (el fons taronja clar duia el text blanc
+    d'una regla del Blau nit i no es llegia).
+  - **Part de dalt ordenada** (ordinador i tauleta): a dalt els botons (Editar · Imprimir · Enviar · Signar · Tancar · ⋯), a la dreta el «fora de
+    pressupost» en una etiqueta taronja i, a sota, els avisos en una graella de tota l'amplada (abans l'import, els avisos en columna i els
+    botons, tot en una fila). El mòbil, com era.
+  - **«Cancel·lar»:** la Barlow Condensed enganxa el punt volat a les eles i es llegia «Cancellar»; ara el caràcter U+00B7 de la lletra estreta
+    surt de la Inter (tres `@font-face` «CO Cond» amb `unicode-range:U+00B7` i els mateixos gruixos), a tota l'app. Editant, amb requadre.
+  - **Menú del capítol:** diu «Opcions» (abans «⋯»). **Rajola triada de l'obra:** la icona, blanca i sense quadre.
+  - **Comparatiu d'industrials** (abans «Industrials»): en llegir el PDF, el capítol és el del pressupost que hi coincideixi (abans s'hi posava
+    el títol del PDF, la referència de l'industrial, i cada oferta anava a un grup diferent: no es podien comparar); de la capçalera, l'empresa
+    (o un contacte amb el mateix NIF), el NIF, la data, el número i l'obra (`capcaleraOferta` a `industrials.js`), amb el camp nou «Pressupost
+    de l'industrial». La franja blau nit és el capítol; a dins, cada empresa i, a sota, el seu pressupost; el botó «Comparatiu (N ofertes)» a
+    dalt del capítol. En adjudicar, el **% de marge** sobre els preus de l'industrial (0 % si ja l'hi ha posat; per defecte, el de l'última
+    adjudicació de l'obra) i el que quedarà al pressupost; les partides noves van al capítol del pressupost. L'adjudicada, en **verd**.
+  - Proves: `v666test` 13/13 (nova); v608, v611 i v612 posades al dia (el nom de la pestanya i el botó del comparatiu).
