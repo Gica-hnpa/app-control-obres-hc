@@ -167,7 +167,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.664.2 a Render):**
+**Estat (publicada la V87.665 a Render):**
 - **Repàs de la constructora** (V87.663–664, 25–26/11/2026): llista a `docs/repas-constructora-2026-11-25.md` (51 punts). V87.663: 30 minuts al
   fons → contrasenya i Inici, entrada més ràpida, contactes nous de les despeses sols, Contactes, Inici, Obres sense Importar ni Filtres, colors
   d'estat, menú amb desplegables. V87.664 (propostes acceptades): barra blau nit a l'ordinador, Obres (Promotor una vegada, mòbil plegable),
@@ -175,7 +175,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   dades», tècnics des de Contactes, partes, nota (enviar per signar), actes rebudes, Agenda (el mes i les targetes), capçaleres grises.
   **Pendent:** els paquets (punt 28) per a més endavant; seguir el
   repàs per Pressupostos. **Recordar a l'Héctor a Pressupost:** el preu que ja es va fer al mateix client, sol.
-- **Entrar sempre** (V87.661, 25/11/2026): cada vegada que s’obre l’app (no en recarregar) demana usuari i contrasenya, amb l’usuari posat i la
+- **Entrar sempre** (V87.661, 25/11/2026; **V87.665: al mòbil, «Entrar amb Face ID / l’empremta»**, clau de l’aparell, Ajustos › Usuaris i contrasenyes): cada vegada que s’obre l’app (no en recarregar) demana usuari i contrasenya, amb l’usuari posat i la
   contrasenya del navegador; sense connexió, amb una empremta de la contrasenya a l’aparell. No surt amb el Supabase de proves (localhost) llevat
   de `aco-proves-bloqueig-v878661`. iPhone/iPad: `maximum-scale=1` (no s’engrandeix en tocar un camp: tots són de 13,5 px per una regla vella).
 - **G3C** (V87.660, 24/11/2026, `src/theme-v878660.css`): el nom de l’app és «G3C · Gestió i control d’obres», amb el logo F3 (menú, barra de dalt

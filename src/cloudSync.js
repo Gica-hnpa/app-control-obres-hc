@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.664.2";
+const VERSION = "V87.665";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -255,6 +255,68 @@ async function comprovaEmpremta878661(uid, pass) {
     if (!v?.sal || !v?.h || !globalThis.crypto?.subtle) return null;
     return (await empremta878661(pass, v.sal)) === v.h;
   } catch { return null; }
+}
+// V87.665 · Entrar amb Face ID / l'empremta (l'Héctor, 26/11/2026: «perquè al mòbil no recorda la contrasenya?»; al mòbil el navegador no la
+// posa sol en obrir l'app). Una clau de l'aparell (WebAuthn, l'autenticador del mateix mòbil, amb verificació de l'usuari): en obrir l'app,
+// «Entrar amb Face ID» fa servir la sessió que l'aparell ja té, sense escriure la contrasenya. És un pany de l'aparell, com l'empremta de la
+// contrasenya sense connexió: la sessió del núvol no canvia. Es fa servir l'identificador de la clau («nuvol-aco-bio__<usuari>»); mai cap dada
+// biomètrica (el mòbil no en dona). S'ofereix una vegada després d'entrar amb la contrasenya al mòbil i a la tauleta; Ajustos › Usuaris i
+// contrasenyes el deixa activar o treure a cada aparell.
+const bioKey878665 = uid => `nuvol-aco-bio__${uid}`;
+const bioNoKey878665 = uid => `nuvol-aco-bio-no__${uid}`;
+const b64u878665 = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const deB64u878665 = s => Uint8Array.from(atob(String(s).replace(/-/g, "+").replace(/_/g, "/") + "===".slice((String(s).length + 3) % 4)), c => c.charCodeAt(0));
+async function bioDisponible878665() {
+  try { return !!(window.isSecureContext && window.PublicKeyCredential && navigator.credentials && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch { return false; }
+}
+function bioDesat878665(uid) { try { const v = JSON.parse(realStore().getItem(bioKey878665(uid)) || "null"); return v?.id ? v : null; } catch { return null; } }
+function nomBio878665() { const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1); return ios ? t("Face ID") : t("l’empremta"); }
+async function activaBio878665(sess = session) {
+  if (!sess?.user_id || !(await bioDisponible878665())) return false;
+  const nom = String(companyOf(sess.email)?.username || sess.email || "G3C");
+  const cred = await navigator.credentials.create({ publicKey: {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    rp: { name: "G3C" },
+    user: { id: new TextEncoder().encode(String(sess.user_id)).slice(0, 64), name: nom, displayName: nom },
+    pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+    authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "discouraged" },
+    timeout: 60000, attestation: "none" } });
+  if (!cred?.rawId) return false;
+  realStore().setItem(bioKey878665(sess.user_id), JSON.stringify({ id: b64u878665(cred.rawId), creat: new Date().toISOString() }));
+  try { realStore().removeItem(bioNoKey878665(sess.user_id)); } catch {}
+  return true;
+}
+// true: és ell (l'aparell ha verificat la persona: Face ID, empremta o el codi del mòbil) · false: no
+async function entraBio878665(uid) {
+  const v = bioDesat878665(uid); if (!v) return false;
+  const a = await navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: "public-key", id: deB64u878665(v.id) }], userVerification: "required", timeout: 60000 } });
+  if (!a?.rawId || b64u878665(a.rawId) !== v.id) return false;
+  const flags = new Uint8Array(a.response?.authenticatorData || new ArrayBuffer(0))[32] || 0;
+  return !!(flags & 0x04);
+}
+function treuBio878665(uid = session?.user_id) { try { realStore().removeItem(bioKey878665(uid)); realStore().setItem(bioNoKey878665(uid), "1"); } catch {} }
+// després d'entrar amb la contrasenya, al mòbil i a la tauleta: s'ofereix una vegada (el «Sí» és el toc que el navegador demana per crear la clau)
+async function ofereixBio878665(el, sess) {
+  try {
+    if (!sess?.user_id || bioDesat878665(sess.user_id) || realStore().getItem(bioNoKey878665(sess.user_id)) === "1") return;
+    if (!window.matchMedia?.("(pointer:coarse)").matches || !(await bioDisponible878665())) return;
+  } catch { return; }
+  const nom = nomBio878665();
+  const box = el.querySelector(".box");
+  box.innerHTML = `<h1>${t("Entrar amb {nom}", { nom })}</h1>
+    <p>${t("La propera vegada que obris l’app en aquest aparell, entraràs amb {nom}, sense escriure la contrasenya.", { nom })}</p>
+    <p class="err" role="alert"></p>
+    <button class="primary" type="button" data-bio-si>${t("Activar {nom}", { nom })}</button>
+    <button class="link" type="button" data-bio-no>${t("Ara no")}</button>`;
+  await new Promise(fi => {
+    box.querySelector("[data-bio-si]").addEventListener("click", async ev => {
+      ev.currentTarget.disabled = true;
+      try { if (await activaBio878665(sess)) { fi(); return; } } catch {}
+      box.querySelector(".err").textContent = t("No s’ha pogut activar. Ho pots fer més tard a Ajustos › Usuaris i contrasenyes.");
+      ev.currentTarget.disabled = false;
+    });
+    box.querySelector("[data-bio-no]").addEventListener("click", () => { try { realStore().setItem(bioNoKey878665(sess.user_id), "1"); } catch {} fi(); });
+  });
 }
 // V87.262 · arxius (fotos, croquis, documents) a l'espai privat «aco-fitxers»; path = <propietari>/<obra>/<id>.
 async function storageFetch(path, opts = {}) {
@@ -658,10 +720,27 @@ function askLogin({ allowSkip = true, message = "", anterior = null } = {}) {
         <label><span>${t("Contrasenya")}</span><input name="password" type="password" autocomplete="current-password" required></label>
         <p class="err" role="alert">${message}</p>
         <button class="primary" type="submit">${t("Entrar")}</button>
+        <div class="bio-v878665" hidden><span>${t("o")}</span><button class="secondary" type="button" data-bio></button></div>
         ${allowSkip ? `<button class="link" type="button" data-skip>${isLocalServer() ? t("Ara no · treballar només en aquest ordinador") : t("Ara no · treballar sense núvol en aquest aparell")}</button>` : ""}
       </form>`);
     const form = el.querySelector("form"), err = el.querySelector(".err"), btn = el.querySelector("button.primary");
     const email = form.elements.email; email.value = localStorage.getItem("nuvol-aco-correu") || (anterior ? (companyOf(anterior.email)?.username || anterior.email || "") : ""); (email.value ? form.elements.password : email).focus();
+    // V87.665 · amb la clau de l'aparell, «Entrar amb Face ID / l'empremta» (la sessió que ja hi ha); la contrasenya continua servint
+    if (anterior?.user_id && bioDesat878665(anterior.user_id)) bioDisponible878665().then(ok => {
+      if (!ok || !el.isConnected) return;
+      const caixa = el.querySelector(".bio-v878665"), bb = caixa.querySelector("button");
+      bb.textContent = t("Entrar amb {nom}", { nom: nomBio878665() }); caixa.hidden = false;
+      // la contrasenya, a sota: el botó de Face ID és el primer
+      caixa.classList.add("primer"); form.insertBefore(caixa, form.firstChild); const sp = caixa.querySelector("span"); sp.textContent = t("o amb la contrasenya"); caixa.appendChild(sp); bb.className = "primary"; btn.className = "secondary"; try { form.elements.password.blur(); bb.focus(); } catch {}
+      bb.addEventListener("click", async () => {
+        err.textContent = ""; bb.disabled = true;
+        try {
+          if (await entraBio878665(anterior.user_id)) { session = anterior; el.remove(); resolve("ok"); return; }
+          err.textContent = t("No s’ha pogut entrar amb {nom}. Entra amb la contrasenya.", { nom: nomBio878665() });
+        } catch { err.textContent = t("No s’ha pogut entrar amb {nom}. Entra amb la contrasenya.", { nom: nomBio878665() }); }
+        bb.disabled = false;
+      });
+    });
     form.addEventListener("submit", async e => {
       e.preventDefault(); err.textContent = ""; btn.disabled = true; btn.textContent = t("Entrant…");
       const usuari = form.elements.email.value, pass = form.elements.password.value;
@@ -670,6 +749,7 @@ function askLogin({ allowSkip = true, message = "", anterior = null } = {}) {
         // V87.663 · l'empremta es fa de fons (0,15 s al mòbil que no cal esperar per obrir l'app)
         desaEmpremta878661(pass);
         try { localStorage.setItem("nuvol-aco-correu", usuari.trim()); } catch {}
+        await ofereixBio878665(el, session);
         el.remove(); resolve("ok");
       } catch (x) {
         // V87.661 · sense connexió, a la pantalla d'entrar de cada vegada: el compte d'aquest aparell, comprovat amb l'empremta desada
@@ -1380,7 +1460,8 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, paquets, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, desaErrors, estatNuvol, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, paquets, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, desaErrors, estatNuvol, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign,
+    bio878665: { disponible: bioDisponible878665, actiu: () => !!(session?.user_id && bioDesat878665(session.user_id)), activa: () => activaBio878665(session), treu: () => treuBio878665(), nom: nomBio878665 } };
   session = readSession();
   // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
   // directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). Si l'aparell té oberta la sessió d'un altre

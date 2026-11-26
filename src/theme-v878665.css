@@ -1,0 +1,14 @@
+/* V87.665 · Entrar amb Face ID / l'empremta */
+.cloud-overlay-v878257 .bio-v878665{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:2px 0 4px}
+.cloud-overlay-v878257 .bio-v878665[hidden]{display:none}
+.cloud-overlay-v878257 .bio-v878665>span{align-self:center;font-size:13.5px;color:var(--co-ink-3,#58667A)}
+.cloud-overlay-v878257 .bio-v878665.primer{margin:0 0 6px}
+.cloud-overlay-v878257 .bio-v878665>button.primary{height:50px;font-size:16px}
+.cloud-overlay-v878257 button.secondary{height:46px;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:10px;background:#fff;color:var(--co-ink,#16263D)}
+.cloud-overlay-v878257 button.secondary:disabled{opacity:.6;cursor:wait}
+/* Ajustos › Usuaris i contrasenyes: Face ID / empremta en aquest aparell */
+.bio-ajust-v878665 .fila{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bio-ajust-v878665 .fila p{margin:0;color:var(--co-ink-2,#334155);font-size:14px}
+.bio-ajust-v878665 .fila b.on{color:#15803D}
+.cloud-overlay-v878257 .bio-v878665>button,.cloud-overlay-v878257 form>button.secondary{display:flex;align-items:center;justify-content:center;text-align:center}
+.cloud-overlay-v878257 button[data-bio-si]{display:flex;align-items:center;justify-content:center;text-align:center;width:100%}

@@ -5167,3 +5167,14 @@
   textos del pressupost no es veuen i les noves fases en certificació quin sentit té?»). A Certificacions la barra de fases només tria (com a
   Facturació, Rendiment i Despeses): sense «Nova fase» ni «Opcions», que són al Pressupost (i als Amidaments). El nom de cada fase, sencer: al
   mòbil les fases ocupen tota l'amplada (dues per fila) i el nom pot anar en dues línies; a l'ordinador, també en dues línies si cal.
+- **V87.665 · Entrar amb Face ID / l'empremta** (26/11/2026; l'Héctor: «perquè al mòbil no recorda la contrasenya?» → «Amb Face ID / empremta»).
+  Al mòbil el navegador no posa la contrasenya sol en obrir l'app (a l'iPhone cal tocar el camp i triar-la del clauer), i des de la V87.661 es
+  demana cada vegada. Ara, amb una clau de l'aparell (WebAuthn amb l'autenticador del mateix mòbil i verificació de la persona): després
+  d'entrar amb la contrasenya al mòbil o la tauleta, una vegada, «Entrar amb Face ID» (iPhone/iPad) o «amb l'empremta» (la resta) · «Activar» o
+  «Ara no». En tornar a obrir l'app, a dalt «Entrar amb Face ID» i, a sota, «o amb la contrasenya»; fa servir la sessió que l'aparell ja té (la
+  del núvol no canvia), com l'empremta de la contrasenya sense connexió. Si l'aparell no reconeix la persona, no entra i la contrasenya
+  continua servint. L'aparell desa només l'identificador de la clau (`nuvol-aco-bio__<usuari>`), mai cap dada biomètrica ni la contrasenya.
+  Ajustos › Usuaris i contrasenyes: «Entrar amb …» per activar-ho o treure-ho a cada aparell (`BioAparell878665`). A l'ordinador no s'ofereix
+  sol (Chrome ja posa la contrasenya), però s'hi pot activar (Windows Hello). Codi a `cloudSync.js`: `activaBio878665`, `entraBio878665`,
+  `ofereixBio878665`, `treuBio878665`; `window.__acoCloud.bio878665`. Estils a `theme-v878665.css`. Prova nova `bio665test` (14/14, amb un
+  autenticador virtual de l'Edge).

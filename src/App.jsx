@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.664.2";
+const APP_VERSION878264="87.665";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -23986,7 +23986,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.664.2",
+    app_version:"87.665",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -24082,6 +24082,22 @@ function accountDraft878233(account={},clients=[],owner="hector"){
     clientTabsFixedV878239:!!account.clientTabsFixedV878239,
     allowedTabs:Array.isArray(account.allowedTabs)?account.allowedTabs.slice():["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra"]
   };
+}
+// V87.665 · Face ID / l'empremta en aquest aparell (l'Héctor, 26/11/2026: al mòbil no es posa sola la contrasenya en obrir l'app). Només si
+// l'aparell en té i hi ha sessió del núvol; la clau és de cada aparell.
+function BioAparell878665(){
+  const bio=window.__acoCloud?.bio878665;const conn=!!window.__acoCloud?.status?.().connected;
+  const[disp,setDisp]=useState(null);const[on,setOn]=useState(()=>!!bio?.actiu?.());const[err,setErr]=useState("");const[fent,setFent]=useState(false);
+  useEffect(()=>{let viu=true;Promise.resolve(bio?.disponible?.()).then(x=>{if(viu)setDisp(!!x)}).catch(()=>viu&&setDisp(false));return()=>{viu=false}},[]);
+  if(!bio||!conn||!disp)return null;
+  const nom=bio.nom();
+  const activa=async()=>{setErr("");setFent(true);try{if(await bio.activa())setOn(true);else setErr(t("No s’ha pogut activar."))}catch{setErr(t("No s’ha pogut activar."))}finally{setFent(false)}};
+  const treu=()=>{bio.treu();setOn(false)};
+  return <Card className="bio-ajust-v878665" title={t("Entrar amb {nom}",{nom})}>
+    <div className="fila">{on?<p><b className="on">{t("Activat en aquest aparell.")}</b> {t("En obrir l’app, entres amb {nom}.",{nom})}</p>:<p>{t("Entra en aquest aparell amb {nom}, sense escriure la contrasenya.",{nom})}</p>}
+      {on?<button type="button" className="secondary" onClick={treu}>{t("Treure-ho")}</button>:<button type="button" className="primary" disabled={fent} onClick={activa}>{t("Activar {nom}",{nom})}</button>}</div>
+    {err&&<p className="err-v878665" role="alert">{err}</p>}
+  </Card>;
 }
 function AccountAccessPanel878233({clients=[],authUser=""}){
   const currentAccount=getAppAccount878233(authUser)||{};
@@ -24284,7 +24300,7 @@ const grups637=[
     !tr637&&["enllacos",programes637?t("Enllaços i programes"):t("Enllaços de les obres"),programes637?<><EnllacosAjustos878305/><Card title={t("Programes de l’ordinador")} className="programes-card-v878637"><ProgramesPc878442/></Card></>:<EnllacosAjustos878305/>],
     emp637&&!tr637&&["exemples",t("Exemples per començar"),<ExemplesAjustos878605/>]]},
   {g:"acces",tit:t("Usuaris i accés"),Ic:Lock,items:[
-    ["usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>],
+    ["usuaris",t("Usuaris i contrasenyes"),<><BioAparell878665/><AccountAccessPanel878233 clients={clients} authUser={authUser}/></>],
     (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Paquets dels comptes")} className="paquets-card-v878653"><PaquetsComptes878653/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>],
     estat646&&["estat",t("Estat del núvol"),<EstatNuvol878646/>],
     ["privadesa",textos640?t("Privadesa i avisos legals"):t("Privadesa"),<Privadesa878640 admin={role878366==="admin"&&!tr637} textos={textos640} ambCopia={!tr637}/>]]},
