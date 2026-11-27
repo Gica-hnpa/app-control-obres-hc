@@ -1,0 +1,5 @@
+/* V87.668 · Agenda: la franja de Google Calendar, sempre a la vista (l'Héctor, 27/11/2026: «jo no veig res de Google Calendar»). Sense connexió,
+   només el botó «Connectar amb Google Calendar» (abans anava dins de «Filtres», plegat al mòbil i a la tauleta). */
+html:root:root body .agenda-v878256 .ag-google-v878295.off{padding:6px 8px}
+html:root:root body .agenda-v878256 .ag-google-v878295 .gc-con-v878597{display:inline-flex;align-items:center;gap:6px;min-height:36px;margin:0}
+html:root:root body .agenda-v878256 .ag-google-v878295 .gc-con-v878597 svg{flex:none}

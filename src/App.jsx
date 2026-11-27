@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.667";
+const APP_VERSION878264="87.668";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14012,10 +14012,11 @@ const BLOC_ICON878485={"Fitxa":<FolderOpen/>,"Dia a dia":<ClipboardCheck/>,"Pres
 const BLOC_CURT878504={"Pressupost i certificacions":"Pressupost","El meu encàrrec":"Encàrrec"};
 // V87.664 · a la constructora, el bloc «Pressupost i certificacions» es diu «Control d'obra» (l'Héctor, 26/11/2026: «quan posa pressupost no hauria
 // de posar també certificacions? o com que hi ha comparatiu d'ofertes i amidaments, potser hauria de posar control d'obra?»). La clau no canvia.
-const blocCO878664=k=>k==="Pressupost i certificacions"&&diuObra878326();
+// V87.668 · també al tècnic (l'Héctor, 27/11/2026: «per què en perfil tècnic no posa control d'obra?»): a tots els perfils
+const blocCO878664=k=>k==="Pressupost i certificacions";
 function nomBloc878664(k){return blocCO878664(k)?"Control d’obra":k}
 function curtBloc878664(k){return blocCO878664(k)?"Control d’obra":(BLOC_CURT878504[k]||k)}
-function subBloc878664(k){return blocCO878664(k)?"pressupost, certificacions, planning":BLOC_SUB878485[k]}
+function subBloc878664(k){return blocCO878664(k)&&diuObra878326()?"pressupost, certificacions, planning":BLOC_SUB878485[k]}
 // V87.507 · l'Héctor (5/11/2026): «Cuentas o Contabilidad (ha canviat)»: torna a dir «Comptabilitat», amb un guionet on es pot partir
 const guio878507=s=>String(s).replace(/^Comptabilitat$/,"Compta\u00ADbilitat").replace(/^Contabilidad$/,"Conta\u00ADbilidad");
 const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, notes, actes, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment","El meu encàrrec":"hores, despeses, factures"};
@@ -14024,9 +14025,10 @@ const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes,
 // Als encàrrecs tècnics les despeses són les meves (van a «El meu encàrrec»); a les obres, les de l'obra (van amb el pressupost).
 const OBRA_BLOCS_TEC878492=[
   {k:"Fitxa",tabs:OBRA_BLOCS878299[0].tabs},
-  {k:"Dia a dia",tabs:[...OBRA_BLOCS878485[1].tabs,"Gantt"]},
+  // V87.668 · el Planning, a «Control d'obra», com a la constructora (V87.664)
+  {k:"Dia a dia",tabs:[...OBRA_BLOCS878485[1].tabs]},
   {k:"El meu encàrrec",tabs:["Honoraris","Gestió temps","Rendiment","Pressupostos","Factures"]},
-  {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Industrials","Certificacions","Certificacions obra","Facturació","Facturació obra","Albarans","Seguiment econòmic","Rendiments"]}
+  {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Industrials","Gantt","Certificacions","Certificacions obra","Facturació","Facturació obra","Albarans","Seguiment econòmic","Rendiments"]}
 ];
 function obraBlocsTec878492(all=[],pur=false){const used=new Set();const defs=OBRA_BLOCS_TEC878492.map(b=>pur&&b.k==="El meu encàrrec"?{...b,tabs:[...b.tabs,"Albarans"]}:b);const blocs=defs.map(b=>({k:b.k,tabs:b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x))}));const rest=all.filter(x=>!used.has(x));if(rest.length)blocs[0].tabs.push(...rest);return blocs.filter(b=>b.tabs.length)}
 function obraBlocs878485(all=[]){const used=new Set();const blocs=OBRA_BLOCS878485.map(b=>({k:b.k,tabs:b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x))}));const rest=all.filter(x=>!used.has(x));if(rest.length)blocs[0].tabs.push(...rest);return blocs.filter(b=>b.tabs.length)}
@@ -24039,7 +24041,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.667",
+    app_version:"87.668",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -26709,11 +26711,13 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
     {view!=="equip"&&<details className="ag-filtres-v878465" open={!tauleta878465||undefined}><summary><SlidersHorizontal size={15} aria-hidden="true"/> {i18nT("Filtres")}{obraF?" · 1":""}</summary><div className="ag-sub">
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT(etPaquet878327("Tots els expedients"))}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les feines")}</label>
-      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres"&&t.k!=="Recordatori").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Feina")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>{/* V87.597 · «Connectar amb Google Calendar» és d'un sol cop: aquí, i no en una targeta fixa a sobre de les cites */}{gcalConfigured()&&!readOnly&&!gc.on&&<button type="button" className="secondary small gc-con-v878597" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
+      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres"&&t.k!=="Recordatori").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Feina")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>
     </div></details>}
-    {gcalConfigured()&&!readOnly&&view!=="equip"&&(gc.on||gc.err)&&<div className="ag-google-v878295">
+    {/* V87.668 · la franja de Google, sempre a la vista (l'Héctor, 27/11/2026: «jo no veig res de Google Calendar»): el botó de connectar era dins de
+        «Filtres» (plegat al mòbil i a la tauleta) i, en caducar el permís (una hora), la franja desapareixia */}
+    {gcalConfigured()&&!readOnly&&view!=="equip"&&<div className={`ag-google-v878295 ${gc.on?"on":"off"}`}>
       {gc.on?<><span>{gc.busy?i18nT("Sincronitzant amb Google Calendar…"):gc.last?i18nT("Google Calendar · sincronitzat a les {h}",{h:new Date(gc.last).toLocaleTimeString(loc878272(),{hour:"2-digit",minute:"2-digit"})}):i18nT("Google Calendar · connectat")}</span><TriaCalGoogle878667 busy={gc.busy} onCanvi={gcSync}/><button type="button" className="secondary" disabled={gc.busy} onClick={gcSync}>{i18nT("Sincronitzar")}</button></>
-      :<button type="button" className="secondary" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
+      :<button type="button" className="secondary gc-con-v878597" onClick={gcConnect}><CalendarDays size={16} aria-hidden="true"/>{i18nT("Connectar amb Google Calendar")}</button>}
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}
     </div>}
     {view==="equip"?<EquipSetmana878381 dies={weekDays.slice(0,5)} obres={safeObres} odata={odata} openObraTab={openObraTab} todayIso={todayIso}/>:view==="mes"?<div className="ag-mes-dos-v878667">{renderMonth()}<TargetesAgenda878664 dia={dia664} treuDia={()=>setDia664("")} byDay={byDay} now={now} cls={cls} openEvent={openEvent} obres={safeObres} odata={odata} obraF={obraF} openObraTab={openObraTab}/></div>:view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}

@@ -5210,3 +5210,17 @@
   - En canviar de calendari, totes les cites de l'app s'hi pugen (abans constaven com a «ja sincronitzades» amb l'anterior; `forca667`); les
     que venien d'un altre calendari de Google no s'hi copien. La primera vegada al mes és per aparell (`aco-agenda-mes-v878667`, no va al núvol).
     `veuagenda330test` posada al dia (el botó de connectar és a la llegenda des de la V87.597).
+- **V87.668 · «Control d'obra» també al tècnic** (l'Héctor, 27/11/2026: «per què en perfil tècnic no posa control d'obra?»). A la V87.664 el bloc
+  «Pressupost i certificacions» de dins de l'obra es va dir «Control d'obra» només a la constructora i finques (`diuObra878326`); ara a tots els
+  perfils (`blocCO878664`), també el nom curt de les rajoles del mòbil (abans «Pressupost»). La clau del bloc no canvia. La línia de sota del tècnic
+  continua dient els seus apartats (sense «planning»: als encàrrecs tècnics no n'hi ha). El paquet «Pressupost i certificacions» (Ajustos) i
+  l'opció de compartir del mateix nom no canvien. El **Planning del tècnic** passa de «Dia a dia» a «Control d'obra» (entre el comparatiu i les
+  certificacions), com a la constructora des de la V87.664. Proves posades al dia: `obratest` (també en castellà, «Control de obra»),
+  `menutecnictest`, `v492test` (la direcció d'obra del tècnic té «Control d'obra» pel paquet de la V87.653) i `honoraris332test` (el comparatiu
+  entremig des de la V87.608 i el Planning).
+  - **Agenda: la franja de Google Calendar, sempre a la vista** (l'Héctor, 27/11/2026: «i jo no veig res de Google Calendar»). Des de la V87.597,
+    sense connexió el botó «Connectar amb Google Calendar» anava dins de «Filtres» (plegat al mòbil i a la tauleta) i, en caducar el permís de
+    Google (una hora), la franja desapareixia fins al primer toc a l'Agenda. Ara la franja (`.ag-google-v878295`, `on`/`off`) surt sempre que
+    Google estigui configurat: sense connexió, el botó; connectada, l'estat, «Calendari» (V87.667) i «Sincronitzar». `theme-v878668.css`.
+    Proves: `gcaltest` 23/23, `v331test` 17/17 (al mòbil obre l'Agenda amb `aco-nav`, ja no és a la barra de baix des de la V87.658, i toca «Ara no»
+    a l'oferta de l'empremta de la V87.665), `veuagenda330test` 17/17, `v664test` 33/33, `v571test` 9/9.
