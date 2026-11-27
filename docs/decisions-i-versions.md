@@ -5262,3 +5262,22 @@
   - La **capçalera de l'obra** porta l'adreça (carrer i població) després del client i el promotor.
   - Les proves simulen el Cadastre i les dades obertes amb `window.__acoFetchMock878670` i la funció amb `window.__acoCloud.fitxaCadastre878670`.
     Prova nova `v670test`. `src/theme-v878670.css`.
+- **V87.671 · Comparatiu d'industrials sense la llista interminable i ofertes amb la referència de cada peça** (l'Héctor, 27/11/2026, a
+  Verbania: «no funciona bé… surt una llista interminable»). Les dues ofertes de fusteria (ROCAS i TRIVIÑO, capítol 05) tenen les peces del
+  plànol de fusteria (portes P01–P08, armaris A01–A11, mobles M i MB) i el capítol 05 del pressupost té unes altres partides: cap línia
+  coincidia i el comparatiu feia una fila per cada línia de cada oferta (75 files: 23 del pressupost + 26 + 26).
+  - **Comparatiu** (`ComparaOfertes878608`): a dalt el **resum** (total, «Partides del pressupost: x de y» o «No coincideixen», partides que no
+    són al pressupost, «Peces a més d'una oferta», termini, pagament i notes); **«Partida per partida»** només amb les del pressupost (si alguna
+    oferta hi coincideix; una oferta que no en té cap no surt «No inclosa» a totes); **«Peça per peça entre les ofertes»**: les peces que no
+    són al pressupost però sí a dues ofertes o més amb el mateix codi (sense els zeros del davant: P1 = P01, A9 = A09, M2 = M02), amb la més
+    barata en verd, la més cara en vermell i la suma; i les **partides de cada oferta que només hi són a ella, a part i plegades**. El PDF del
+    comparatiu, igual. Al mòbil, columnes més estretes i la primera fixa en lliscar.
+  - **Lector de PDF** (`llegirSenseCodis` a `src/pressupostPdf.js`): una línia que comença amb la referència d'una peça (`refPeca`: «P02 …»,
+    «A01 …», «Mb01 …»; no «M2», que és una unitat) comença la partida següent i el preu de sota és seu; la referència és el codi. Abans, a
+    TRIVIÑO, el text de cada peça anava a la d'abans i els preus quedaven desplaçats (es veu pels preus: A01 495/479, A09 786/746, M04 488/488,83).
+    Els codis que posa l'app sola (01.01…) es marquen (`auto` → `codiAuto` a la línia de l'oferta) i no serveixen per aparellar.
+  - **Fitxa de l'oferta:** sota el PDF, **«Tornar a llegir les partides»** (torna a llegir el PDF desat amb l'oferta i en posa les partides:
+    «Posar-les a l'oferta (n partides)»). Per arreglar la de TRIVIÑO: Editar › «Afegir el PDF de l'oferta» › «Tornar a llegir les partides» ›
+    Desar. Canviar el codi d'una línia a mà li treu el `codiAuto`.
+  - `src/theme-v878671.css`. Prova nova `v671test` (amb un PDF fet com el de TRIVIÑO); `pdfpressupostunit` (apartat 9) i `v611test` posades al
+    dia. `tools/proves/miraindtest.mjs` (`OBRA_JSON=`): obre el comparatiu amb les dades d'una obra d'una còpia del núvol, per mirar-lo.

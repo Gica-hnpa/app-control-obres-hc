@@ -185,6 +185,11 @@ function llegirAmbCodis(linies, apartats) {
 // V87.305.1 · Pressupostos sense codis, fets com una factura (p. ex. el de Socoterm: «Nº · Descripción · Cant · PU sin IVA · IVA ·
 // PVP sin IVA»): cada línia amb text i quantitat × preu = import és una partida; les línies de text de sota en continuen la
 // descripció; el títol en majúscules d'abans («REPARACIÓN DE GRIETA EN FACHADA») és el capítol. Els codis es posen sols (01.01…).
+// V87.671 · Ofertes amb la referència de la peça al davant («P02 Puertas para trastero…», «A01 Colocación…», «Mb01 Mueble…») i el preu a
+// l'última línia de la descripció (l'oferta de fusteria de TRIVIÑO de Verbania, 27/11/2026): la referència comença la partida següent i
+// el preu de sota és seu (abans el text de cada peça anava a la d'abans i els preus quedaven desplaçats). La referència és el codi.
+const REF_PECA = /^([A-Z][A-Za-z]{0,2}\d{1,3}(?:\/[A-Z]{0,2}\d{1,3})?)[.:)]?\s+(?=[A-Za-zÀ-ÿ¿¡])/;
+export const refPeca = txt => { const m = String(txt || "").match(REF_PECA); return m && !UNITATS.test(m[1]) ? m[1] : ""; };
 function llegirSenseCodis(linies) {
   const caps = [], partides = [], avisos = [];
   let cap = "", act = null, totalPdf = null, titol = [], nCap = 0, nPart = 0, nomesImport = false;
@@ -213,27 +218,40 @@ function llegirSenseCodis(linies) {
     let ordre = "";
     const mo = txt.match(/^(\d{1,3})[.)]?\s+(.{6,})$/); if (mo) { ordre = mo[1]; txt = mo[2]; }
     const q = nums.length >= 2 ? quadra(nums) : null;
+    // V87.671 · la cua d'una peça amb referència: des de la referència que esperava fins a aquesta línia (amb el preu) és la partida
+    const iRef = q && q.ok && /[a-zà-úñç]/i.test(txt) ? pendent.findIndex(x => refPeca(x)) : -1;
+    if (iRef >= 0) {
+      const ls = pendent; pendent = [];
+      if (act) ls.slice(0, iRef).forEach(afegeix);
+      tanca(); capDe(); nPart++;
+      let ut = ""; const tt = txt.split(" "); if (tt.length > 1 && UNITATS.test(tt[tt.length - 1]) && tt[tt.length - 1] !== "%") ut = tt.pop();
+      act = { codi: refPeca(ls[iRef]), cap, ut: normUt(ut) || "ut", concepte: "", desc: "", q: q.q, pu: q.pu, imp: q.imp };
+      ls.slice(iRef).forEach(afegeix); if (tt.length) afegeix(tt.join(" "));
+      continue;
+    }
     if (q && q.ok && txt.length >= 6 && /[a-zà-úñç]/i.test(txt)) {
       tanca(); pendent = []; capDe(); nPart++;
       let ut = ""; const tt = txt.split(" "); if (tt.length > 1 && UNITATS.test(tt[tt.length - 1]) && tt[tt.length - 1] !== "%") ut = tt.pop();
-      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: normUt(ut) || "ut", concepte: tt.join(" "), desc: "", q: q.q, pu: q.pu, imp: q.imp };
+      act = { codi: refPeca(txt) || `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: normUt(ut) || "ut", concepte: tt.join(" "), desc: "", q: q.q, pu: q.pu, imp: q.imp }; if (!refPeca(txt)) act.auto = true; // V87.671 · codi posat per l’app (no es fa servir per aparellar)
       continue;
     }
     // només números (quantitat, preu, import) i el text de la partida a sobre
     if (q && q.ok && !/[a-zà-úñç]/i.test(txt) && pendent.length) {
       let ls = pendent; pendent = [];
       // amb una partida oberta, la nova comença a l'última frase («Pintado de barandillas…»); el d'abans («Incluye limpieza…») és
-      // la cua de la descripció de l'oberta
-      if (act && ls.length > 1) { let i = ls.length - 1; for (; i > 0; i--) if (/^[A-ZÀ-ÚÑÇ¿¡]/.test(ls[i]) && /[.:;]$/.test(ls[i - 1])) break; ls.slice(0, i).forEach(afegeix); ls = ls.slice(i); }
+      // la cua de la descripció de l'oberta. V87.671 · si una línia comença amb la referència d'una peça, la nova comença allà.
+      const ir = ls.findIndex(x => refPeca(x));
+      if (act && ir > 0) { ls.slice(0, ir).forEach(afegeix); ls = ls.slice(ir); }
+      else if (act && ls.length > 1 && ir < 0) { let i = ls.length - 1; for (; i > 0; i--) if (/^[A-ZÀ-ÚÑÇ¿¡]/.test(ls[i]) && /[.:;]$/.test(ls[i - 1])) break; ls.slice(0, i).forEach(afegeix); ls = ls.slice(i); }
       tanca(); capDe(); nPart++;
-      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: "ut", concepte: "", desc: "", q: q.q, pu: q.pu, imp: q.imp };
+      act = { codi: refPeca(ls[0]) || `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: "ut", concepte: "", desc: "", q: q.q, pu: q.pu, imp: q.imp }; if (!refPeca(ls[0])) act.auto = true;
       ls.forEach(afegeix);
       const tt = act.concepte.trim().split(" "); if (tt.length > 1 && UNITATS.test(tt[0]) && tt[0] !== "%") { act.ut = normUt(tt.shift()); act.concepte = tt.join(" "); }
       continue;
     }
     if (nomesImport && nums.length === 1 && nums[0] > 0 && txt.length >= 4 && /[a-zà-úñç]/i.test(txt)) {
       tanca(); capDe(); nPart++;
-      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: "pa", concepte: txt, desc: "", q: 1, pu: nums[0], imp: nums[0] };
+      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: "pa", concepte: txt, desc: "", q: 1, pu: nums[0], imp: nums[0] }; act.auto = true;
       continue;
     }
     // títol en majúscules (sense números): el capítol de les partides que vindran
@@ -241,10 +259,11 @@ function llegirSenseCodis(linies) {
     if (act && txt && !nums.length) {
       // una frase que comença en majúscula després d'un punt pot ser la partida següent (si a sota hi arriben els seus números);
       // si no, en acabar torna a la descripció d'aquesta
-      if (pendent.length || (/^[A-ZÀ-ÚÑÇ¿¡]/.test(txt) && /[.:;]$/.test(act.ultima || ""))) pendent.push(txt); else afegeix(txt);
+      // V87.671 · i una línia que comença amb la referència d'una peça («P03 Puerta de paso…») és la partida següent
+      if (pendent.length || refPeca(txt) || (/^[A-ZÀ-ÚÑÇ¿¡]/.test(txt) && /[.:;]$/.test(act.ultima || ""))) pendent.push(txt); else afegeix(txt);
       continue;
     }
-    if (!act && txt && !nums.length && /[a-zà-úñç]/i.test(txt)) { if (taula) pendent.push(txt); else titol = []; continue; }
+    if (!act && txt && !nums.length && /[a-zà-úñç]/i.test(txt)) { if (taula || refPeca(txt) || (pendent.length && refPeca(pendent[0]))) pendent.push(txt); else titol = []; continue; }
     if (!act) titol = [];
   }
   tanca();

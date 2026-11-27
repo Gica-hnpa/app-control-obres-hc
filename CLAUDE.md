@@ -169,7 +169,10 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.670 a Render):**
+**Estat (publicada la V87.671 a Render):**
+- **Comparatiu d'industrials** (V87.669 per capítols; V87.671): resum a dalt, «Partida per partida» (pressupost), «Peça per peça entre les ofertes»
+  (mateix codi: P1 = P01) i les pròpies de cada oferta plegades. El lector de PDF entén les peces amb la referència al davant (TRIVIÑO). **A
+  Verbania, l'Héctor ha de tornar a llegir la de TRIVIÑO** (Editar › Afegir el PDF › «Tornar a llegir les partides»): està desada amb els preus desplaçats.
 - **Repàs de la constructora** (V87.663–664, 25–26/11/2026): llista a `docs/repas-constructora-2026-11-25.md` (51 punts). V87.663: 30 minuts al
   fons → contrasenya i Inici, entrada més ràpida, contactes nous de les despeses sols, Contactes, Inici, Obres sense Importar ni Filtres, colors
   d'estat, menú amb desplegables. V87.664 (propostes acceptades): barra blau nit a l'ordinador, Obres (Promotor una vegada, mòbil plegable),

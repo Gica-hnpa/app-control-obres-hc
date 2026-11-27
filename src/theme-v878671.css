@@ -1,0 +1,46 @@
+/* V87.671 · Comparatiu d'industrials sense la llista interminable (l'Héctor, 27/11/2026, a Verbania): a dalt el resum de les ofertes, a sota
+   «Partida per partida» (només les del pressupost) i, plegades, les partides de cada oferta que no són al pressupost. */
+
+html:root:root body .ind-comp-v878671{display:flex;flex-direction:column;gap:12px}
+html:root:root body .ind-comp-v878671 .fila.cap .ref-v878671{display:block;font-weight:500;font-size:12px;color:var(--co-ink-3,#64748B);line-height:1.3;overflow-wrap:anywhere}
+html:root:root body .ind-comp-v878671 .resum-v878671 .fila.cond .n b{font-weight:700;color:var(--co-ink,#0F172A)}
+html:root:root body .ind-comp-v878671 .resum-v878671 .fila.cond .n.falta small{color:#B45309;font-weight:700}
+html:root:root body .ind-comp-v878671 .nota-v878671{margin:0;padding:10px 12px;border-radius:8px;background:#FEF3C7;color:#78350F;font-size:13.5px;line-height:1.45}
+
+/* les parts plegables: «Partida per partida» i les pròpies de cada oferta */
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671{border:1px solid var(--co-line,#D5DCE4);border-radius:8px;background:#FFFFFF}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671>summary{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:10px 12px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--co-ink,#0F172A);list-style:none}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671>summary::-webkit-details-marker{display:none}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671>summary::before{content:"›";display:inline-block;width:12px;font-weight:800;color:var(--co-ink-3,#64748B);transition:transform .15s}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671[open]>summary::before{transform:rotate(90deg)}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671>summary small{font-weight:500;font-size:13px;color:var(--co-ink-3,#64748B)}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671[open]>summary{border-bottom:1px solid var(--co-line,#D5DCE4)}
+html:root:root body .ind-comp-v878671 .ind-comp-det-v878671>.taula{border-radius:0 0 8px 8px}
+
+html:root:root body .ind-comp-v878671 .falta-v878671,html:root:root body .ind-comp-v878671 .resum-v878671 .fila.cond .n.falta b{color:#B45309}
+html:root:root body .ind-comp-v878671 .entre-v878671 .fila.tot>span{border-top:1px solid var(--co-line,#D5DCE4)}
+
+/* la taula de les peces entre ofertes no porta la columna del pressupost (no hi són) */
+html:root:root body .ind-comp-v878671 .taula.sense-pres-v878671{grid-template-columns:minmax(220px,2fr) repeat(var(--n),minmax(130px,1fr))}
+
+/* al mòbil: columnes més estretes i la primera fixa en lliscar cap al costat */
+@media (max-width:767px){
+  html:root:root body .ind-comp-v878671 .taula{grid-template-columns:minmax(128px,1.3fr) repeat(calc(var(--n) + 1),minmax(104px,1fr))}
+  html:root:root body .ind-comp-v878671 .taula.sense-pres-v878671{grid-template-columns:minmax(128px,1.3fr) repeat(var(--n),minmax(104px,1fr))}
+  html:root:root body .ind-comp-v878671 .fila>span{padding:7px 8px;font-size:12.5px}
+  html:root:root body .ind-comp-v878671 .fila>span:first-child{position:sticky;left:0;z-index:2;background:#FFFFFF;box-shadow:1px 0 0 #E2E8F0}
+  html:root:root body .ind-comp-v878671 .fila.cap>span:first-child{z-index:3;background:#F8FAFC}
+  html:root:root body .ind-comp-v878671 .fila.tot>span:first-child{background:#F1F5F9}
+  html:root:root body .ind-comp-v878671 .fila.cap .secondary{min-height:36px;padding:0 8px;font-size:13px}
+}
+
+/* la fitxa de l'oferta: «Obrir el PDF» i «Tornar a llegir les partides», sota el PDF */
+html:root:root body .ind-original-v878669 .bts-pdf-v878671{display:flex;flex-wrap:wrap;gap:8px;position:sticky;bottom:0}
+html:root:root body .ind-original-v878669 .bts-pdf-v878671>button{display:inline-flex;align-items:center;gap:6px;position:static}
+
+/* les partides pròpies d'una oferta: una llista senzilla (concepte i import) */
+html:root:root body .ind-comp-v878671 .llista-v878671 .l{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:8px 12px;border-bottom:1px solid #E2E8F0;font-size:13px}
+html:root:root body .ind-comp-v878671 .llista-v878671 .l:last-child{border-bottom:0}
+html:root:root body .ind-comp-v878671 .llista-v878671 .pt{min-width:0;overflow-wrap:anywhere}
+html:root:root body .ind-comp-v878671 .llista-v878671 .pt small{display:block;color:#64748B}
+html:root:root body .ind-comp-v878671 .llista-v878671 .n{flex:none}

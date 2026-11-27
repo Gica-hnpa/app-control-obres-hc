@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.670";
+const APP_VERSION878264="87.671";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17563,6 +17563,8 @@ function MargesCamps878378({v={},def,set,readOnly=false,perObra=false}){
 // (les ja certificades, no), les que falten s'hi afegeixen i queden lligades a l'oferta per al seguiment (certificat i facturat de l'industrial).
 const fd608=s=>{const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}/${m[2]}/${m[1]}`:String(s||"")};
 const capNom608=c=>c?String(c):t("Tota l’obra");
+// les partides llegides d'un PDF, com a línies de l'oferta (V87.671: amb «codiAuto» si el codi l'ha posat l'app)
+const liniesOferta671=(rows,cap)=>(rows||[]).map(r=>({codi:r.codi||"",cap:cap||r.cap||"",ut:r.ut||"",concepte:r.concepte||"",q:r.q,pu:r.pu,...(r.auto?{codiAuto:1}:{})}));
 function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]}){
   const ofertes=Array.isArray(data.industrials878608)?data.industrials878608:[];
   const bid=ensureBudgetGroups8786(data).active||"principal";
@@ -17618,7 +17620,7 @@ function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]})
     const pres=[num&&!ref.includes(num)?t("Pressupost {n}",{n:num}):"",ref].filter(Boolean).join(" · ");
     let docs=[];
     if(meta?.file)try{const url=await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ko(r.error);r.readAsDataURL(meta.file)});docs=[{id:"ofpdf-"+Date.now(),nom:nomF||"oferta.pdf",type:"application/pdf",url,data:todayISO8743()}]}catch(err){console.warn(err)}
-    setFitxa({id:"",industrial:cc.industrial||"",nif:cc.nif||"",pressupostNom:pres,capitol:cap||"",import:"",data:cc.data||todayISO8743(),notes:"",linies:rows.map(r=>({codi:r.codi||"",cap:cap||r.cap||"",ut:r.ut||"",concepte:r.concepte||"",q:r.q,pu:r.pu})),fitxer:nomF?{nom:nomF}:null,docs})};
+    setFitxa({id:"",industrial:cc.industrial||"",nif:cc.nif||"",pressupostNom:pres,capitol:cap||"",import:"",data:cc.data||todayISO8743(),notes:"",linies:liniesOferta671(rows,cap),fitxer:nomF?{nom:nomF}:null,docs})};
   const desaFitxa=f=>{const nou=!f.id;const o={...f,id:f.id||"of-"+Date.now(),import:f.linies?.length?"":String(f.import||""),estat:f.estat||"rebuda",updatedAt:ara(),...(nou?{createdAt:ara()}:{})};
     setData?.(d=>{const l=Array.isArray(d.industrials878608)?d.industrials878608:[];return {...d,indCaps878669:ambCap(d,o.capitol),industrials878608:nou?[...l,o]:l.map(x=>x.id===o.id?o:x),updatedAt:ara()}});setFitxa(null)};
   const elimina=o=>{if(!confirm(t("Eliminar l’oferta de {n}?",{n:o.industrial||t("l’industrial")})))return;desaOfertes(l=>l.filter(x=>x.id!==o.id))};
@@ -17699,8 +17701,10 @@ function FitxaOferta878608({inicial,caps=[],partides=[],industrials=[],readOnly=
   const ambLinies=(f.linies||[]).length>0;
   const total=ambLinies?IND878608.importLinies(f):IND878608.num(f.import);
   const ok=String(f.industrial||"").trim()&&total>0;
-  const setL=(i,k,v)=>setF(x=>({...x,linies:x.linies.map((l,j)=>j===i?{...l,[k]:v}:l)}));
+  const setL=(i,k,v)=>setF(x=>({...x,linies:x.linies.map((l,j)=>{if(j!==i)return l;const n={...l,[k]:v};if(k==="codi")delete n.codiAuto;return n})}));
   const treuL=i=>setF(x=>({...x,linies:x.linies.filter((_,j)=>j!==i)}));
+  // V87.671 · tornar a llegir les partides del PDF de l'oferta (p. ex. la de TRIVIÑO de Verbania, llegida amb els preus desplaçats)
+  const[rellegir,setRellegir]=useState(null);
   const nouK=()=>"n"+Date.now()+Math.random().toString(36).slice(2,6);
   const afegeixL=()=>setF(x=>({...x,import:"",linies:[...(x.linies||[]),{_k:nouK(),codi:"",cap:x.capitol||"",ut:"",concepte:"",q:1,pu:""}]}));
   const delPres=IND878608.liniesPressupost(partides,f.capitol||"");
@@ -17715,8 +17719,8 @@ function FitxaOferta878608({inicial,caps=[],partides=[],industrials=[],readOnly=
   const inpPdf=useRef(null);
   const posaPdf=async fl=>{if(!fl)return;if(fl.size>25*1024*1024){alert(t("El PDF fa més de 25 MB."));return}
     try{const url=await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ko(r.error);r.readAsDataURL(fl)});setPdfUrl(url);setF(x=>({...x,docs:[{id:"ofpdf-"+Date.now(),nom:fl.name||"oferta.pdf",type:"application/pdf",url,data:todayISO8743()}],fitxer:{nom:fl.name||"oferta.pdf"}}))}catch(e){alert(String(e?.message||e))}};
-  return <Modal title={inicial.id?t("Oferta de {n}",{n:inicial.industrial||""}):t("Oferta nova")} close={close}><div className={`ind-fitxa-v878608 ind-fitxa-v878611${doc?" amb-pdf-v878669":""}`}>
-    {doc&&<div className="ind-original-v878669">{blob?<PaginesPdf8784291 blob={blob}/>:<p className="carregant-v8784291">{t("Obrint el document…")}</p>}{blob&&<button type="button" className="secondary obre-v878669" onClick={()=>obreVisor8784291(doc.nom||"oferta.pdf",async()=>blob)}><FileText size={15} aria-hidden="true"/> {t("Obrir el PDF")}</button>}</div>}
+  return <><Modal title={inicial.id?t("Oferta de {n}",{n:inicial.industrial||""}):t("Oferta nova")} close={close}><div className={`ind-fitxa-v878608 ind-fitxa-v878611${doc?" amb-pdf-v878669":""}`}>
+    {doc&&<div className="ind-original-v878669">{blob?<PaginesPdf8784291 blob={blob}/>:<p className="carregant-v8784291">{t("Obrint el document…")}</p>}{blob&&<div className="bts-pdf-v878671"><button type="button" className="secondary obre-v878669" onClick={()=>obreVisor8784291(doc.nom||"oferta.pdf",async()=>blob)}><FileText size={15} aria-hidden="true"/> {t("Obrir el PDF")}</button>{!readOnly&&<button type="button" className="secondary rellegeix-v878671" onClick={()=>setRellegir(new File([blob],doc.nom||"oferta.pdf",{type:"application/pdf"}))}><RefreshCw size={15} aria-hidden="true"/> {t("Tornar a llegir les partides")}</button>}</div>}</div>}
     <div className="ind-dades-v878669">
     <label><span>{t("Industrial o constructora")}</span><input list="ind-noms-v878608" value={f.industrial||""} disabled={readOnly} onChange={e=>set("industrial",e.target.value)} placeholder={t("Nom de l’empresa")} autoFocus={!inicial.id}/><datalist id="ind-noms-v878608">{industrials.map((x,i)=><option key={i} value={x.empresa||x.nom}/>)}</datalist></label>
     <label><span>{t("Pressupost de l’industrial")}</span><input value={f.pressupostNom||""} disabled={readOnly} onChange={e=>set("pressupostNom",e.target.value)} placeholder={t("Número i obra del seu pressupost")}/></label>
@@ -17747,7 +17751,8 @@ function FitxaOferta878608({inicial,caps=[],partides=[],industrials=[],readOnly=
       <label><span>{t("Forma de pagament")}</span><input value={f.pagament||""} disabled={readOnly} onChange={e=>set("pagament",e.target.value)} placeholder={t("Ex. 30 % a l’inici i la resta per certificacions")}/></label></div>
     <label><span>{t("Notes")}</span><TextCreix878604 rows={2} value={f.notes||""} disabled={readOnly} onChange={e=>set("notes",e.target.value)} placeholder={t("El que inclou i el que no, garanties…")}/></label>
     </div>
-  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{readOnly?t("Tancar"):t("Cancel·lar")}</button>{!readOnly&&<button type="button" className="primary" disabled={!ok} onClick={()=>{const ls=net(f.linies);desa({...f,linies:ls,import:ls.length?"":String(IND878608.num(f.import))})}}>{t("Desar l’oferta")}</button>}</div></Modal>;
+  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{readOnly?t("Tancar"):t("Cancel·lar")}</button>{!readOnly&&<button type="button" className="primary" disabled={!ok} onClick={()=>{const ls=net(f.linies);desa({...f,linies:ls,import:ls.length?"":String(IND878608.num(f.import))})}}>{t("Desar l’oferta")}</button>}</div></Modal>
+    {rellegir&&<PdfPressupost878305 titol={t("Tornar a llegir les partides")} botoLlegit inicial={rellegir} close={()=>setRellegir(null)} onLlegit={rows=>{setRellegir(null);const at=Date.now();setF(x=>({...x,import:"",linies:liniesOferta671(rows,x.capitol).map((l,i)=>({...l,_k:"r"+at+"-"+i}))}))}}/>}</>;
 }
 // V87.611 · el comparatiu: les partides que una oferta no inclou («No inclosa»), la més cara de cada partida en vermell, el termini i la forma de
 // pagament, «Editar» cada oferta i el PDF per enviar-lo (l'Héctor, 15/11/2026: «millorem comparatius d'ofertes»)
@@ -17759,23 +17764,62 @@ function ComparaOfertes878608({grup,partides=[],obraNom="",close,onAdjudica,onEd
     :<span className={`n buit${f&&j!=null&&(f.sp?.[j]||(f.pres&&c.ambL[j]))?" falta":""}`}>{f&&j!=null&&f.sp?.[j]?t("Sense preu"):f&&f.pres&&j!=null&&c.ambL[j]?t("No inclosa"):"—"}</span>;
   const pc=x=>c.pres>0?`${x>c.pres?"+":""}${(Math.round((x-c.pres)/c.pres*1000)/10).toLocaleString(loc878272())} %`:"";
   const ambCond=k=>ofs.some(o=>String(o[k]||"").trim());
+  // V87.671 · (l'Héctor, 27/11/2026, a Verbania: «surt una llista interminable»): les partides de les ofertes que no són al pressupost (cada
+  // industrial escriu les seves) ja no s'afegeixen a la taula una sota l'altra. A dalt, el resum (total, partides del pressupost que inclou,
+  // partides pròpies, condicions); a sota, «Partida per partida» només amb les del pressupost; i les pròpies de cada oferta, a part i plegades.
+  // Una oferta que no coincideix amb cap partida del pressupost no surt com «No inclosa» a totes: es compara el total.
+  const ambP=c.files.filter(f=>f.pres);
+  // les peces que no són al pressupost però sí a dues ofertes o més (la mateixa referència: P1 i P01, A9 i A09…): «Peça per peça entre les ofertes»;
+  // les que només són a una oferta, a part i plegades
+  const nOf=f=>f.of.filter(Boolean).length;
+  const entre=c.files.filter(f=>!f.pres&&nOf(f)>=2);
+  const fora=ofs.map((o,j)=>c.files.filter(f=>!f.pres&&f.of[j]).length);
+  const propies=ofs.map((o,j)=>c.files.filter(f=>!f.pres&&f.of[j]&&nOf(f)<2));
+  const incl=ofs.map((o,j)=>c.ambL[j]?ambP.filter(f=>f.of[j]||f.sp[j]).length:null);
+  const aparella=incl.map(n=>n>0);
+  const coincideix=aparella.some(Boolean)&&ambP.length>0;
+  const noIncl=c.noIncl.map((n,j)=>aparella[j]?n:0);
+  const nFora=fora.reduce((s,n)=>s+n,0);
+  const sumaEntre=ofs.map((o,j)=>entre.reduce((s,f)=>s+(f.of[j]?.imp||0),0)),faltenEntre=ofs.map((o,j)=>entre.filter(f=>!f.of[j]).length);
   // la més baixa, entre les ofertes que inclouen totes les partides del pressupost (si n’hi ha cap)
-  const compl=c.totals.filter((x,j)=>!c.noIncl[j]&&x>0);const millorT=compl.length?Math.min(...compl):c.millor;
+  const compl=c.totals.filter((x,j)=>!noIncl[j]&&x>0);const millorT=compl.length?Math.min(...compl):c.millor;
   const html=useMemo(()=>{const files=[];
-    if(c.ambLinies)c.files.forEach(f=>files.push([[f.codi,f.concepte].filter(Boolean).join(" "),f.pres?money(f.pres.imp):"",...f.of.map((x,j)=>x?`${money(x.imp)} (${money(x.pu)})`:f.sp?.[j]?t("Sense preu"):f.pres&&c.ambL[j]?t("No inclosa"):"")]));
-    if(c.noIncl.some(n=>n>0))files.push({subtotal:[t("Partides no incloses"),"",...c.noIncl.map(n=>n?String(n):"")]});
+    files.push([t("Partides del pressupost"),String(ambP.length),...incl.map((n,j)=>n==null?t("Preu tancat"):aparella[j]?t("{x} de {y}",{x:n,y:ambP.length}):t("No coincideixen"))]);
+    if(nFora)files.push([t("Partides que no són al pressupost"),"",...fora.map(n=>n?String(n):"")]);
     [["termini",t("Termini d’execució")],["pagament",t("Forma de pagament")],["notes",t("Notes")]].forEach(([k,l])=>{if(ambCond(k))files.push([l,"",...ofs.map(o=>String(o[k]||""))])});
+    if(coincideix){files.push({grup:t("Partida per partida")});ambP.forEach(f=>files.push([[f.codi,f.concepte].filter(Boolean).join(" "),money(f.pres.imp),...f.of.map((x,j)=>x?`${money(x.imp)} (${money(x.pu)})`:f.sp?.[j]?t("Sense preu"):aparella[j]?t("No inclosa"):"")]))}
+    if(entre.length){files.push({grup:t("Peça per peça entre les ofertes")});entre.forEach(f=>files.push([[f.codi,f.concepte].filter(Boolean).join(" "),"",...f.of.map(x=>x?`${money(x.imp)} (${money(x.pu)})`:"")]));files.push({subtotal:[t("Suma d’aquestes peces"),"",...sumaEntre.map((x,j)=>money(x)+(faltenEntre[j]?" · "+t("en falten {n}",{n:faltenEntre[j]}):""))]})}
+    ofs.forEach((o,j)=>{if(!propies[j].length)return;files.push({grup:entre.length?t("{n}: partides que només són en aquesta oferta",{n:o.industrial||"—"}):t("{n}: partides que no són al pressupost",{n:o.industrial||"—"})});propies[j].forEach(f=>files.push([[f.codi,f.concepte].filter(Boolean).join(" "),"",...ofs.map((_,k)=>k===j&&f.of[k]?`${money(f.of[k].imp)} (${money(f.of[k].pu)})`:"")]))});
     return informeHtml878505({titol,sub:[obraNom,ofs.length===1?t("1 oferta"):t("{n} ofertes",{n:ofs.length})].filter(Boolean).join(" · "),horitzontal:ofs.length>2||c.ambLinies,
       cols:[{l:t("Partida")},{l:t("Pressupost"),n:true},...ofs.map(o=>({l:o.industrial||"—",n:true}))],files,
       peu:[t("Total"),money(c.pres),...c.totals.map(x=>`${money(x)}${pc(x)?" · "+pc(x):""}`)]})},[c,ofs,titol]);
-  return <Modal title={titol} close={close}><div className="ind-comp-v878608 ind-comp-v878611">
-    <div className="taula" style={{"--n":ofs.length}}>
-      <div className="fila cap"><span>{t("Partida")}</span><span>{t("Pressupost")}</span>{ofs.map(o=><span key={o.id}><b>{o.industrial}</b>{onEdita&&<button type="button" className="link edita" onClick={()=>onEdita(o)}>{t("Editar")}</button>}{onAdjudica&&o.estat!=="adjudicada"&&<button type="button" className="secondary" onClick={()=>onAdjudica(o)}>{t("Adjudicar")}</button>}{o.estat==="adjudicada"&&<em>{t("Adjudicada")}</em>}</span>)}</div>
-      {c.ambLinies&&c.files.map((f,i)=><div key={i} className={`fila${f.pres?"":" nova"}`}><span className="pt">{f.codi?<small>{f.codi}</small>:null}{f.concepte}{!f.pres&&<em>{t("No és al pressupost")}</em>}</span>{cel(f.pres,null,null)}{f.of.map((x,j)=><React.Fragment key={j}>{cel(x,f,j)}</React.Fragment>)}</div>)}
-      <div className="fila tot"><span>{t("Total")}</span><span className="n"><b>{money(c.pres)}</b></span>{c.totals.map((x,j)=><span key={j} className={`n${!c.noIncl[j]&&Math.abs(x-millorT)<0.005?" millor":""}`}><b>{money(x)}</b>{c.pres>0&&<small>{pc(x)}</small>}</span>)}</div>
-      {c.noIncl.some(n=>n>0)&&<div className="fila cond falta"><span>{t("Partides no incloses")}</span><span/>{c.noIncl.map((n,j)=><span key={j} className="n">{n?(n===1?t("1 partida"):t("{n} partides",{n})):"—"}</span>)}</div>}
+  const capOf=<div className="fila cap"><span>{t("Partida")}</span><span>{t("Pressupost")}</span>{ofs.map(o=><span key={o.id}><b>{o.industrial}</b>{o.pressupostNom&&<small className="ref-v878671">{o.pressupostNom}</small>}</span>)}</div>;
+  return <Modal title={titol} close={close}><div className="ind-comp-v878608 ind-comp-v878611 ind-comp-v878671">
+    <div className="taula resum-v878671" style={{"--n":ofs.length}}>
+      <div className="fila cap"><span>{t("Resum")}</span><span>{t("Pressupost")}</span>{ofs.map(o=><span key={o.id}><b>{o.industrial}</b>{o.pressupostNom&&<small className="ref-v878671">{o.pressupostNom}</small>}{onEdita&&<button type="button" className="link edita" onClick={()=>onEdita(o)}>{t("Editar")}</button>}{onAdjudica&&o.estat!=="adjudicada"&&<button type="button" className="secondary" onClick={()=>onAdjudica(o)}>{t("Adjudicar")}</button>}{o.estat==="adjudicada"&&<em>{t("Adjudicada")}</em>}</span>)}</div>
+      <div className="fila tot"><span>{t("Total")}</span><span className="n"><b>{money(c.pres)}</b></span>{c.totals.map((x,j)=><span key={j} className={`n${!noIncl[j]&&Math.abs(x-millorT)<0.005?" millor":""}`}><b>{money(x)}</b>{c.pres>0&&<small>{pc(x)}</small>}</span>)}</div>
+      {c.ambLinies&&ambP.length>0&&<div className="fila cond"><span>{t("Partides del pressupost")}</span><span className="n">{ambP.length}</span>{incl.map((n,j)=><span key={j} className={`n${aparella[j]&&noIncl[j]?" falta":""}`}>{n==null?t("Preu tancat"):aparella[j]?<><b>{t("{x} de {y}",{x:n,y:ambP.length})}</b>{noIncl[j]>0&&<small>{noIncl[j]===1?t("1 no inclosa"):t("{n} no incloses",{n:noIncl[j]})}</small>}</>:<small>{t("No coincideixen")}</small>}</span>)}</div>}
+      {nFora>0&&<div className="fila cond"><span>{t("Partides que no són al pressupost")}</span><span/>{fora.map((n,j)=><span key={j} className="n">{n||"—"}</span>)}</div>}
+      {entre.length>0&&<div className="fila cond"><span>{t("Peces a més d’una oferta")}</span><span/>{faltenEntre.map((n,j)=><span key={j} className={`n${n?" falta":""}`}><b>{t("{x} de {y}",{x:entre.length-n,y:entre.length})}</b></span>)}</div>}
       {[["termini",t("Termini d’execució")],["pagament",t("Forma de pagament")],["notes",t("Notes")]].filter(([k])=>ambCond(k)).map(([k,l])=><div key={k} className="fila cond"><span>{l}</span><span/>{ofs.map(o=><span key={o.id} className="tx">{o[k]||"—"}</span>)}</div>)}
     </div>
+    {c.ambLinies&&!coincideix&&<p className="nota-v878671">{entre.length?t("Les partides de les ofertes no tenen el codi ni el text de les del pressupost: a sota, les peces que tenen la mateixa referència a les ofertes."):t("Les partides de les ofertes no tenen el codi ni el text de les del pressupost: es comparen els totals. Les partides de cada oferta són a sota.")}</p>}
+    {coincideix&&<details className="ind-comp-det-v878671" open={ambP.length<=30||undefined}><summary><span>{t("Partida per partida")}</span><small>{ambP.length===1?t("1 partida del pressupost"):t("{n} partides del pressupost",{n:ambP.length})}</small></summary>
+      <div className="taula" style={{"--n":ofs.length}}>
+        {capOf}
+        {ambP.map((f,i)=><div key={i} className="fila"><span className="pt">{f.codi?<small>{f.codi}</small>:null}{f.concepte}</span>{cel(f.pres,null,null)}{f.of.map((x,j)=><React.Fragment key={j}>{x||f.sp?.[j]||aparella[j]?cel(x,f,j):<span className="n buit">—</span>}</React.Fragment>)}</div>)}
+      </div>
+    </details>}
+    {entre.length>0&&<details className="ind-comp-det-v878671 entre-v878671" open={entre.length<=40||undefined}><summary><span>{t("Peça per peça entre les ofertes")}</span><small>{entre.length===1?t("1 peça a més d’una oferta"):t("{n} peces a més d’una oferta",{n:entre.length})}</small></summary>
+      <div className="taula sense-pres-v878671" style={{"--n":ofs.length}}>
+        <div className="fila cap"><span>{t("Peça")}</span>{ofs.map(o=><span key={o.id}><b>{o.industrial}</b>{o.pressupostNom&&<small className="ref-v878671">{o.pressupostNom}</small>}</span>)}</div>
+        {entre.map((f,i)=><div key={i} className="fila"><span className="pt">{f.codi?<small>{f.codi}</small>:null}{f.concepte}</span>{f.of.map((x,j)=><React.Fragment key={j}>{cel(x,f,j)}</React.Fragment>)}</div>)}
+        <div className="fila tot"><span>{t("Suma d’aquestes peces")}</span>{sumaEntre.map((x,j)=><span key={j} className="n"><b>{money(x)}</b>{faltenEntre[j]>0&&<small className="falta-v878671">{t("en falten {n}",{n:faltenEntre[j]})}</small>}</span>)}</div>
+      </div>
+    </details>}
+    {ofs.map((o,j)=>propies[j].length>0&&<details key={o.id} className="ind-comp-det-v878671 propies-v878671"><summary><span>{o.industrial||t("Sense nom")}</span><small>{entre.length?(propies[j].length===1?t("1 partida només en aquesta oferta"):t("{n} partides només en aquesta oferta",{n:propies[j].length})):(propies[j].length===1?t("1 partida que no és al pressupost"):t("{n} partides que no són al pressupost",{n:propies[j].length}))} · {money(propies[j].reduce((s,f)=>s+(f.of[j]?.imp||0),0))}</small></summary>
+      <div className="llista-v878671">{propies[j].map((f,i)=><div key={i} className="l"><span className="pt">{f.codi?<small>{f.codi}</small>:null}{f.concepte}</span><span className="n"><b>{money(f.of[j].imp)}</b><small>{money(f.of[j].pu)}{f.of[j].q?` · ${qty2(f.of[j].q)}${f.ut?" "+f.ut:""}`:""}</small></span></div>)}</div>
+    </details>)}
   </div><BotonsDoc878412 html={html} titol={titol} onImprimir={()=>printHtmlInPlace878112(html,titol)} close={close}/></Modal>;
 }
 function AdjudicaOferta878608({oferta,data={},grup,close,confirma}){
@@ -18199,7 +18243,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
     </div>
   </Modal>;
 }
-function PdfPressupost878305({onImport,close,inicial=null,onLlegit=null,titol=""}){
+function PdfPressupost878305({onImport,close,inicial=null,onLlegit=null,titol="",botoLlegit=false}){
   const[estat,setEstat]=useState("tria");
   const[err,setErr]=useState("");
   const[res,setRes]=useState(null);
@@ -18261,7 +18305,8 @@ function PdfPressupost878305({onImport,close,inicial=null,onLlegit=null,titol=""
   async function desa(){
     setEstat("desant");
     const rows=sel.map(p=>({codi:p.codi,cap:p.cap,ut:p.ut,concepte:p.concepte,desc:p.desc,q:nm(p.q),pu:nm(p.pu)}));
-    if(onLlegit){onLlegit(rows,{fileName:fitxer?.name||"",total,file:fitxer,text:textPdf});return}
+    // V87.671 · a les ofertes, el codi que ha posat l'app (01.01…) no serveix per aparellar-les amb el pressupost ni entre elles
+    if(onLlegit){onLlegit(rows.map((r,i)=>sel[i]?.auto?{...r,auto:1}:r),{fileName:fitxer?.name||"",total,file:fitxer,text:textPdf});return}
     const r=await onImport?.(rows,{fileName:fitxer?.name||"",total,file:fitxer});
     if(r){alert(r.nou?t("Fet: s’ha creat el pressupost «{nom}» amb {n} partides. El que ja hi havia no s’ha tocat.",{nom:r.nom,n:r.partides}):t("Fet: s’han posat {n} partides al pressupost.",{n:r.partides}));close?.()}
     else{setErr(t("No s’ha pogut desar."));setEstat("revisa")}
@@ -18299,7 +18344,7 @@ function PdfPressupost878305({onImport,close,inicial=null,onLlegit=null,titol=""
         <td><NumIn878584 className="num" inputMode="decimal" value={p.pu} onChange={e=>ch(p._i,"pu",e.target.value)}/></td>
         <td className="num">{money(nm(p.q)*nm(p.pu))}</td>
       </tr>)}</tbody></table></section>)}</div>
-      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>{setEstat("tria");setRes(null);setFiles([]);setErr("");setFitxer(null)}}>{t("Un altre PDF")}</button>{botoIa()}<button type="button" className="primary" disabled={!sel.length||estat==="desant"} onClick={desa}>{estat==="desant"?t("Desant…"):onLlegit?t("Fer-ne l’oferta ({n} partides)",{n:sel.length}):t("Crear el pressupost ({n} partides)",{n:sel.length})}</button></div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>{setEstat("tria");setRes(null);setFiles([]);setErr("");setFitxer(null)}}>{t("Un altre PDF")}</button>{botoIa()}<button type="button" className="primary" disabled={!sel.length||estat==="desant"} onClick={desa}>{estat==="desant"?t("Desant…"):onLlegit?(botoLlegit?t("Posar-les a l’oferta ({n} partides)",{n:sel.length}):t("Fer-ne l’oferta ({n} partides)",{n:sel.length})):t("Crear el pressupost ({n} partides)",{n:sel.length})}</button></div>
     </>}
   </div></Modal>;
 }
@@ -24287,7 +24332,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.670",
+    app_version:"87.671",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

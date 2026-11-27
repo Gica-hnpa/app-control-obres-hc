@@ -43,7 +43,9 @@ export const importPartides = ps => r2(ps.reduce((s, p) => s + num(p.q) * num(p.
 
 
 // la clau per aparellar una línia d'oferta amb una partida: el codi o, si no n'hi ha, el concepte
-const clauCodi = x => norm(x?.codi).replace(/\s/g, "");
+// V87.671 · sense els zeros del davant de cada número: la «P1» d'una oferta és la «P01» de l'altra (i «A9» = «A09», «05.01» = «5.1»)
+// (el codi que l'app ha posat sola en llegir el PDF, «codiAuto», no compta: dues ofertes sense codis tindrien totes dues 01.01, 01.02…)
+const clauCodi = x => x?.codiAuto ? "" : norm(x?.codi).split(" ").filter(Boolean).map(p => p.replace(/(^|[a-z])0+(?=\d)/g, "$1")).join(".");
 const clauText = x => norm(x?.concepte).slice(0, 48);
 const comu = (a, b) => { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; };
 // V87.612 · sense codi ni text igual, només la partida que s'hi assembla de debò (el principi comú ha de ser gairebé tot el text més curt):
