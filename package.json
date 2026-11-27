@@ -1,7 +1,7 @@
 {
   "name": "app-control-obres-v87-259-compartits",
   "private": true,
-  "version": "87.668",
+  "version": "87.669",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,0 +1,83 @@
+/* V87.669 · Comparatiu d'industrials per capítols (l'Héctor, 27/11/2026: «posar capítols i dins de cada capítol que llegeixi el pdf com una
+   factura… el comparatiu… adjudicar»; «s'ha de veure el pdf llegit… sobretot l'original»; «el nom de l'empresa i a dins la referència»;
+   «com em modificaran les partides… i com comprovarem el % de marge»). */
+
+/* ── a dalt: «Capítol» i les xifres ── */
+html:root:root body .ind-cap-top-v878669{display:flex;align-items:stretch;gap:12px}
+html:root:root body .ind-cap-top-v878669>.nou-cap-v878669{align-self:center;display:inline-flex;align-items:center;gap:6px;min-height:42px;white-space:nowrap}
+html:root:root body .ind-cap-top-v878669>.ind-xifres-v878608{flex:1;min-width:0}
+@media (max-width:767px){
+  html:root:root body .ind-cap-top-v878669{flex-direction:column}
+  html:root:root body .ind-cap-top-v878669>.nou-cap-v878669{align-self:stretch;justify-content:center}
+}
+
+/* ── dins de cada capítol: el que hi ha al pressupost i les accions ── */
+html:root:root body .ind-llista-v878608 .ind-cap-v878669{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+html:root:root body .ind-llista-v878608 .ind-cap-v878669 .al-pres{display:inline-flex;align-items:baseline;gap:8px}
+html:root:root body .ind-llista-v878608 .ind-cap-v878669 .ind-accions-v878608{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+html:root:root body .ind-llista-v878608 .ind-cap-v878669 .ind-accions-v878608 .ind-comparar-v878666{margin-left:0}
+html:root:root body .ind-llista-v878608 .ind-cap-v878669 .treu-cap-v878669{padding:0 10px}
+@media (max-width:767px){
+  html:root:root body .ind-llista-v878608 .ind-cap-v878669 .ind-accions-v878608{margin-left:0;justify-content:flex-start;width:100%}
+  html:root:root body .ind-llista-v878608 .ind-cap-v878669 .ind-accions-v878608>button{flex:1 1 auto}
+}
+
+/* ── cada oferta: l'empresa i, a sota, la referència del seu pressupost ── */
+html:root:root body .ind-llista-v878608 .ind-of .nom b{font-size:16px}
+html:root:root body .ind-llista-v878608 .ind-of .bts .pdf-v878669{display:inline-flex;align-items:center;gap:5px}
+html:root:root body .ind-llista-v878608 .ind-of .mou-v878669{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13.5px;font-weight:600;color:var(--co-ink-2,#334155)}
+html:root:root body .ind-llista-v878608 .ind-of .mou-v878669 select{height:36px;max-width:100%;min-width:220px;padding:0 8px;border:1px solid var(--co-line-strong,#AEB8C4);border-radius:6px;background:#FFFFFF}
+html:root:root body .ind-sense-v878669>summary svg:first-child{color:#B45309}
+
+/* ── la fitxa amb el PDF original ── */
+html:root:root body .modal:has(.ind-fitxa-v878608.amb-pdf-v878669){width:min(1480px,96vw)!important;max-width:96vw!important}
+html:root:root body .ind-fitxa-v878608 .ind-dades-v878669{display:flex;flex-direction:column;gap:12px;min-width:0}
+html:root:root body .ind-original-v878669{display:flex;flex-direction:column;gap:8px;min-width:0;padding:8px;border:1px solid var(--co-line,#D2D8DF);border-radius:8px;background:#E7ECF2;max-height:62vh;overflow:auto}
+html:root:root body .ind-original-v878669 .pdf-v8784291{display:flex;flex-direction:column;gap:8px}
+html:root:root body .ind-original-v878669 .pdf-v8784291 img{display:block;width:100%;height:auto;background:#FFFFFF;box-shadow:0 1px 3px rgba(15,23,42,.18)}
+html:root:root body .ind-original-v878669 .obre-v878669{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;position:sticky;bottom:0}
+@media (min-width:1024px){
+  html:root:root body .ind-fitxa-v878608.amb-pdf-v878669{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+  html:root:root body .ind-fitxa-v878608.amb-pdf-v878669 .ind-original-v878669{position:sticky;top:0;max-height:calc(100vh - 190px)}
+}
+html:root:root body .afegeix-pdf-v878669 button{display:inline-flex;align-items:center;gap:6px}
+html:root:root body .ind-linies-pleg-v878669{border:1px solid var(--co-line,#D2D8DF);border-radius:8px;background:#F6F8FB}
+html:root:root body .ind-linies-pleg-v878669>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;cursor:pointer;font-weight:700;color:var(--co-ink,#16263D);list-style:none}
+html:root:root body .ind-linies-pleg-v878669>summary::-webkit-details-marker{display:none}
+html:root:root body .ind-linies-pleg-v878669>summary::after{content:"▾";margin-left:6px;color:var(--co-ink-3,#58667A)}
+html:root:root body .ind-linies-pleg-v878669[open]>summary::after{content:"▴"}
+html:root:root body .ind-linies-pleg-v878669>summary span{flex:1}
+html:root:root body .ind-linies-pleg-v878669>.ind-linies-v878611{margin:0;border:0;border-top:1px solid var(--co-line,#D2D8DF);border-radius:0 0 8px 8px}
+
+/* ── afegir un capítol ── */
+/* el contingut de les finestres, amb marge als costats (com les altres finestres) */
+html:root:root body .modal>.ind-fitxa-v878608,html:root:root body .modal>.ind-adj-v878608,html:root:root body .modal>.ind-noucap-v878669{padding:12px 18px 14px;min-width:0}
+html:root:root body .ind-noucap-v878669 label{display:flex;flex-direction:column;gap:4px}
+html:root:root body .ind-noucap-v878669 label>span{font-size:13px;font-weight:700;color:#334155}
+
+/* ── adjudicar: què canvia al pressupost ── */
+html:root:root body .modal:has(.ind-adj-det-v878669){width:min(920px,96vw)!important;max-width:96vw!important}
+html:root:root body .ind-adj-det-v878669{margin:6px 0 12px;border:1px solid var(--co-line,#D2D8DF);border-radius:8px;background:#FFFFFF}
+html:root:root body .ind-adj-det-v878669>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;cursor:pointer;font-weight:700;background:#EDF0F4;border-radius:8px 8px 0 0;list-style:none}
+html:root:root body .ind-adj-det-v878669>summary::-webkit-details-marker{display:none}
+html:root:root body .ind-adj-det-v878669>summary .tot{font-weight:500;white-space:nowrap}
+html:root:root body .ind-adj-det-v878669 .taula{max-height:46vh;overflow:auto}
+html:root:root body .ind-adj-det-v878669 .l{display:grid;grid-template-columns:minmax(0,1fr) 104px 104px 112px;gap:8px;align-items:baseline;padding:6px 12px;border-top:1px solid #EEF1F5;font-size:13.5px}
+html:root:root body .ind-adj-det-v878669 .l.cap{position:sticky;top:0;z-index:1;background:#F8FAFC;font-size:12px;font-weight:700;color:var(--co-ink-3,#58667A);border-top:0}
+html:root:root body .ind-adj-det-v878669 .l .c{min-width:0;overflow-wrap:anywhere}
+html:root:root body .ind-adj-det-v878669 .l .c b{margin-right:4px}
+html:root:root body .ind-adj-det-v878669 .l .c em{margin-left:6px;font-style:normal;font-size:12px;color:var(--co-ink-3,#58667A)}
+html:root:root body .ind-adj-det-v878669 .l .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+html:root:root body .ind-adj-det-v878669 .l .nou{font-weight:700}
+html:root:root body .ind-adj-det-v878669 .l .nou.puja{color:#B91C1C}
+html:root:root body .ind-adj-det-v878669 .l .nou.baixa{color:#15803D}
+html:root:root body .ind-adj-det-v878669 .l.nova{background:#FFF7ED}
+html:root:root body .ind-adj-det-v878669 .l.queda{color:var(--co-ink-3,#58667A)}
+html:root:root body .ind-adj-det-v878669 .sub{padding:8px 12px 4px;font-size:12.5px;font-weight:700;color:var(--co-ink-2,#334155);border-top:1px solid #E2E8F0;background:#F8FAFC}
+@media (max-width:767px){
+  html:root:root body .ind-adj-det-v878669 .l{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 8px}
+  html:root:root body .ind-adj-det-v878669 .l .c{grid-column:1/-1}
+  html:root:root body .ind-adj-det-v878669 .l.cap{display:none}
+  html:root:root body .ind-adj-det-v878669 .l .n[data-l]::before{content:attr(data-l);display:block;font-size:11px;font-weight:600;color:var(--co-ink-3,#58667A)}
+  html:root:root body .ind-adj-det-v878669 .l .n:not([data-l]){visibility:hidden}
+}

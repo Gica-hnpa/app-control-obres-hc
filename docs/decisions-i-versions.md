@@ -5224,3 +5224,28 @@
     Google estigui configurat: sense connexió, el botó; connectada, l'estat, «Calendari» (V87.667) i «Sincronitzar». `theme-v878668.css`.
     Proves: `gcaltest` 23/23, `v331test` 17/17 (al mòbil obre l'Agenda amb `aco-nav`, ja no és a la barra de baix des de la V87.658, i toca «Ara no»
     a l'oferta de l'empremta de la V87.665), `veuagenda330test` 17/17, `v664test` 33/33, `v571test` 9/9.
+- **V87.669 · Comparatiu d'industrials per capítols, amb el PDF original** (l'Héctor, 27/11/2026: «no vam dir que havia de poder posar capítols i
+  dins de cada capítol que llegeixi el pdf com una factura i després com faig el comparatiu… abans estava però ara fa versions que no els veig»;
+  «s'ha de veure el pdf llegit… o com a molt les dues maneres però sobretot l'original»; «el nom ha de sortir el de l'empresa i a dins la
+  referència que posin»; «estructurar-ho i guardar-ho per capítols i després veure com ho lliguem amb un pressupost… si està totalment fet
+  perquè l'he adjuntat d'un bc3, com em modificaran les partides… i com comprovarem el % de marge»). Una sola pantalla per a tots els perfils
+  que la tenen (constructora, tècnic amb direcció d'obra, gestió total, finques).
+  - **Per capítols:** a dalt «Capítol» (un del pressupost, «Tota l'obra» o un de nou; `data.indCaps878669`). Cada capítol és una banda (blau nit
+    oberta) i a dins: «Al pressupost», «Llegir l'oferta d'un PDF» i «Oferta a mà» (ja amb el capítol), «Comparatiu (n ofertes)» amb dues o més, les
+    ofertes (l'empresa i a sota la referència del seu pressupost) i treure el capítol si no en té cap. Abans, el capítol d'una oferta llegida era
+    el títol del PDF si no coincidia amb el pressupost i cada oferta anava a un grup diferent (Verbania: «01 Pressupost 250316…» i «01 REF. SR.
+    SEBASTIEN…»): ara aquestes van a **«Sense capítol»**, amb «Passar al capítol» (el títol del PDF passa a ser la referència, sense el número).
+  - **El PDF original:** en llegir-lo, el PDF es desa amb l'oferta (`oferta.docs`, com els documents de les actes: `fileStore.js`, a l'aparell i al
+    núvol). A la fitxa de l'oferta, a l'ordinador el PDF a l'esquerra i les dades a la dreta; al mòbil, el PDF a dalt; les partides llegides, a
+    sota i plegades. Cada oferta té «PDF» (el visor). A una oferta sense PDF, «Afegir el PDF de l'oferta». La referència també es treu del títol
+    del PDF i el número, del nom de l'arxiu («ROCAS_pressupost-250316.pdf»).
+  - **Adjudicar: «Què canvia al pressupost»**, partida per partida: el preu d'ara, el de l'industrial i el preu nou amb el marge («Amb el 10 %»),
+    les partides noves i les del capítol que l'oferta no té («es queden com estan»), i el total del capítol abans → després. Fins a «Adjudicar i
+    passar-ho al pressupost» no es toca res. (La lògica és la de la V87.608/612/666: les partides que coincideixen pel codi o el concepte agafen el
+    preu de l'oferta amb el marge, les certificades no canvien, les que no hi són s'afegeixen al capítol.)
+  - **Expedient nou, «Més dades ara»** (l'Héctor: «si poso direcció d'obra, que és un tècnic, em surten tots els contactes i només han de sortir els
+    tècnics»; «i DEO també… cada desplegable té el seu grup diferenciat a Contactes»): Direcció d'obra, DEO i Coordinació S+S, només els tècnics;
+    Constructora, les constructores; Promotor, els promotors (els grups de Contactes, `grupContacte878315`). Un nom nou escrit va a Contactes amb l'obra.
+  - `src/theme-v878669.css`. Prova nova `v669test`.
+  - **Foto del Cadastre també amb foto** (l'Héctor: «si poso canviar foto puc tornar a clicar a veure si em busca la del cadastre?»): el botó surt
+    sempre que hi ha la referència cadastral (abans, només sense foto). `cadastre356test` posada al dia; `v652test` (finques) fa primer el capítol.
