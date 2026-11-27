@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.669";
+const APP_VERSION878264="87.670";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11881,6 +11881,123 @@ function tancaDesat878617(e,msg){toast878557(msg||i18nT("Desat"));try{const bt=e
   // dins d'una targeta plegable, es plega; si el botó és a sota de diverses targetes (Dades de l'empresa), es pleguen les obertes del mateix formulari
   const dets=det?[det]:[...(bt?.closest?.(".actions-inline,.modal-actions")?.parentElement?.querySelectorAll("details[open]")||[])];
   if(dets.length)setTimeout(()=>{dets.forEach(d=>{d.open=false});try{(dets[0]).scrollIntoView({block:"nearest",behavior:"smooth"})}catch{}},120)}catch{}}
+// V87.670 · El Cadastre i les cèdules, des de Dades (l'Héctor, 27/11/2026: «a veure si posant l'adreça la pugues buscar [la referència
+// cadastral]»; «en cèdules… em digui si existeix cèdula anterior caducada o vigent»; «un botó… descarregar la fitxa de la finca… i que
+// després automàticament s'adjunti a documents en documentació prèvia»).
+//  · Referència per l'adreça: els serveis públics del Cadastre (JSON, sense clau i oberts a les webs: CORS): el municipi, el carrer i
+//    Consulta_DNPLOC; en un edifici amb pisos, la llista per triar-ne un.
+//  · Cèdules: les dades obertes de la Generalitat («Cèdules d'habitabilitat», analisi.transparenciacatalunya.cat, 3pqu-s3ga), per la
+//    referència de 20 caràcters, la de la finca (14) o l'adreça. Vigent = «Atorgada» i la data de fi de vigència no ha passat.
+//  · Fitxa del Cadastre (PDF): la funció «aco-cadastre» del núvol (supabase/functions/aco-cadastre); sense la funció, s'obre la de la Seu.
+const CAD_JSON878670="https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/";
+const CEDULES878670="https://analisi.transparenciacatalunya.cat/resource/3pqu-s3ga.json";
+const SEU_FITXA878670="https://www1.sedecatastro.gob.es/CYCBienInmueble/SECImprimirCroquisYDatos.aspx?refcat=";
+const PROV_CP878670={"08":"BARCELONA","17":"GIRONA","25":"LLEIDA","43":"TARRAGONA"};
+const nrm670=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9Ç ]+/g," ").replace(/\s+/g," ").trim();
+const llista670=x=>x==null?[]:Array.isArray(x)?x:[x];
+// les proves posen window.__acoFetchMock878670 (respostes simulades del Cadastre i de les dades obertes)
+const fetch670=(u,o)=>(window.__acoFetchMock878670||fetch)(u,o);
+// el primer valor amb aquesta clau, a qualsevol fondària (les respostes del Cadastre porten embolcalls diferents)
+function troba670(o,k,d=0){if(!o||typeof o!=="object"||d>8)return undefined;if(Object.prototype.hasOwnProperty.call(o,k))return o[k];for(const v of Object.values(o)){const r=troba670(v,k,d+1);if(r!==undefined)return r}return undefined}
+const rcDe670=rc=>rc?[rc.pc1,rc.pc2,rc.car,rc.cc1,rc.cc2].map(x=>String(x||"")).join(""):"";
+async function cadJson670(op,q){const u=CAD_JSON878670+op+"?"+new URLSearchParams(q).toString();let r;try{r=await fetch670(u)}catch{throw new Error(i18nT("No s’ha pogut connectar amb el Cadastre."))}if(!r.ok)throw new Error(i18nT("El Cadastre no ha respost ({s}).",{s:r.status}));return r.json()}
+const errCad670=j=>{const l=llista670(troba670(j,"err"));return l.length?String(l[0]?.des||l[0]?.cod||""):""};
+// «Carrer de la Tramuntana, 5, 2n 1a» → {via:"Tramuntana", num:"5"}
+function partsAdreca878670(adr){
+  const s=String(adr||"").trim();const m=s.match(/^(.*?)[\s,]+(?:n[ºo°.]?\s*)?(\d+)/i);
+  return {via:netejaVia878670((m?m[1]:s).replace(/[,\s]+$/,"")),num:m?m[2]:""};
+}
+function netejaVia878670(v){
+  let via=String(v||"").trim().replace(/^c\/\s*/i,"");
+  via=via.replace(/^(gran\s+via|c\/|c\.|cl\.?|carrer|calle|av\.?|avda\.?|avgda\.?|avinguda|avenida|pl\.?|pl\.ça|plaça|plaza|pg\.?|passeig|paseo|ptge\.?|passatge|pasaje|rbla\.?|rambla|ronda|rda\.?|camí|cami|camino|ctra\.?|carretera|travessera|trav\.?|via|urb\.?|urbanització|baixada|pujada)\s+/i,"");
+  for(let i=0;i<3;i++)via=via.replace(/^(de\s+la|de\s+les|dels|del|de\s+l['’]|de|d['’]|la|les|els|el|l['’])\s*/i,"");
+  return via.trim();
+}
+// els immobles d'una finca (14 caràcters) o d'una adreça: [{rc, txt}]
+function immobles670(j){
+  const out=[];const uno=troba670(j,"bico");
+  const ok=v=>v&&!/^(T|OD|OS)$/.test(String(v));
+  const fila=(rc,dt,debi,ldt)=>{const li=troba670(dt,"loint")||{};const parts=[ok(li.es)?i18nT("Esc. {e}",{e:li.es}):"",ok(li.pt)?i18nT("Planta {p}",{p:li.pt}):"",ok(li.pu)?i18nT("Porta {p}",{p:li.pu}):"",debi?.luso||"",debi?.sfc?`${debi.sfc} m²`:""].filter(Boolean);return {rc,txt:parts.join(" · ")||ldt||rc,ldt:ldt||""}};
+  if(uno){const bi=troba670(uno,"bi")||uno;const rc=rcDe670(troba670(bi,"rc"));if(rc)out.push(fila(rc,troba670(bi,"dt"),troba670(bi,"debi"),troba670(bi,"ldt")))}
+  for(const x of llista670(troba670(j,"rcdnp"))){const rc=rcDe670(x?.rc);if(rc)out.push(fila(rc,x?.dt,x?.debi,x?.ldt||""))}
+  return out;
+}
+async function immoblesRc878670(rc14){const j=await cadJson670("Consulta_DNPRC",{RefCat:rc14});const l=immobles670(j);if(!l.length)throw new Error(errCad670(j)||i18nT("El Cadastre no té aquesta referència."));return l}
+function CercaRc878670({adreca="",poblacio="",cp="",llista=null,close,tria}){
+  const p0=partsAdreca878670(adreca);
+  const[f,setF]=useState({muni:poblacio||"",via:p0.via,num:p0.num});const set=(k,v)=>setF(x=>({...x,[k]:v}));
+  const[estat,setEstat]=useState(llista?"llista":"");const[err,setErr]=useState("");
+  const[carrers,setCarrers]=useState([]);const[imm,setImm]=useState(llista||[]);
+  const prov=PROV_CP878670[String(cp||"").slice(0,2)]||"GIRONA";
+  async function dnploc(muni,c){
+    const j=await cadJson670("Consulta_DNPLOC",{Provincia:prov,Municipio:muni,Sigla:c.tv,Calle:c.nv,Numero:f.num,Bloque:"",Escalera:"",Planta:"",Puerta:""});
+    const l=immobles670(j);if(!l.length)throw new Error(errCad670(j)||i18nT("El Cadastre no té cap immoble en aquest número."));
+    setImm(l);setCarrers([]);setEstat("llista");
+  }
+  async function busca(){
+    setErr("");setImm([]);setCarrers([]);setEstat("...");
+    try{
+      const via=netejaVia878670(f.via);
+      if(!f.muni.trim()||!via||!f.num.trim())throw new Error(i18nT("Cal el municipi, el carrer i el número."));
+      const jm=await cadJson670("ObtenerMunicipios",{Provincia:prov,Municipio:f.muni.trim()});
+      const ms=llista670(troba670(jm,"muni")).map(m=>m?.nm).filter(Boolean);
+      if(!ms.length)throw new Error(i18nT("El Cadastre no troba el municipi «{m}» a {p}.",{m:f.muni,p:prov}));
+      const muni=ms.find(m=>nrm670(m)===nrm670(f.muni))||ms[0];
+      // el nom tal com està i, si no hi és, la paraula més llarga (p. ex. «Gran Via de Jaume I» → «JAUME»)
+      let cs=[];for(const nv of [...new Set([via,[...via.split(/\s+/)].filter(w=>w.length>=4).sort((a,b)=>b.length-a.length)[0]||""])].filter(Boolean)){const jc=await cadJson670("ObtenerCallejero",{Provincia:prov,Municipio:muni,TipoVia:"",NomVia:nv});cs=llista670(troba670(jc,"calle")).map(c=>c?.dir).filter(c=>c&&c.nv);if(cs.length)break}
+      if(!cs.length)throw new Error(i18nT("El Cadastre no troba el carrer «{c}» a {m}.",{c:via,m:muni}));
+      const exacte=cs.filter(c=>nrm670(c.nv)===nrm670(via)||nrm670(via).endsWith(" "+nrm670(c.nv)));
+      if(exacte.length===1||cs.length===1){await dnploc(muni,exacte[0]||cs[0]);return}
+      setCarrers(cs.slice(0,30).map(c=>({...c,muni})));setEstat("carrers");
+    }catch(e){setErr(e?.message||String(e));setEstat("")}
+  }
+  return <Modal title={i18nT("Buscar la referència cadastral")} close={close}><div className="stack cerca-rc-v878670">
+    {!llista&&<div className="camps"><label><span>{i18nT("Municipi")}</span><input value={f.muni} onChange={e=>set("muni",e.target.value)}/></label>
+      <label className="via"><span>{i18nT("Carrer")}</span><input value={f.via} onChange={e=>set("via",e.target.value)} placeholder={i18nT("Ex. Tramuntana")}/></label>
+      <label className="num"><span>{i18nT("Número")}</span><input value={f.num} inputMode="numeric" onChange={e=>set("num",e.target.value)}/></label>
+      <button type="button" className="primary" disabled={estat==="..."} onClick={busca}><Search size={16} aria-hidden="true"/> {estat==="..."?i18nT("Buscant…"):i18nT("Buscar")}</button></div>}
+    {err&&<p className="err-v878670" role="alert">{err}</p>}
+    {estat==="carrers"&&<div className="tria-v878670"><b>{i18nT("Quin carrer?")}</b>{carrers.map((c,i)=><button key={i} type="button" className="secondary" onClick={async()=>{setEstat("...");try{await dnploc(c.muni,c)}catch(e){setErr(e?.message||String(e));setEstat("carrers")}}}>{c.tv} {c.nv}</button>)}</div>}
+    {estat==="llista"&&imm.length>0&&<div className="tria-v878670"><b>{imm.length===1?i18nT("L’immoble"):i18nT("Quin immoble? ({n})",{n:imm.length})}</b>
+      {imm.map(x=><button key={x.rc} type="button" className="secondary imm" onClick={()=>tria(x.rc)}><span className="rc">{x.rc}</span><span>{x.txt}</span></button>)}
+      {imm.length>1&&<button type="button" className="link" onClick={()=>tria(imm[0].rc.slice(0,14))}>{i18nT("Tota la finca ({rc})",{rc:imm[0].rc.slice(0,14)})}</button>}</div>}
+  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{i18nT("Tancar")}</button></div></Modal>;
+}
+// les cèdules d'habitabilitat que ja té l'habitatge (o l'edifici), de les dades obertes de la Generalitat
+function vigenciaCedula878670(c,avui=todayISO8743()){
+  const fi=String(c?.data_fi_vigencia||"").slice(0,10),e=String(c?.estat_cedula||"");
+  if(/atorgada/i.test(e)&&fi&&fi>=avui)return {k:"vigent",t:i18nT("Vigent")};
+  if(/atorgada/i.test(e)||/caducada/i.test(e))return {k:"caducada",t:i18nT("Caducada")};
+  return {k:"altra",t:e||i18nT("Sense estat")};
+}
+function CedulesAnteriors878670({rc="",adreca="",poblacio=""}){
+  const r=rcNet878305(rc);const pa=partsAdreca878670(adreca);
+  const clau=r.length>=20?"rc:"+r.slice(0,20):r.length>=14?"finca:"+r.slice(0,14):(pa.via&&pa.num&&poblacio?"adr:"+[poblacio,pa.via,pa.num].join("|"):"");
+  const[st,setSt]=useState({clau:"",l:null,err:""});
+  useEffect(()=>{if(!clau)return;let viu=true;const t0=setTimeout(async()=>{
+    const q=new URLSearchParams({$order:"data_resolucio DESC",$limit:"40"});
+    const esc=s=>String(s).replace(/'/g,"''");
+    if(clau.startsWith("rc:"))q.set("referencia_cadastral",r.slice(0,20));
+    else if(clau.startsWith("finca:"))q.set("$where",`starts_with(referencia_cadastral,'${esc(r.slice(0,14))}')`);
+    else q.set("$where",`upper(municipi) like '%${esc(String(poblacio).toUpperCase())}%' AND upper(nomvia) like '%${esc(pa.via.toUpperCase())}%' AND numinici='${esc(pa.num)}'`);
+    try{const res=await fetch670(CEDULES878670+"?"+q.toString());if(!res.ok)throw new Error(i18nT("Les dades obertes no han respost ({s}).",{s:res.status}));const l=await res.json();if(viu)setSt({clau,l:Array.isArray(l)?l:[],err:""})}
+    catch(e){if(viu)setSt({clau,l:null,err:e?.message||i18nT("No s’ha pogut connectar amb les dades obertes.")})}},400);
+    return()=>{viu=false;clearTimeout(t0)}},[clau]);
+  if(!clau)return <div className="cedules-v878670 buit"><b>{i18nT("Cèdules anteriors")}</b><span>{i18nT("Posa la referència cadastral o l’adreça per mirar-ho.")}</span></div>;
+  const l=st.clau===clau?st.l:null;
+  const vig=(l||[]).find(c=>vigenciaCedula878670(c).k==="vigent");
+  const fd=s=>{const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}/${m[2]}/${m[1]}`:""};
+  const anys=c=>{const a=String(c.data_resolucio||"").slice(0,4),b=String(c.data_fi_vigencia||"").slice(0,4);return a&&b?(+b)-(+a):null};
+  return <div className="cedules-v878670">
+    <header><b>{i18nT("Cèdules anteriors")}</b>{st.clau!==clau&&!st.err?<span className="carregant">{i18nT("Mirant-ho…")}</span>:l?(vig?<span className="et vigent">{i18nT("Vigent fins al {d}",{d:fd(vig.data_fi_vigencia)})}</span>:l.length?<span className="et caducada">{i18nT("Cap de vigent")}</span>:<span className="et cap">{i18nT("Cap a les dades obertes")}</span>):null}</header>
+    {st.err&&st.clau===clau&&<p className="err-v878670">{st.err}</p>}
+    {l&&l.length>0&&<ul>{l.map((c,i)=>{const v=vigenciaCedula878670(c);const a=anys(c);return <li key={(c.numero_cedula||"")+i}>
+      <span className={`et ${v.k}`}>{v.t}</span>
+      <span className="n"><b>{c.numero_cedula||"—"}</b><small>{[[c.tipusvia,c.nomvia,c.numinici].filter(Boolean).join(" "),[c.escala&&i18nT("Esc. {e}",{e:c.escala}),c.pis,c.porta].filter(Boolean).join(" "),c.superficie_util?`${String(c.superficie_util).replace(".",",")} m²`:""].filter(Boolean).join(" · ")}</small></span>
+      <span className="d">{fd(c.data_resolucio)}{c.data_fi_vigencia?` → ${fd(c.data_fi_vigencia)}`:""}{a?<small>{i18nT("{n} anys",{n:a})}</small>:null}</span>
+    </li>})}</ul>}
+  </div>;
+}
 function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAgents=[],setData,openAgent,keepAgent878303=null,agentsLib878301=null}){
   const [form,setForm0]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
   const [clientChoice,setClientChoice0]=useState(()=>obra.compartida?(clientIdObra878347(obra)||"__prom__"):(obra.client||client?.id||""));
@@ -11930,6 +12047,28 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     });
   },[obra.id,obra.promotorAgentId,obra.propietat,promoterSignature87210]);
   function upd(k,v){setForm(p=>({...p,[k]:v}))}
+  // V87.670 · referència cadastral per l'adreça, fitxa del Cadastre a Documents › 01 · Documentació prèvia i cèdules anteriors
+  const[rcCerca670,setRcCerca670]=useState(null);   // null · {} (buscar per l'adreça) · {llista} (triar l'immoble de la finca)
+  const[fitxa670,setFitxa670]=useState("");
+  // la referència triada a «Buscar per l'adreça» es desa sola (com si es toqués «Desar»)
+  const[desa670,setDesa670]=useState(false);
+  useEffect(()=>{if(desa670){setDesa670(false);saveAll()}},[desa670,form.rc]);
+  async function baixaFitxa670(rcTriada){
+    let rc=rcNet878305(rcTriada||form.rc);
+    if(rc.length<14)return;
+    setFitxa670("...");
+    try{
+      if(rc.length<20){const l=await immoblesRc878670(rc.slice(0,14));if(l.length===1)rc=l[0].rc;else{setFitxa670("");setRcCerca670({llista:l,fitxa:true});return}}
+      rc=rc.slice(0,20);
+      // sense la funció del núvol (o sense núvol), l'enllaç a la fitxa de la Seu del Cadastre (el navegador la baixa i s'afegeix a mà)
+      let b=null;try{b=await window.__acoCloud?.fitxaCadastre878670?.(rc)}catch(e){if(!e?.senseFuncio&&!/connectat al núvol/i.test(String(e?.message||"")))throw e}
+      if(!b){setFitxa670("seu:"+rc);return}
+      const id=`doc-${obra?.id||"exp"}-${Date.now()}`,nom=`Fitxa cadastral ${rc}.pdf`,now=new Date().toISOString();
+      await saveDocFile(id,new File([b],nom,{type:"application/pdf"}),obra?.id);
+      setData?.(d=>({...d,documents:[{id,obraId:obra?.id,nom,tipus:"PDF",folder:"01_DOCUMENTACIO_PREVIA",data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:b.size,storage:"indexeddb",hasFile:true,origen878670:"cadastre"},...(d.documents||[])],updatedAt:now}));
+      setFitxa670("ok");
+    }catch(e){setFitxa670(e?.message||String(e))}
+  }
   function changeCp(v){setForm(p=>{const pob=poblacioForCp8773(v);return {...p,codiPostal:v,poblacio:pob||p.poblacio}})}
   function changePoblacio(v){setForm(p=>{const cp=cpForPoblacio8773(v);return {...p,poblacio:v,codiPostal:cp||p.codiPostal}})}
   function addAgentToObraIfNeeded878159(ag){
@@ -12148,7 +12287,13 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       {(()=>{const camps878363=<>
       {/* V87.664 · a les obres pròpies (constructora), fora «Referència del client» (l'Héctor, 26/11/2026: «no li veig cap sentit»); si ja en té, es veu */}
       {(!propia878363||String(form.refClient||"").trim())&&<label><span>{propia878363?i18nT("Referència del client (el seu número d’obra o de comanda)"):i18nT("Núm. del client (expedient, obra o pressupost)")}</span><input value={form.refClient||""} onChange={e=>upd("refClient",e.target.value)}/></label>}
-      <label><span>{i18nT("Referència cadastral")}</span><input value={form.rc||""} onChange={e=>upd("rc",e.target.value)}/></label>
+      <div className="rc-v878670"><label><span>{i18nT("Referència cadastral")}</span><input value={form.rc||""} onChange={e=>upd("rc",e.target.value)}/></label>
+        <div className="bts"><button type="button" className="secondary" onClick={()=>setRcCerca670({})}><Search size={15} aria-hidden="true"/> {i18nT("Buscar per l’adreça")}</button>
+          {rcNet878305(form.rc).length>=14&&<button type="button" className="secondary fitxa-v878670" disabled={fitxa670==="..."} onClick={()=>baixaFitxa670()}><FileText size={15} aria-hidden="true"/> {fitxa670==="..."?i18nT("Baixant la fitxa…"):i18nT("Fitxa del Cadastre")}</button>}</div>
+        {fitxa670&&fitxa670!=="..."&&<small className={`msg-v878670 ${fitxa670==="ok"?"ok":""}`} role="status">{fitxa670==="ok"?i18nT("✓ Desada a Documents › 01 · Documentació prèvia."):fitxa670.startsWith("seu:")?<>{i18nT("L’app encara no la pot desar sola.")} <a href={SEU_FITXA878670+fitxa670.slice(4)} target="_blank" rel="noopener">{i18nT("Obrir-la al Cadastre")}</a></>:fitxa670}</small>}
+      </div>
+      {/Cèdula/i.test(canonicalWorkType8740(form.tipusTreball||form.tipologia||""))&&<div className="span-all"><CedulesAnteriors878670 rc={form.rc} adreca={form.adreca} poblacio={form.poblacio}/></div>}
+      {rcCerca670&&<CercaRc878670 adreca={form.adreca} poblacio={form.poblacio} cp={form.codiPostal} llista={rcCerca670.llista||null} close={()=>setRcCerca670(null)} tria={rc=>{const fx=rcCerca670.fitxa;setRcCerca670(null);if(fx){baixaFitxa670(rc);return}upd("rc",rc);setDesa670(true)}}/>}
       <label className="doc-lang-v878283"><span>{i18nT("Idioma dels documents")}</span><select value={LANGS.some(l=>l.code===form.idiomaDocs)?form.idiomaDocs:""} onChange={e=>upd("idiomaDocs",e.target.value)}><option value="">{i18nT("El de cada usuari")}</option>{LANGS.map(l=><option key={l.code} value={l.code}>{l.nom}</option>)}</select></label>
       <label className="span-all"><span>{i18nT("Definició tipus de feina")}</span><textarea value={form.definicioFeina||""} onChange={e=>upd("definicioFeina",e.target.value)} placeholder={i18nT("Definició base de l'encàrrec, editable per cada expedient...")}/></label>
       {String(obra?.observacions||"").trim()&&<label className="span-all"><span>{i18nT("Observacions internes")}</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder={i18nT("Condicionants, criteris, notes de l’encàrrec...")}/></label>}
@@ -14970,7 +15115,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const base=codiCurt878270(obra),propE878347=expPropietari878347(obra);
   // V87.304 · si el promotor no és el client, el seu nom en negreta (encàrrec de l'Héctor: identificar bé l'obra)
   const prom878304=promotorDiferent878304(obra,client);
-  const info=<>{base}{propE878347?<span className="exp-prop-v878347"> ({propE878347})</span>:null}{client?.nom?` · ${client.nom}`:""}{prom878304&&<> · <b className="prom-v878304">{prom878304}</b></>}{esFinques878652()?"":" · "+t(moduleLabel8737(obra))}{obra?.refClient?<> · <span className="ref-client-v878314">{t("Núm. client")} {obra.refClient}</span></>:null}</>;
+  const info=<>{base}{propE878347?<span className="exp-prop-v878347"> ({propE878347})</span>:null}{client?.nom?` · ${client.nom}`:""}{prom878304&&<> · <b className="prom-v878304">{prom878304}</b></>}{(()=>{const ad=[obra?.adreca,obra?.poblacio].map(x=>String(x||"").trim()).filter(x=>x&&!/^pendent$/i.test(x)).join(", ");return ad?<> · <span className="adr-v878670">{ad}</span></>:null})()}{esFinques878652()?"":" · "+t(moduleLabel8737(obra))}{obra?.refClient?<> · <span className="ref-client-v878314">{t("Núm. client")} {obra.refClient}</span></>:null}</>;
   const st=normalizeExpedientStatus878136(estat);
   return <>
     <div className="obra-bar-info-v878269">
@@ -24142,7 +24287,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.669",
+    app_version:"87.670",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

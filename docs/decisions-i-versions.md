@@ -5249,3 +5249,16 @@
   - `src/theme-v878669.css`. Prova nova `v669test`.
   - **Foto del Cadastre també amb foto** (l'Héctor: «si poso canviar foto puc tornar a clicar a veure si em busca la del cadastre?»): el botó surt
     sempre que hi ha la referència cadastral (abans, només sense foto). `cadastre356test` posada al dia; `v652test` (finques) fa primer el capítol.
+- **V87.670 · Cadastre i cèdules a Dades, i l'adreça a la capçalera** (l'Héctor, 27/11/2026: «a veure si posant l'adreça la pugues buscar
+  [la referència cadastral]»; «en cèdules… que em digui si existeix cèdula anterior caducada o vigent»; «un botó que sigui descarregar la fitxa
+  de la finca treta del cadastre i que després automàticament s'adjunti a documents en documentació prèvia»; «l'adreça, tot i estar posada a
+  Dades, no em surt en l'encapçalament»). Detall i instal·lació a `docs/cadastre.md`.
+  - Dades › Obra, al costat de la referència: **«Buscar per l'adreça»** (`CercaRc878670`: serveis JSON públics del Cadastre, oberts a les webs:
+    municipi, carrer i `Consulta_DNPLOC`; pisos per triar; la triada es desa sola) i **«Fitxa del Cadastre»** (el PDF de la Seu amb la funció
+    nova `aco-cadastre`, **per instal·lar**: `supabase/functions/aco-cadastre/index.ts`; es desa a Documents › 01 · Documentació prèvia; sense la
+    funció, l'enllaç a la Seu).
+  - Als encàrrecs de cèdula, **«Cèdules anteriors»** (`CedulesAnteriors878670`): dades obertes de la Generalitat (`3pqu-s3ga`), per la
+    referència de 20, la de la finca o l'adreça; vigent = «Atorgada» i data de fi no passada; la durada en anys.
+  - La **capçalera de l'obra** porta l'adreça (carrer i població) després del client i el promotor.
+  - Les proves simulen el Cadastre i les dades obertes amb `window.__acoFetchMock878670` i la funció amb `window.__acoCloud.fitxaCadastre878670`.
+    Prova nova `v670test`. `src/theme-v878670.css`.

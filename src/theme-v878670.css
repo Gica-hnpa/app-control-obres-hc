@@ -1,0 +1,50 @@
+/* V87.670 · Dades: buscar la referència cadastral per l'adreça, la fitxa del Cadastre a Documents i les cèdules anteriors; l'adreça a la
+   capçalera de l'obra (l'Héctor, 27/11/2026). */
+
+/* ── la referència cadastral, amb els seus botons ── */
+html:root:root body .rc-v878670{display:flex;flex-direction:column;gap:6px;min-width:0}
+html:root:root body .rc-v878670>label{margin:0}
+html:root:root body .rc-v878670 .bts{display:flex;flex-wrap:wrap;gap:6px}
+html:root:root body .rc-v878670 .bts button{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 10px;font-size:13px}
+html:root:root body .rc-v878670 .msg-v878670{font-size:12.5px;color:var(--co-ink-2,#334155)}
+html:root:root body .rc-v878670 .msg-v878670.ok{color:#15803D;font-weight:600}
+html:root:root body .rc-v878670 .msg-v878670 a{font-weight:700}
+
+/* ── buscar la referència ── */
+html:root:root body .modal>.cerca-rc-v878670{padding:12px 18px 14px;min-width:0}
+html:root:root body .cerca-rc-v878670 .camps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) 90px auto;gap:8px;align-items:end}
+html:root:root body .cerca-rc-v878670 .camps label{display:flex;flex-direction:column;gap:4px;margin:0}
+html:root:root body .cerca-rc-v878670 .camps label>span{font-size:13px;font-weight:700;color:#334155}
+html:root:root body .cerca-rc-v878670 .camps button{display:inline-flex;align-items:center;gap:6px;min-height:40px}
+html:root:root body .cerca-rc-v878670 .tria-v878670{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+html:root:root body .cerca-rc-v878670 .tria-v878670>b{font-size:13.5px}
+html:root:root body .cerca-rc-v878670 .tria-v878670 button.secondary{justify-content:flex-start;text-align:left;min-height:40px;height:auto;padding:6px 10px}
+html:root:root body .cerca-rc-v878670 .tria-v878670 button.imm{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+html:root:root body .cerca-rc-v878670 .tria-v878670 button.imm .rc{font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;letter-spacing:.02em}
+html:root:root body .cerca-rc-v878670 .tria-v878670 button.imm span:last-child{font-size:12.5px;font-weight:500;color:var(--co-ink-2,#334155)}
+html:root:root body .err-v878670{margin:0;color:#B91C1C;font-size:13px;font-weight:600}
+@media (max-width:767px){
+  html:root:root body .cerca-rc-v878670 .camps{grid-template-columns:minmax(0,1fr) 90px}
+  html:root:root body .cerca-rc-v878670 .camps label:first-child{grid-column:1/-1}
+  html:root:root body .cerca-rc-v878670 .camps button{grid-column:1/-1;justify-content:center}
+}
+
+/* ── cèdules anteriors ── */
+html:root:root body .cedules-v878670{border:1px solid var(--co-line,#D2D8DF);border-radius:8px;background:#FFFFFF;overflow:hidden}
+html:root:root body .cedules-v878670>header,html:root:root body .cedules-v878670.buit{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px;background:#EDF0F4}
+html:root:root body .cedules-v878670.buit span{font-size:13px;color:var(--co-ink-3,#58667A)}
+html:root:root body .cedules-v878670 .carregant{font-size:13px;color:var(--co-ink-3,#58667A)}
+html:root:root body .cedules-v878670 .et{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;background:#F1F5F9;color:#475569}
+html:root:root body .cedules-v878670 .et.vigent{background:#DCFCE7;color:#166534}
+html:root:root body .cedules-v878670 .et.caducada{background:#FEE2E2;color:#991B1B}
+html:root:root body .cedules-v878670 ul{list-style:none;margin:0;padding:0}
+html:root:root body .cedules-v878670 li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 12px;border-top:1px solid #EEF1F5}
+html:root:root body .cedules-v878670 li .n{display:flex;flex-direction:column;min-width:0}
+html:root:root body .cedules-v878670 li .n small{font-size:12.5px;color:var(--co-ink-3,#58667A);overflow-wrap:anywhere}
+html:root:root body .cedules-v878670 li .d{display:flex;flex-direction:column;align-items:flex-end;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+html:root:root body .cedules-v878670 li .d small{font-size:12px;color:var(--co-ink-3,#58667A)}
+html:root:root body .cedules-v878670 .err-v878670{padding:8px 12px}
+@media (max-width:767px){
+  html:root:root body .cedules-v878670 li{grid-template-columns:auto minmax(0,1fr)}
+  html:root:root body .cedules-v878670 li .d{grid-column:1/-1;align-items:flex-start}
+}

@@ -53,6 +53,8 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     pressupost i preus) amb Claude. **Instal·lada el 2/11/2026** (passos a `docs/pressupost-ia.md`).
     **Compte d'Anthropic (19/11/2026):** prepagament; crèdit comprat 0 $ i **99,98 $ de crèdit promocional («API credit (Max)») que
     caduca el 19/12/2026**: després, o si s'acaba, la IA de l'app s'atura fins que l'Héctor compri crèdit. Límit de despesa 50 $/mes i avís a 30 $.
+  - Edge Function `aco-cadastre` (V87.670, `supabase/functions/aco-cadastre/index.ts`): la fitxa del Cadastre (PDF) per a Dades › «Fitxa del Cadastre»,
+    que es desa a Documents › 01 · Documentació prèvia. **Encara no instal·lada** (passos a `docs/cadastre.md`); sense, l'app dona l'enllaç a la Seu.
   - Edge Function `aco-comptes` (V87.613, `supabase/functions/aco-comptes/index.ts`): Ajustos › «Comptes del núvol» (només l’Héctor) crea
     comptes d’empresa i hi posa contrasenyes noves; mai n’esborra cap. Només els correus del secret `ACO_ADMINS`. **Encara no instal·lada**
     (passos a `docs/comptes-nuvol.md`).
@@ -167,7 +169,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.669 a Render):**
+**Estat (publicada la V87.670 a Render):**
 - **Repàs de la constructora** (V87.663–664, 25–26/11/2026): llista a `docs/repas-constructora-2026-11-25.md` (51 punts). V87.663: 30 minuts al
   fons → contrasenya i Inici, entrada més ràpida, contactes nous de les despeses sols, Contactes, Inici, Obres sense Importar ni Filtres, colors
   d'estat, menú amb desplegables. V87.664 (propostes acceptades): barra blau nit a l'ordinador, Obres (Promotor una vegada, mòbil plegable),

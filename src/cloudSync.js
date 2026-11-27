@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.669";
+const VERSION = "V87.670";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1343,6 +1343,17 @@ async function syncNow() { await cycle({ returning: true }); }
 // V87.409 · funcions del núvol que es criden amb el compte connectat (p. ex. les peticions de signatura a distància)
 async function rpc(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/rest/v1/rpc/${name}`, { method: "POST", body: body || {} }); }
 async function callFunction(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/functions/v1/${name}`, { method: "POST", body }); }
+// V87.670 · la fitxa d'un immoble del Cadastre (PDF) amb la funció «aco-cadastre» (la Seu del Cadastre no deixa que el navegador la baixi: CORS)
+async function fitxaCadastre(rc) {
+  if (!session) throw new Error(t("Cal estar connectat al núvol."));
+  await ensureToken();
+  let r;
+  try { r = await fetch(CLOUD_URL + "/functions/v1/aco-cadastre", { method: "POST", headers: { apikey: CLOUD_KEY, "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ rc }), cache: "no-store" }); }
+  catch { const e = new Error(t("No hi ha connexió amb el núvol.")); e.offline = true; throw e; }
+  if (r.ok && /pdf/i.test(r.headers.get("content-type") || "")) return await r.blob();
+  let j = null; try { j = await r.json(); } catch {}
+  const e = new Error(j?.error || `Error ${r.status}`); e.status = r.status; e.senseFuncio = r.status === 404 || /not found|no existeix/i.test(String(j?.error || j?.message || "")); throw e;
+}
 // V87.460 · Banc de preus comú (una sola fila, supabase/aco_banc_comu_v878460.sql). «cap» no porta les partides: només es baixen si ha canviat la versió.
 // V87.533 · les partides i els capítols van comprimits (gzip en base64, dades_gz): uns 2-3 MB en lloc d'11. «comptes» diu qui el veu
 // (null: tothom; ["demo-%@usuaris.controlobres.app"]: els comptes de demostració); ho fa complir el servidor (aco_banc_comu_v878533.sql).
@@ -1460,7 +1471,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, paquets, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, desaErrors, estatNuvol, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign,
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, paquets, myEmail: () => session?.email || "", callFunction, fitxaCadastre878670: fitxaCadastre, rpc, changePassword, storageUpload, storageDownload, espai, desaErrors, estatNuvol, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign,
     bio878665: { disponible: bioDisponible878665, actiu: () => !!(session?.user_id && bioDesat878665(session.user_id)), activa: () => activaBio878665(session), treu: () => treuBio878665(), nom: nomBio878665 } };
   session = readSession();
   // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
